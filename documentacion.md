@@ -1,410 +1,297 @@
-# Documentación del Proyecto  
+# Documentación del Proyecto — 770 Barbería
 
 ---
 
-## 1. Objetivo  
+## 1. Objetivo
 
-Crear una plataforma web **serverless** que permita a clientes y barberos gestionar citas de forma ágil, segura y transparente. El sistema elimina la fricción de la reserva tradicional al ofrecer un calendario en tiempo real, planes de pago diferenciados (Oro, Plata, Bronce) y notificaciones automáticas, con la meta de alcanzar **un 30 % de reducción del tiempo medio de reserva** y **un 20 % de incremento en la tasa de confirmación de citas** durante los primeros seis meses.
-
----
-
-## 2. Información General  
-
-| Campo                         | Valor                                                                 |
-|------------------------------|-----------------------------------------------------------------------|
-| **Nombre del proyecto**       | CitasBarber                                                        |
-| **Versión**                  | 1.0.0                                                                 |
-| **Fecha**                    | 2026‑09‑01                                                             |
-| **Stack tecnológico principal** | Front‑end: Next.js 14 + React 18 + Tailwind CSS  <br>Back‑end: Node.js 20 + Express (API Routes) <br>Auth: JWT + RBAC <br>Base de datos: MongoDB Atlas (Free Tier) <br>Payments: Stripe (Transferencias) + registro de pagos en efectivo <br>Notificaciones: Firebase Cloud Messaging + SendGrid (email) <br>Despliegue: Vercel (Frontend & Serverless Functions) |
-| **Perspectivas de expertos consultados** | Ingeniero de Sistemas, Especialista en Gestión de Citas, Consultor de Experiencia de Usuario, Analista de Pagos |
+Ofrecer una plataforma web **serverless y 100 % gratuita** para que los clientes de **770 Barbería** (Caldas, Antioquia — Colombia) agenden sus citas en línea sin llamadas ni filas, y para que cada barbero gestione su agenda en tiempo real. El sistema elimina la fricción de la reserva tradicional con un motor de disponibilidad en vivo, planes de servicio diferenciados (Bronce, Plata, Oro) y comunicación por **WhatsApp**, sin pasarelas de pago ni servicios externos de notificación.
 
 ---
 
-## 3. Actores Relacionados  
+## 2. Información General
 
-| Actor        | Responsabilidad dentro del sistema                                                            |
-|--------------|----------------------------------------------------------------------------------------------|
-| **Administrador** | Aprobar/eliminar barberos, gestionar planes, revisar métricas de uso y auditoría.          |
-| **Barbero**        | Configurar disponibilidad, bloquear/habilitar franjas, aceptar o rechazar solicitudes, crear citas offline, recibir pagos y revisar reseñas. |
-| **Cliente**        | Registrarse, buscar barberos, seleccionar plan (Oro/Plata/Bronce), reservar una franja, pagar (transferencia o efectivo), recibir notificaciones, cancelar/reprogramar y dejar reseña. |
-
----
-
-## 4. Descripción de la Necesidad  
-
-En la actualidad, muchos barberos operan de forma independiente sin una herramienta centralizada que sincronice su agenda con los clientes. Los usuarios deben llamar o mensajear, lo que genera pérdidas de tiempo, dobles reservas y dificultades para pagar. Las alternativas existentes (Google Calendar, WhatsApp) carecen de integración de pagos, control de planes y gestión de reseñas. **BarberBooking** resuelve estos problemas al proporcionar:  
-
-* Un **motor de disponibilidad** que calcula slots en tiempo real y evita colisiones.  
-* **Planes de pago** que adaptan la experiencia a diferentes presupuestos y métodos (transferencia vs. efectivo).  
-* **Notificaciones push y por email** para mantener informados a barberos y clientes.  
-* **Auditoría y trazabilidad** mediante logs en Vercel Analytics y webhook de auditoría.  
-
-El resultado esperado es una mayor ocupación de los barberos, menos cancelaciones y una experiencia de usuario coherente y segura.
+| Campo | Valor |
+|---|---|
+| **Nombre del proyecto** | 770 Barbería (repositorio: `citasbarber`) |
+| **Versión** | 1.0.0 |
+| **Última actualización de este documento** | 2026‑09‑10 |
+| **Stack principal** | Next.js 14 (App Router) + React 18 + Tailwind CSS · API Routes (Node.js) · MongoDB Atlas + Mongoose · JWT · WhatsApp (`wa.me`) · Despliegue en Vercel |
+| **Naturaleza** | Aplicación web instalable como **PWA** (Progressive Web App), pensada mobile‑first |
 
 ---
 
-## 5. Diagrama de Solución  
+## 3. Actores del Sistema
+
+| Actor | Responsabilidades |
+|---|---|
+| **Administrador** | Aprueba/rechaza barberos, activa/desactiva cuentas según la suscripción, y configura los planes (servicios, precios, duración, métodos de pago) de forma individual por barbero. |
+| **Barbero** | Configura su horario laboral, bloquea días completos o franjas de horas (ausencias), acepta/rechaza/completa solicitudes, agenda citas manuales para clientes presenciales, edita su foto y redes, y revisa un resumen diario de cortes e ingresos. |
+| **Cliente** | Se identifica solo con **nombre + celular** (sin contraseña), elige barbero/plan/horario, paga el anticipo por transferencia cuando aplica (subiendo comprobante y enviándolo por WhatsApp), consulta el estado de su cita y la cancela dentro de la ventana permitida. |
+
+---
+
+## 4. Descripción de la Necesidad
+
+Los barberos de 770 gestionaban sus citas por llamadas y WhatsApp manual, lo que generaba dobles reservas, tiempos muertos y confusión de horarios. La app centraliza la agenda con:
+
+* Un **motor de disponibilidad** que calcula franjas libres en tiempo real (paso de 15 min) evitando colisiones con citas, días bloqueados y franjas de ausencia.
+* **Planes de servicio** con duración y anticipo diferenciados, y métodos de pago colombianos (Nequi, Daviplata, QR, cuenta bancaria, efectivo).
+* **Comunicación por WhatsApp** (`wa.me`) con mensajes pre‑llenados para confirmación, rechazo y envío de comprobantes — sin costos de mensajería.
+* **Registro sin fricción** para el cliente: solo nombre y celular; en visitas siguientes se le reconoce por el número.
+
+---
+
+## 5. Diagrama de Solución
 
 ```mermaid
 graph TD
-    subgraph FrontEnd[Frontend (Next.js + Tailwind)]
-        UI[UI React] --> API_GW[API Gateway (Vercel Functions)]
+    subgraph Cliente_Dispositivo[Navegador / PWA instalada]
+        UI[UI Next.js + React + Tailwind]
     end
 
-    subgraph BackEnd[Backend (Node.js/Express)]
-        API_GW --> Auth[Auth Service (JWT & RBAC)]
-        API_GW --> Calendar[Calendar Service]
-        API_GW --> Payment[Payment Service (Stripe + Cash)]
-        API_GW --> Notify[Notification Service (FCM + SendGrid)]
-        API_GW --> DB[MongoDB Atlas]
+    subgraph Vercel[Vercel - Serverless]
+        UI --> MW[Middleware: rate limiting]
+        MW --> API[API Routes Next.js]
+        API --> Auth[Auth JWT en cookie httpOnly]
+        API --> Disp[Motor de disponibilidad]
+        API --> WA[Generador de links WhatsApp wa.me]
     end
 
-    AdminConsole[Admin Console] --> Auth
-    Barbero[Barbero] --> UI
-    Cliente[Cliente] --> UI
+    API --> DB[(MongoDB Atlas)]
+    WA -. link pre-llenado .-> WhatsApp[(WhatsApp del barbero/cliente)]
 
-    Notify --> Cliente
-    Notify --> Barbero
-    Payment --> Stripe[(Stripe API)]
-    Payment --> CashRecord[Cash Register (internal)]
-    Calendar --> UI
-    DB -->|CRUD| Users[Usuarios]
-    DB -->|CRUD| Barbers[Barberos]
-    DB -->|CRUD| Appointments[Citas]
-    DB -->|CRUD| Payments[Pagos]
+    DB --> Barberos[Barberos]
+    DB --> Clientes[Clientes]
+    DB --> Citas[Citas]
+    DB --> Solicitudes[Solicitudes de registro]
+    DB --> Usuarios[Usuarios admin]
 ```
 
 ---
 
-## 6. Diagrama de Procesos  
+## 6. Diagrama de Procesos (agendamiento)
 
 ```mermaid
 flowchart LR
-    A[Inicio: Cliente abre la app] --> B[Registro / Login]
-    B --> C[Selección de barbero]
-    C --> D[Visualiza calendario del barbero]
-    D --> E[Selecciona franja horaria]
-    E --> F[Elige plan (Oro/Plata/Bronce)]
-    F --> G{¿Plan Bronce?}
-    G -- Sí --> H[Escoge método de pago: Transferencia o Efectivo]
-    G -- No --> I[Pago obligatorio: Transferencia]
-    H --> J[Genera solicitud de cita]
+    A[Cliente abre la app] --> B[Ingresa nombre + celular]
+    B --> C[Elige barbero]
+    C --> D[Ve horarios disponibles en tiempo real]
+    D --> E[Elige franja y plan]
+    E --> F{Plan con anticipo?}
+    F -- Plata/Oro --> G[Paga 50% por transferencia, sube comprobante]
+    G --> H[Se abre WhatsApp del barbero para enviarlo]
+    F -- Bronce --> I[Elige transferencia o efectivo]
+    H --> J[Solicitud creada estado: Solicitada]
     I --> J
-    J --> K[Notificación al barbero]
-    K --> L{Barbero acepta?}
-    L -- Acepta --> M[Estado: Confirmada]
-    L -- Rechaza --> N[Estado: Rechazada]
-    M --> O[Notificación de confirmación al cliente]
-    N --> P[Notificación de rechazo al cliente]
-    O --> Q[Realiza pago (si no fue efectivo)]
-    Q --> R[Servicio completado]
-    R --> S[Cliente deja reseña y calificación]
-    S --> T[Fin]
+    J --> K{Barbero decide}
+    K -- Acepta --> L[Confirmada: slot bloqueado + resumen por WhatsApp]
+    K -- Rechaza --> M[Rechazada: se abre WhatsApp para aclarar motivo]
+    L --> N[Barbero marca Completada tras el servicio]
 ```
 
 ---
 
-## 7. Requerimientos Funcionales Específicos  
+## 7. Requerimientos Funcionales
 
-| ID  | Descripción                                                                                              | Prioridad | Criterio de Aceptación                                                                                                         |
-|-----|----------------------------------------------------------------------------------------------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------|
-| RF-01 | Registro de usuarios con roles **Cliente** o **Barbero** mediante formulario verificado.               | Alta      | El usuario ingresa datos, recibe email de verificación y al confirmar se crea el registro con el rol seleccionado.            |
-| RF-02 | Inicio de sesión con JWT y refresco de token.                                                            | Alta      | Tras enviar credenciales válidas, el backend devuelve un access token (15 min) y un refresh token (7 días).                    |
-| RF-03 | Recuperación de contraseña mediante email seguro.                                                         | Alta      | El usuario solicita recuperación, recibe enlace único válido 1 h y puede establecer una nueva contraseña.                       |
-| RF-04 | Visualización del calendario del barbero con colores: libre (verde), bloqueado (gris), reservado (rojo). | Alta      | El componente FullCalendar muestra los slots coloreados y actualiza en tiempo real tras cualquier cambio.                     |
-| RF-05 | Creación de cita con selección de plan (Oro, Plata, Bronce) y método de pago correspondiente.          | Alta      | Al seleccionar plan, el sistema habilita solo los métodos de pago permitidos y genera la solicitud de cita.                  |
-| RF-06 | Notificaciones push y por email cuando el barbero acepta o rechaza la solicitud.                        | Media     | El cliente recibe una notificación en la app y un email dentro de los 5 segundos posteriores a la decisión del barbero.       |
-| RF-07 | Bloqueo y habilitación de franjas horarias por parte del barbero.                                        | Alta      | El barbero puede marcar cualquier slot como *bloqueado* o *disponible*; los cambios son persistidos y reflejados al instante.|
-| RF-08 | Creación de cita offline (barbero contacta a cliente directamente) con confirmación posterior.          | Media     | El barbero crea una cita manualmente; el cliente ve la cita solo cuando el barbero la marca como *confirmada*.               |
-| RF-09 | Cancelación o reprogramación de cita dentro de la ventana configurada por el barbero.                  | Media     | El cliente puede cancelar/reprogramar si la solicitud se hace al menos 24 h antes del slot; el estado cambia a *Cancelada*. |
-| RF-10 | Registro de pago en efectivo para plan Bronce con estado *Pendiente* y conciliación posterior.        | Media     | El cliente marca “Pago en efectivo”, el backend guarda el registro como *Pendiente* y el barbero puede cambiar a *Pagado*.  |
-| RF-11 | Publicación de reseña y calificación (1‑5 estrellas) después de una cita completada.                    | Baja      | Tras el estado *Completada*, el cliente accede a un formulario de reseña; la información queda vinculada a la cita.          |
-| RF-12 | Panel de administración para aprobar o rechazar solicitudes de incorporación de barberos.              | Alta      | El admin visualiza una lista de usuarios con rol *Barbero* en estado *Pendiente* y puede cambiar su estado a *Activo* o *Rechazado*. |
+| ID | Descripción | Criterio de aceptación |
+|---|---|---|
+| RF‑01 | Registro de barbero con nombre, local, celular, ciudad y email. | Queda en estado *Pendiente* hasta aprobación del admin. |
+| RF‑02 | Aprobación/rechazo de barberos por el admin y activación/desactivación de cuentas. | El admin cambia el estado a *Activo*, *Rechazado* o *Inactivo*. |
+| RF‑03 | Configuración de planes (servicios, precio, duración, anticipo, métodos de pago) por barbero. | El admin edita los planes de cada barbero de forma independiente. |
+| RF‑04 | Login de barbero/admin con JWT en cookie `httpOnly`. | Credenciales válidas crean una sesión de 2 días; rutas protegidas exigen rol. |
+| RF‑05 | Identificación del cliente solo con nombre + celular, sin contraseña. | En visitas posteriores el sistema reconoce al cliente por su celular. |
+| RF‑06 | Visualización de horarios disponibles en tiempo real según plan elegido. | El motor descuenta citas, días bloqueados y franjas de ausencia; no ofrece horas pasadas. |
+| RF‑07 | Creación de solicitud de cita con plan y método de pago correspondiente. | Bronce admite efectivo; Plata/Oro exigen anticipo del 50 % por transferencia. |
+| RF‑08 | Envío de comprobante de anticipo por WhatsApp. | El cliente sube la imagen y se abre `wa.me` del barbero con mensaje pre‑llenado. |
+| RF‑09 | Aceptar / rechazar / completar citas desde el panel (lista y calendario). | Al rechazar se abre WhatsApp con el cliente; al aceptar se bloquea el slot. |
+| RF‑10 | Bloqueo de **días completos** y de **franjas de horas** (ausencias) por el barbero. | Los clientes dejan de ver ese tiempo al agendar; las franjas se ven en el calendario del barbero. |
+| RF‑11 | Cita manual para clientes presenciales (sin celular). | Queda en el historial, la agenda y el resumen diario. |
+| RF‑12 | Consulta y cancelación de la cita por el cliente solo con su celular. | Puede cancelar dentro de la ventana configurada por el barbero. |
+| RF‑13 | Resumen diario del barbero (número de citas, ingresos estimados, desglose por plan). | Disponible en el panel del barbero. |
+| RF‑14 | Instalación como app (PWA) desde la web pública. | Android instala en un toque; iOS muestra instrucciones (Compartir → Agregar a inicio). |
 
 ---
 
-## 8. Manual Técnico  
+## 8. Manual Técnico
 
-### 8.1 Stack Tecnológico y Justificación  
+### 8.1 Stack y justificación
 
-| Capa                     | Tecnología                         | Motivo de elección |
-|--------------------------|------------------------------------|--------------------|
-| **Frontend**            | Next.js 14 (SSR + API Routes) + React 18 + Tailwind CSS | SEO amigable, generación estática y server‑side rendering, integración nativa con Vercel y estilos altamente configurables. |
-| **Backend / API**       | Node.js 20 + Express (en API Routes) | Compatibilidad con Vercel Functions, ecosistema npm amplio, fácil manejo de middlewares (auth, validación). |
-| **Autenticación**       | JSON Web Tokens (jwt) + RBAC      | Stateless, escalable y sencillo de integrar con Vercel Functions. |
-| **Base de datos**       | MongoDB Atlas (Free Tier)         | Modelo de documentos flexible para usuarios, citas y pagos; escalado automático y backup gestionado. |
-| **Motor de disponibilidad** | Algoritmo de slots atómicos usando transacciones MongoDB | Garantiza consistencia y evita doble reserva. |
-| **Calendario**          | FullCalendar (React) + date‑fns   | Soporte de zona horaria, ARIA y personalización visual. |
-| **Pagos**               | Stripe (Transferencias) + registro interno de efectivo | Cumple con PCI‑DSS, API robusta y permite registrar pagos offline. |
-| **Notificaciones**      | Firebase Cloud Messaging (FCM) + SendGrid | Push a dispositivos móviles y email fiable. |
-| **Despliegue**          | Vercel (frontend + serverless functions) | Deploy instantáneo, CDN global, integración con Git y preview URLs. |
-| **Analítica & Logs**    | Vercel Analytics + Webhook de auditoría (Kafka‑lite) | Visibilidad operativa y trazabilidad. |
+| Capa | Tecnología | Motivo |
+|---|---|---|
+| Frontend | Next.js 14 (App Router) + React 18 + Tailwind CSS | SSR/estático, integración nativa con Vercel, UI mobile‑first configurable. |
+| Backend/API | **API Routes** de Next.js (Node.js) | Sin servidor Express aparte; funciones serverless en el mismo proyecto. |
+| Autenticación | `jsonwebtoken` (JWT) en cookie `httpOnly` + `bcryptjs` | Stateless, simple y seguro; clientes sin contraseña (solo celular). |
+| Base de datos | MongoDB Atlas (Free Tier) + Mongoose 8 | Modelo de documentos flexible para barberos, clientes y citas. |
+| Motor de disponibilidad | Algoritmo propio (`src/lib/disponibilidad.js`) | Calcula slots en paso de 15 min descontando ocupaciones. |
+| Calendario | Componente propio (`src/components/barbero/Calendario.js`) | Sin dependencias pesadas; vista semana/mes y timeline por día. |
+| Pagos | **Sin gateway**: transferencia colombiana + comprobante por WhatsApp | Stack 100 % gratuito; verificación manual por el barbero. |
+| Notificaciones | Links `wa.me` con mensaje pre‑llenado | Cero costo; el mensaje se adapta a móvil (emojis) o PC (texto plano). |
+| PWA | `manifest.webmanifest` + service worker + banner de instalación | App instalable en pantalla de inicio. |
+| Despliegue | Vercel | Deploy automático por push a `main`, CDN global, HTTPS. |
 
-### 8.2 Dependencias Principales  
+### 8.2 Dependencias principales
 
-```bash
-# Frontend
-next@14
-react@18
-react-dom@18
-tailwindcss@3
-@fullcalendar/react@6
-@fullcalendar/daygrid@6
-date-fns@3
+```jsonc
+// Producción
+"next": "14.2",
+"react": "^18.3.1",
+"react-dom": "^18.3.1",
+"mongoose": "^8.6.0",
+"jsonwebtoken": "^9.0.2",
+"bcryptjs": "^2.4.3",
+"date-fns": "^3.6.0",
+"@phosphor-icons/react": "^2.1.10"
 
-# Backend
-express@4
-mongoose@8
-jsonwebtoken@9
-bcryptjs@2
-dotenv@16
-stripe@12
-@sendgrid/mail@8
-firebase-admin@12
-cors@2
+// Desarrollo
+"tailwindcss": "^3.4.13",
+"eslint" / "eslint-config-next": "14.2",
+"mongodb-memory-server": "^10.1.2",   // Mongo en memoria para dev/pruebas
+"playwright": "^1.62.1",
+"postcss" / "autoprefixer"
 ```
 
-### 8.3 Variables de Entorno  
+> **No** se usan Stripe, SendGrid, Firebase/FCM, Express ni FullCalendar. Cualquier referencia a esas tecnologías está obsoleta.
 
-| Variable                     | Descripción                                    | Ejemplo |
-|------------------------------|------------------------------------------------|---------|
-| `NEXT_PUBLIC_BASE_URL`       | URL pública del frontend (usado en emails)    | `https://barberbooking.vercel.app` |
-| `MONGODB_URI`                | Cadena de conexión a MongoDB Atlas              | `mongodb+srv://user:pwd@cluster0.mongodb.net/barberbooking` |
-| `JWT_SECRET`                 | Secret para firmar los tokens JWT              | `c0mpl3x$ecretK3y` |
-| `JWT_EXPIRES_IN`             | Tiempo de vida del access token (s)            | `900` |
-| `REFRESH_TOKEN_EXPIRES_IN`   | Tiempo de vida del refresh token (s)           | `604800` |
-| `STRIPE_SECRET_KEY`          | Clave secreta de Stripe                         | `sk_test_XXXX` (ver panel de Stripe) |
-| `SENDGRID_API_KEY`           | API key de SendGrid                             | `SG.xxxxxxxx` |
-| `FCM_SERVICE_ACCOUNT`        | JSON string con credenciales de Firebase        | `{...}` |
-| `ADMIN_EMAIL`                | Email del administrador para alertas críticas   | `admin@barberbooking.com` |
+### 8.3 Variables de entorno
 
-### 8.4 Configuración del Entorno de Desarrollo  
+| Variable | Descripción | Obligatoria |
+|---|---|---|
+| `MONGODB_URI` | Cadena de conexión a MongoDB Atlas. Si está vacía en dev, se levanta un Mongo **en memoria** con datos de ejemplo. | En producción |
+| `JWT_SECRET` | Secret para firmar los JWT. Sin él, la app **lanza error en producción**. | En producción |
+| `JWT_EXPIRES_IN` | Vida del token en segundos (por defecto `172800` = 2 días). | No |
+| `ADMIN_EMAIL` | Email del administrador que crea el seed. | Para el seed |
+| `ADMIN_PASSWORD` | Contraseña del administrador del seed. | Para el seed |
+| `ALLOW_SEED` | Habilita el seed en entornos controlados. | No |
 
-1. **Instalar Node.js 20+** y **Git**.  
-2. **Clonar** el repositorio y crear un archivo `.env.local` en la raíz con las variables listadas.  
-3. Ejecutar `npm install` para instalar todas las dependencias.  
-4. Iniciar la base de datos local (opcional) con **MongoDB Community Server** y apuntar `MONGODB_URI` a `mongodb://localhost:27017/barberbooking`.  
-5. Lanzar el proyecto con `npm run dev`. Vercel detectará automáticamente los **API Routes**.  
-6. Acceder a `http://localhost:3000` y validar que el login, calendario y pagos funcionan con los **mocks** de Stripe y SendGrid (modo test).
+> Los valores reales **no** se versionan (ver `.gitignore`: `.env`, `.env.local`). Configúralos en el panel de Vercel.
 
----
-
-## 9. Manual de Instalación  
+### 8.4 Entorno de desarrollo
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/yourorg/barberbooking.git
-cd barberbooking
+# 1. Instalar dependencias
+npm install
 
-# 2. Instalar dependencias
-npm ci
-
-# 3. Copiar archivo de variables de entorno y completarlo
-cp .env.example .env.local
-# Editar .env.local con los valores reales (ver sección 8.3)
-
-# 4. Iniciar la base de datos local (opcional)
-# Si se usa MongoDB Atlas, saltar este paso
-docker run -d -p 27017:27017 --name mongodb mongo:6
-
-# 5. Ejecutar en modo desarrollo
+# 2. Ejecutar en desarrollo (no requiere instalar MongoDB)
 npm run dev
-# La app está disponible en http://localhost:3000
+# Si MONGODB_URI está vacío, arranca Mongo en memoria + seed automático
+# App disponible en http://localhost:3000
 
-# 6. Construir para producción (Vercel)
+# 3. Build de producción
 npm run build
-# Vercel CLI (opcional)
-npm i -g vercel
-vercel --prod
 ```
-
-**Despliegue en producción**  
-- Conectar el repositorio a Vercel mediante GitHub.  
-- Definir las variables de entorno en el panel de Vercel (Settings → Environment Variables).  
-- Cada push a `main` genera automáticamente una preview y, tras merge, se despliega a producción.
 
 ---
 
-## 10. Arquitectura de la Aplicación  
+## 9. Arquitectura de la Aplicación
 
-### 10.1 Diagrama de Casos de Uso  
+### 9.1 Estructura de carpetas
 
-```mermaid
-graph LR
-    Admin -->|Aprueba| Barbero_Registro
-    Admin -->|Gestiona| Planes
-    Barbero -->|Configura| Horario
-    Barbero -->|Acepta/Rechaza| Solicitud_Cita
-    Barbero -->|Registra| Pago_Efectivo
-    Cliente -->|Registra| Registro_Cliente
-    Cliente -->|Inicia| Login
-    Cliente -->|Busca| Buscar_Barbero
-    Cliente -->|Ve| Calendario
-    Cliente -->|Reserva| Solicitud_Cita
-    Cliente -->|Paga| Pago_Transferencia
-    Cliente -->|Recibe| Notificacion
-    Cliente -->|Deja| Reseña
+```
+src/
+  app/
+    page.js                     # Landing + lista de barberos
+    agendar/[barberId]/         # Asistente de agendamiento (cliente)
+    mis-citas/                  # Consulta/cancelación por celular
+    barbero/{login,registro,panel,cambiar-password}/
+    admin/{login,panel}/
+    manifest.js                 # Manifest de la PWA
+    layout.js                   # Layout raíz + metadatos + banner PWA
+    api/                        # API Routes (ver 9.2)
+  components/                   # UI, íconos, paneles barbero/admin, InstallPrompt
+  lib/                          # db, auth, disponibilidad, whatsapp, constants, seed, emojis
+  models/                       # Barbero, Cliente, Cita, Usuario, Solicitud (Mongoose)
+  middleware.js                 # Rate limiting por IP
+public/                         # Íconos PWA, service worker (sw.js), fotos
 ```
 
-### 10.2 Diagrama de Secuencia (Caso de uso: “Cliente agenda cita”)  
+### 9.2 Endpoints (API Routes)
 
-```mermaid
-sequenceDiagram
-    participant C as Cliente
-    participant UI as UI (Next.js)
-    participant API as API Gateway
-    participant Auth as Auth Service
-    participant Cal as Calendar Service
-    participant Pay as Payment Service
-    participant DB as MongoDB
-    participant N as Notification Service
+| Grupo | Rutas |
+|---|---|
+| Auth | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`, `POST /api/auth/registro-barbero` |
+| Público (cliente) | `GET /api/barberos`, `GET /api/barberos/[id]`, `GET /api/barberos/[id]/disponibilidad`, `POST /api/clientes/identificar`, `GET /api/citas/consulta`, `POST /api/solicitudes` |
+| Barbero | `GET/PUT /api/barbero/perfil`, `GET /api/barbero/resumen`, `POST /api/barbero/cambiar-password`, `GET /api/citas`, `PATCH /api/citas/[id]`, `POST /api/citas/manual` |
+| Admin | `GET/POST /api/admin/barberos`, `... /api/admin/barberos/[id]` (+ `/planes`, `/password`), `GET /api/admin/solicitudes`, `... /api/admin/solicitudes/[id]` |
 
-    C->>UI: Ingresa credenciales
-    UI->>API: POST /api/auth/login
-    API->>Auth: Verifica credenciales
-    Auth-->>API: JWT + Refresh
-    API-->>UI: Token
-
-    C->>UI: Selecciona barbero y slot
-    UI->>API: GET /api/barbers/:id/availability
-    API->>Cal: Calcular slots libres
-    Cal-->>API: Slots
-    API-->>UI: Renderiza calendario
-
-    C->>UI: Elige plan (Bronce) y método (Efectivo)
-    UI->>API: POST /api/appointments
-    API->>DB: Insert appointment (status: Pending)
-    DB-->>API: _id
-    API->>N: Envia notificación al barbero
-    N-->>Barbero: Push + Email
-
-    Barbero->>UI: Acepta cita
-    UI->>API: PATCH /api/appointments/:id/confirm
-    API->>DB: Update status = Confirmed
-    DB-->>API: OK
-    API->>N: Notifica al cliente
-    N-->>C: Push + Email
-
-    C->>UI: Registra pago (Transferencia)
-    UI->>API: POST /api/payments
-    API->>Pay: Crear charge Stripe
-    Pay-->>API: paymentId, status=Succeeded
-    API->>DB: Update appointment.paymentId
-    DB-->>API: OK
-    API-->>UI: Confirmación final
-```
-
-### 10.3 Diagrama de Clases  
+### 9.3 Modelo de datos (resumen)
 
 ```mermaid
 classDiagram
-    class User {
-        <<abstract>>
-        +ObjectId id
-        +String email
-        +String passwordHash
-        +String role
-        +Date createdAt
-        +Date updatedAt
-        +verifyPassword()
+    class Barbero {
+        String nombre
+        String local
+        String celular
+        String ciudad
+        String email
+        String estado  // pendiente|activo|rechazado|inactivo
+        Object horario  // horaInicio, horaFin, diasLaborales
+        String[] diasBloqueados
+        Franja[] franjasBloqueadas  // fecha, horaInicio, horaFin, motivo
+        Number ventanaCancelacionHoras
+        Plan[] planes
+        Object datosPago  // nequi, daviplata, cuenta, qrImagen
+        Boolean suscripcionActiva
     }
-
-    class Client {
-        +ObjectId profileId
-        +Array<Appointment> appointments
-        +bookAppointment()
-        +cancelAppointment()
+    class Cliente {
+        String nombre
+        String celular
     }
-
-    class Barber {
-        +String name
-        +String shopName
-        +Array<ScheduleSlot> schedule
-        +Array<Appointment> appointments
-        +blockSlot()
-        +unblockSlot()
-        +acceptAppointment()
-        +rejectAppointment()
+    class Cita {
+        ObjectId barbero
+        ObjectId cliente
+        String clienteNombre
+        String clienteCelular
+        String plan  // bronce|plata|oro
+        Object planSnapshot  // copia inmutable
+        String fecha  // YYYY-MM-DD
+        String horaInicio
+        String horaFin
+        String metodoPago
+        Object pagoAnticipo  // requerido, monto, comprobante, estado
+        String estado  // solicitada|confirmada|rechazada|completada|cancelada
+        Boolean esManual
+        String motivoRechazo
     }
-
-    class Appointment {
-        +ObjectId id
-        +ObjectId clientId
-        +ObjectId barberId
-        +Date start
-        +Date end
-        +Plan plan
-        +PaymentMethod paymentMethod
-        +AppointmentStatus status
-        +addReview()
+    class Usuario {
+        String email
+        String passwordHash
+        String role  // admin
     }
-
-    class Plan {
-        <<enumeration>>
-        +ORO
-        +PLATA
-        +BRONCE
+    class Solicitud {
+        String nombre
+        String local
+        String celular
+        String ciudad
     }
-
-    class PaymentMethod {
-        <<enumeration>>
-        +TRANSFERENCIA
-        +EFECTIVO
-    }
-
-    class AppointmentStatus {
-        <<enumeration>>
-        +SOLICITADA
-        +PENDIENTE_PAGO
-        +CONFIRMADA
-        +COMPLETADA
-        +CANCELADA
-        +RECHAZADA
-    }
-
-    class Payment {
-        +ObjectId id
-        +ObjectId appointmentId
-        +Number amount
-        +String currency
-        +String provider (Stripe|Cash)
-        +String status
-        +Date processedAt
-    }
-
-    User <|-- Client
-    User <|-- Barber
-    Appointment "1" --> "1" Client : clientId
-    Appointment "1" --> "1" Barber : barberId
-    Appointment "1" --> "1" Plan : plan
-    Appointment "1" --> "1" PaymentMethod : method
-    Appointment "1" --> "1" Payment : payment
+    Barbero "1" --> "*" Cita
+    Cliente "1" --> "*" Cita
 ```
 
-### 10.4 Diagrama de Componentes (Alto Nivel)  
+### 9.4 Planes de servicio
 
-```mermaid
-graph TB
-    subgraph Frontend
-        UI[UI React + Tailwind]
-        CalendarComp[FullCalendar Component]
-        PaymentForm[Formulario Stripe]
-    end
+| Plan | Duración (con buffer 5 min) | Precio ejemplo | Anticipo | Métodos de pago |
+|---|---|---|---|---|
+| **Bronce** | 25 min | $20.000 | No | Nequi, Daviplata, QR, cuenta, **efectivo** |
+| **Plata** | 55 min | $45.000 | 50 % | Solo transferencia (Nequi, Daviplata, QR, cuenta) |
+| **Oro** | 55 min | $70.000 | 50 % | Solo transferencia (Nequi, Daviplata, QR, cuenta) |
 
-    subgraph Backend
-        AuthSrv[Auth Service (JWT/RBAC)]
-        CalendarSrv[Calendar Service]
-        PaymentSrv[Payment Service]
-        NotifySrv[Notification Service]
-        UserCtrl[User Controllers]
-        AppointmentCtrl[Appointment Controllers]
-        DB[MongoDB Atlas]
-    end
+*(Precios y servicios son editables por el admin de forma individual por barbero.)*
 
-    UI --> AuthSrv
-    UI --> CalendarSrv
-    UI --> PaymentSrv
-    UI --> NotifySrv
-    AuthSrv --> DB
-    CalendarSrv --> DB
-    PaymentSrv -->
+---
+
+## 10. Seguridad
+
+- **JWT obligatorio en producción**: la app aborta el arranque si falta `JWT_SECRET`; en dev usa un secret local no válido para producción.
+- **Cookie de sesión** `httpOnly`, `sameSite=lax`, `secure` en producción, expiración de 2 días.
+- **Rate limiting** por IP (ventana deslizante en memoria) sobre login, registro de barbero, identificación de clientes y solicitudes (`src/middleware.js`).
+- **Cabeceras de seguridad** en todas las rutas (`next.config.mjs`): `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Strict-Transport-Security` (HSTS), `Permissions-Policy`.
+- **Optimizador de imágenes desactivado** (`images.unoptimized`) para reducir superficie de ataque.
+- **Sin secretos en el repositorio**: credenciales y `MONGODB_URI` viven solo en variables de entorno.
+
+---
+
+## 11. Despliegue
+
+- Repositorio en GitHub conectado a **Vercel**; cada push a `main` genera despliegue automático.
+- Variables de entorno definidas en el panel de Vercel (Settings → Environment Variables).
+- Base de datos en **MongoDB Atlas**; en el primer arranque con base vacía, el seed crea el administrador.

@@ -2,7 +2,7 @@
 
 ## Visión del Producto
 
-La visión del producto es crear una plataforma web SaaS orientada al mercado colombiano para la gestión de citas de barberías, con un modelo de suscripción mensual dirigido a barberos independientes. El Administrador es el eje central: valida qué barberos pueden usar la app, configura los planes de servicio (Bronce, Plata, Oro) con sus precios, duraciones y métodos de pago colombianos (Nequi, Daviplata, QR, cuenta bancaria) de forma individual por barbero, y controla la activación de cuentas. Los clientes viven una experiencia de registro mínima —solo Nombre completo y Celular— para eliminar fricciones. El barbero gestiona su agenda por jornada laboral, acepta o rechaza solicitudes, agenda citas manuales para clientes presenciales y recibe un resumen diario de cortes e ingresos. Todo el stack es 100 % gratuito: sin pasarelas de pago externas ni servicios de notificación de pago; las comunicaciones se realizan mediante redirección a WhatsApp (wa.me) y los pagos anticipados se verifican a través de comprobantes que el cliente envía directamente al WhatsApp del barbero.
+La visión del producto es crear una plataforma web SaaS orientada al mercado colombiano para la gestión de citas de barberías, con un modelo de suscripción mensual dirigido a barberos independientes. El Administrador es el eje central: valida qué barberos pueden usar la app, configura los planes de servicio (Bronce, Plata, Oro) con sus precios, duraciones y métodos de pago colombianos (Nequi, Daviplata, QR, cuenta bancaria) de forma individual por barbero, y controla la activación de cuentas. Los clientes viven una experiencia de registro mínima —solo Nombre completo y Celular— para eliminar fricciones. El barbero gestiona su agenda por jornada laboral, acepta, rechaza o completa solicitudes, agenda citas manuales para clientes presenciales y recibe un resumen diario de cortes e ingresos. Todo el stack es 100 % gratuito: sin pasarelas de pago externas ni servicios de notificación de pago; las comunicaciones se realizan mediante redirección a WhatsApp (wa.me) y los pagos anticipados se verifican a través de comprobantes que el cliente envía directamente al WhatsApp del barbero. La aplicación es **instalable como PWA** en el celular (Android e iOS), abriéndose a pantalla completa como una app nativa.
 
 ---
 
@@ -22,14 +22,16 @@ La visión del producto es crear una plataforma web SaaS orientada al mercado co
 4. El Cliente puede seleccionar un barbero, una franja horaria disponible y un plan (Bronce / Plata / Oro) para crear una solicitud de cita.
 5. El Cliente con plan Plata u Oro puede pagar el 50 % de anticipo por transferencia colombiana (Nequi, Daviplata, QR o cuenta bancaria), subir el comprobante y enviarlo al WhatsApp del barbero.
 6. El Cliente puede recibir el resumen de la cita confirmada por WhatsApp (wa.me) incluyendo: barbero, plan, servicios del plan, fecha, hora y duración estimada.
-7. El Cliente puede consultar el estado de su cita (Pendiente / Confirmada / Rechazada / Completada / Cancelada) ingresando solo su número de celular.
+7. El Cliente puede consultar el estado de su cita (Solicitada / Confirmada / Rechazada / Completada / Cancelada) ingresando solo su número de celular.
 8. El Cliente puede cancelar su cita dentro de la ventana mínima configurada por el barbero.
 9. El Barbero puede configurar su horario laboral diario (hora de inicio y fin) y bloquear días completos o franjas específicas por ausencia o vacaciones.
-10. El Barbero puede aceptar o rechazar solicitudes de cita; al rechazar, se abre automáticamente una conversación de WhatsApp con el cliente para aclarar el motivo.
-11. El Barbero puede agendar citas manuales para clientes presenciales (adultos mayores, sin celular), dejando registro completo en el historial y en el resumen diario.
-12. El Barbero puede alternar entre una vista de **Lista** (citas del día en orden cronológico) y una vista de **Calendario** (semanal/mensual) desde su panel.
-13. El Barbero recibe un resumen diario automático al finalizar su jornada con total de citas, ingresos estimados y desglose por plan.
-14. El sistema bloquea automáticamente el slot en la agenda del barbero según la duración del plan: Bronce 25 min, Plata y Oro 55 min (buffer de 5 min incluido).
+10. El Barbero puede aceptar, rechazar o marcar como completada una cita; al rechazar, se abre automáticamente una conversación de WhatsApp con el cliente para aclarar el motivo.
+11. El Barbero puede gestionar las citas tanto desde la vista **Lista** como directamente desde el **Calendario**: las citas solicitadas muestran los botones Aceptar/Rechazar siempre visibles, y el resto se expande al tocarlas para completar o contactar por WhatsApp.
+12. El Barbero puede agendar citas manuales para clientes presenciales (adultos mayores, sin celular), dejando registro completo en el historial y en el resumen diario.
+13. El Barbero puede alternar entre una vista de **Lista** (citas del día en orden cronológico) y una vista de **Calendario** (semanal/mensual) desde su panel.
+14. El Barbero recibe un resumen diario automático al finalizar su jornada con total de citas, ingresos estimados y desglose por plan.
+15. El sistema bloquea automáticamente el slot en la agenda del barbero según la duración del plan: Bronce 25 min, Plata y Oro 55 min (buffer de 5 min incluido).
+16. Cualquier visitante puede **instalar la app** en su celular desde la web pública: en Android con un botón "Instalar" (un toque) y en iOS mediante instrucciones (Compartir → Agregar a inicio).
 
 ---
 
@@ -62,7 +64,7 @@ La visión del producto es crear una plataforma web SaaS orientada al mercado co
 ## Arquitectura Técnica
 
 ```
-Arquitectura serverless 100% gratuita basada en Vercel para el frontend (Next.js con React y Tailwind CSS) y API Routes como capa de negocio en Node.js/Express. La persistencia de datos se gestiona con MongoDB Atlas free tier con colecciones para: clientes (identificados por celular), barberos, citas y configuración de planes por barbero. Se usa JWT para autenticación de barberos y administradores; los clientes no tienen contraseña, se identifican solo por celular. El motor de disponibilidad calcula slots en tiempo real según el horario laboral del barbero (configurable) y bloquea automáticamente la duración exacta por plan: Bronce 25 min, Plata y Oro 55 min. Los pagos son gestionados externamente por el cliente (Nequi, Daviplata, QR o cuenta bancaria) sin ningún gateway integrado; el comprobante se sube como imagen y se envía al WhatsApp del barbero mediante un link wa.me. Las notificaciones al cliente también se realizan por WhatsApp (wa.me) con el resumen pre-llenado de la cita. Los logs se envían a Vercel Analytics para trazabilidad operativa.
+Arquitectura serverless 100% gratuita basada en Vercel para el frontend (Next.js 14 con React 18 y Tailwind CSS) y las **API Routes** de Next.js (Node.js) como capa de negocio; no se usa un servidor Express aparte. La persistencia de datos se gestiona con MongoDB Atlas free tier (vía Mongoose) con colecciones para: clientes (identificados por celular), barberos, citas, solicitudes de registro y usuarios administradores. Se usa JWT en cookie httpOnly para autenticación de barberos y administradores; los clientes no tienen contraseña, se identifican solo por celular. El motor de disponibilidad calcula slots en tiempo real (paso de 15 min) según el horario laboral del barbero (configurable) descontando citas, días bloqueados y franjas de ausencia, y bloquea automáticamente la duración exacta por plan: Bronce 25 min, Plata y Oro 55 min. Los pagos son gestionados externamente por el cliente (Nequi, Daviplata, QR o cuenta bancaria) sin ningún gateway integrado; el comprobante se sube como imagen y se envía al WhatsApp del barbero mediante un link wa.me. Las notificaciones al cliente también se realizan por WhatsApp (wa.me) con el resumen pre-llenado de la cita. La app se sirve como **PWA instalable** (manifest + service worker). El endurecimiento de seguridad incluye rate limiting por IP, cabeceras de seguridad (HSTS, X-Frame-Options, etc.) y JWT obligatorio en producción.
 ```
 
 ---
@@ -75,6 +77,6 @@ Arquitectura serverless 100% gratuita basada en Vercel para el frontend (Next.js
 - Cifrado de datos en tránsito (TLS 1.3) y en reposo (MongoDB Atlas encriptado)
 - Cumplimiento con la Ley 1581 de 2012 (Habeas Data, Colombia) para gestión de datos personales
 - Stack 100 % gratuito: sin gateway de pagos externo, sin servicios de notificación de pago
-- Auditoría de eventos críticos y trazabilidad de cambios en la agenda mediante Vercel Analytics
+- Trazabilidad operativa mediante los logs de la plataforma de despliegue (Vercel)
 - Accesibilidad en la interfaz del calendario (soporte móvil prioritario)
 - Respaldo diario automático de la base de datos con retención de 30 días (MongoDB Atlas)
