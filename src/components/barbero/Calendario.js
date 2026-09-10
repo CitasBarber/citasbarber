@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import EstadoBadge from "@/components/EstadoBadge";
+import { WhatsAppIcon } from "@/components/Icons";
 import { DIAS_SEMANA } from "@/lib/constants";
 import { fechaLocalHoy, hhmmAMin, minAHhmm, diaSemanaDeFecha } from "@/lib/disponibilidad";
+import { esMovil } from "@/lib/dispositivo";
 
 const DOT_COLOR = {
   solicitada: "bg-amber-400",
@@ -25,12 +27,30 @@ export default function Calendario({ perfil }) {
   const [ref, setRef] = useState(new Date());
   const [diaSel, setDiaSel] = useState(hoy);
   const [vista, setVista] = useState("semana");
+  const [abierta, setAbierta] = useState(null); // id de la cita expandida
 
-  useEffect(() => {
+  function cargar() {
     fetch("/api/citas")
       .then((r) => r.json())
       .then((d) => setCitas(d.citas || []));
-  }, []);
+  }
+
+  useEffect(() => { cargar(); }, []);
+
+  async function accion(id, accion, extra = {}) {
+    if (accion === "rechazar") {
+      extra.motivo = prompt("Motivo del rechazo (opcional):") || "";
+    }
+    const res = await fetch(`/api/citas/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accion, plano: !esMovil(), ...extra }),
+    });
+    const d = await res.json();
+    if (!res.ok) return alert(d.error);
+    if (d.linkWhatsApp) window.open(d.linkWhatsApp, "_blank");
+    cargar();
+  }
 
   const porFecha = useMemo(() => {
     const m = {};
@@ -167,7 +187,13 @@ export default function Calendario({ perfil }) {
 
             <div className="space-y-1.5">
               {timeline.segmentos.map((seg, i) => (
-                <SegmentoTimeline key={i} seg={seg} />
+                <SegmentoTimeline
+                  key={i}
+                  seg={seg}
+                  abierta={abierta}
+                  onToggle={(id) => setAbierta((prev) => (prev === id ? null : id))}
+                  onAccion={accion}
+                />
               ))}
             </div>
           </div>
@@ -177,7 +203,7 @@ export default function Calendario({ perfil }) {
   );
 }
 
-function SegmentoTimeline({ seg }) {
+function SegmentoTimeline({ seg, abierta, onToggle, onAccion }) {
   if (seg.tipo === "libre") {
     const suficiente = seg.duracion >= 25;
     return (
@@ -195,21 +221,54 @@ function SegmentoTimeline({ seg }) {
 
   const c = seg.cita;
   const estilo = CITA_ESTILO[c.estado] || { wrap: "border-gray-200 bg-gray-50", barra: "bg-gray-400" };
+  const expandida = abierta === c.id;
+  const celular = (c.clienteCelular || "").replace(/\D/g, "");
+
   return (
-    <div className={`flex items-stretch gap-3 px-3 py-2.5 rounded-lg border ${estilo.wrap}`}>
-      <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-xs text-barber-gray">{hora12(seg.inicio)} – {hora12(seg.fin)}</span>
-          <span className="font-bold text-sm">{c.clienteNombre}</span>
+    <div className={`rounded-lg border ${estilo.wrap}`}>
+      <button
+        type="button"
+        onClick={() => onToggle(c.id)}
+        className="w-full flex items-stretch gap-3 px-3 py-2.5 text-left"
+      >
+        <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-xs text-barber-gray">{hora12(seg.inicio)} – {hora12(seg.fin)}</span>
+            <span className="font-bold text-sm">{c.clienteNombre}</span>
+          </div>
+          <p className="text-xs text-barber-gray mt-0.5">
+            {c.planSnapshot?.nombre} · {formatDur(seg.duracion)}
+          </p>
         </div>
-        <p className="text-xs text-barber-gray mt-0.5">
-          {c.planSnapshot?.nombre} · {formatDur(seg.duracion)}
-        </p>
-      </div>
-      <div className="shrink-0 self-center">
-        <EstadoBadge estado={c.estado} />
-      </div>
+        <div className="shrink-0 self-center">
+          <EstadoBadge estado={c.estado} />
+        </div>
+      </button>
+
+      {expandida && (
+        <div className="flex flex-wrap gap-2 px-3 pb-3 pt-0">
+          {c.estado === "solicitada" && (
+            <>
+              <button className="btn-blue text-sm py-1.5" onClick={() => onAccion(c.id, "confirmar")}>Aceptar</button>
+              <button className="btn-outline text-sm py-1.5" onClick={() => onAccion(c.id, "rechazar")}>Rechazar</button>
+            </>
+          )}
+          {c.estado === "confirmada" && (
+            <button className="btn-dark text-sm py-1.5" onClick={() => onAccion(c.id, "completar")}>Marcar completada</button>
+          )}
+          {celular && (
+            <a
+              className="btn-wa text-sm py-1.5"
+              href={`https://wa.me/${celular}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <WhatsAppIcon className="w-4 h-4" /> WhatsApp
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }
