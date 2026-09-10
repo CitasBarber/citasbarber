@@ -132,14 +132,12 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Contacto: barbero interesado en la app escribe al admin */}
-      <ContactoAdmin />
-
       <footer className="bg-barber-black text-white/70 text-sm">
         <div className="h-1 sm:h-1.5 barber-pole" />
         <div className="mx-auto max-w-6xl px-4 py-5 sm:py-6 flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 text-center sm:text-left">
           <span>© {new Date().getFullYear()} 770 Barbería · Caldas, Antioquia</span>
           <div className="flex justify-center sm:justify-end gap-4">
+            <ContactoAdmin className="hover:text-white" />
             <Link href="/barbero/registro" className="hover:text-white">Soy barbero</Link>
             <Link href="/admin/login" className="hover:text-white">Administrador</Link>
           </div>
