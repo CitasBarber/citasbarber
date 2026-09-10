@@ -29,15 +29,6 @@ input, select, textarea {
   font-size: max(16px, 1em);
 }
 
-/* Barra fija de hora seleccionada en agendamiento */
-@keyframes slide-up {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-.sticky-hora-bar {
-  animation: slide-up 0.22s ease-out;
-}
-
 /* Animación de entrada para tarjetas (#4) */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(24px); }

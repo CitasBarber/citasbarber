@@ -75,10 +75,25 @@ export default function AgendarPage() {
     setBuscando(false); // no encontró en 30 días; se queda en la fecha actual
   }
 
-  function irAHorario() {
+  // Auto-avance: al elegir plan pasa a horario (y busca el primer día con cupos)
+  function seleccionarPlan(p) {
+    setPlan(p);
+    setMetodoPago(null);
     setError("");
     setPaso(3);
-    if (!fechaManual) buscarPrimeraFecha(plan);
+    if (!fechaManual) buscarPrimeraFecha(p);
+  }
+
+  // Auto-avance: al elegir hora pasa a pago
+  function seleccionarHora(s) {
+    setHora(s);
+    setPaso(4);
+  }
+
+  // Retrocede un paso, sin perder los datos ya ingresados
+  function volver() {
+    setError("");
+    setPaso((p) => Math.max(1, p - 1));
   }
 
   function onArchivo(e) {
@@ -160,6 +175,20 @@ export default function AgendarPage() {
 
       <Pasos paso={paso} />
 
+      {/* Botón Atrás siempre visible en pasos intermedios */}
+      {paso >= 2 && paso <= 4 && (
+        <button
+          type="button"
+          onClick={volver}
+          className="group mt-4 inline-flex items-center gap-2 text-sm font-semibold text-barber-ink hover:text-barber-red transition"
+        >
+          <span className="grid place-items-center w-9 h-9 rounded-full border border-gray-300 bg-white shadow-sm group-hover:border-barber-red group-hover:-translate-x-0.5 transition">
+            ←
+          </span>
+          Atrás
+        </button>
+      )}
+
       {error && <p className="mt-4 text-red-600 text-sm">{error}</p>}
 
       {/* PASO 1: datos del cliente */}
@@ -196,7 +225,7 @@ export default function AgendarPage() {
             {barbero.planes.map((p) => (
               <button
                 key={p.key}
-                onClick={() => { setPlan(p); setMetodoPago(null); }}
+                onClick={() => seleccionarPlan(p)}
                 className={`card p-5 text-left transition flex flex-col h-full ${plan?.key === p.key ? "ring-2 ring-barber-red" : "hover:-translate-y-1"}`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -214,16 +243,13 @@ export default function AgendarPage() {
               </button>
             ))}
           </div>
-          <div className="flex gap-3">
-            <button className="btn-outline" onClick={() => setPaso(1)}>Atrás</button>
-            <button className="btn-primary flex-1" disabled={!plan} onClick={irAHorario}>Continuar</button>
-          </div>
+          <p className="text-sm text-barber-gray text-center">Toca un plan para continuar.</p>
         </div>
       )}
 
       {/* PASO 3: fecha y hora */}
       {paso === 3 && (
-        <form className={`card p-6 mt-4 space-y-4 ${hora ? "pb-24 sm:pb-6" : ""}`} onSubmit={(e) => { e.preventDefault(); if (hora) setPaso(4); }}>
+        <div className="card p-6 mt-4 space-y-4">
           <h2 className="font-display text-xl">¿Qué día y a qué hora?</h2>
 
           {/* Accesos rápidos de fecha */}
@@ -261,38 +287,15 @@ export default function AgendarPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <GrupoSlots titulo="🌅 Mañana" lista={slots.filter((s) => s < "12:00")} hora={hora} setHora={setHora} />
-                <GrupoSlots titulo="🌇 Tarde" lista={slots.filter((s) => s >= "12:00")} hora={hora} setHora={setHora} />
+                <GrupoSlots titulo="🌅 Mañana" lista={slots.filter((s) => s < "12:00")} hora={hora} setHora={seleccionarHora} />
+                <GrupoSlots titulo="🌇 Tarde" lista={slots.filter((s) => s >= "12:00")} hora={hora} setHora={seleccionarHora} />
               </div>
             )}
           </div>
 
-          <div className="flex gap-3">
-            <button type="button" className="btn-outline" onClick={() => setPaso(2)}>Atrás</button>
-            {/* En móvil se oculta cuando hay hora — la barra fija lo reemplaza */}
-            <button
-              type="submit"
-              className={`btn-primary flex-1 ${hora ? "hidden sm:inline-flex" : ""}`}
-              disabled={!hora}
-            >
-              {hora ? `Continuar · ${hora12(hora)}` : "Elige una hora"}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Barra fija bottom: aparece al elegir hora, solo en móvil */}
-      {paso === 3 && hora && (
-        <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden sticky-hora-bar">
-          <div className="bg-white border-t border-black/10 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] px-4 py-3 flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-barber-gray leading-none mb-1">Hora elegida</p>
-              <p className="font-display text-2xl leading-none">{hora12(hora)}</p>
-            </div>
-            <button className="btn-primary shrink-0 px-6" onClick={() => setPaso(4)}>
-              Continuar →
-            </button>
-          </div>
+          {!cargandoSlots && !buscando && slots.length > 0 && (
+            <p className="text-sm text-barber-gray text-center">Toca una hora para continuar.</p>
+          )}
         </div>
       )}
 
@@ -334,16 +337,13 @@ export default function AgendarPage() {
             </div>
           )}
 
-          <div className="flex gap-3">
-            <button type="button" className="btn-outline" onClick={() => setPaso(3)}>Atrás</button>
-            <button
-              type="submit"
-              className="btn-primary flex-1"
-              disabled={enviando || !metodoPago || (requiereAnticipo && !comprobante)}
-            >
-              {enviando ? "Enviando…" : "¡Enviar solicitud!"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="btn-primary w-full"
+            disabled={enviando || !metodoPago || (requiereAnticipo && !comprobante)}
+          >
+            {enviando ? "Enviando…" : "¡Enviar solicitud!"}
+          </button>
         </form>
       )}
 
