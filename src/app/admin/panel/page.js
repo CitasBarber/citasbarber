@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -38,21 +38,21 @@ export default function AdminPanelPage() {
       });
   }, [router]);
 
-  function cargar() {
+  const cargar = useCallback(() => {
     const q = filtro ? `?estado=${filtro}` : "";
     fetch(`/api/admin/barberos${q}`).then((r) => r.json()).then((d) => setBarberos(d.barberos || []));
-  }
+  }, [filtro]);
 
-  useEffect(() => { if (sesion) cargar(); /* eslint-disable-next-line */ }, [sesion, filtro]);
+  useEffect(() => { if (sesion) cargar(); }, [sesion, cargar]);
 
-  function cargarSolicitudes() {
+  const cargarSolicitudes = useCallback(() => {
     fetch("/api/admin/solicitudes")
       .then((r) => r.json())
       .then((d) => { setSolicitudes(d.solicitudes || []); setNuevasSolicitudes(d.nuevas || 0); });
-  }
+  }, []);
 
   // Cargar solicitudes al entrar (para el contador) y al abrir la vista.
-  useEffect(() => { if (sesion) cargarSolicitudes(); /* eslint-disable-next-line */ }, [sesion]);
+  useEffect(() => { if (sesion) cargarSolicitudes(); }, [sesion, cargarSolicitudes]);
 
   async function accionSolicitud(id, accion) {
     if (accion === "eliminar") {

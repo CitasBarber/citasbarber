@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import EstadoBadge from "@/components/EstadoBadge";
 import { WhatsAppIcon } from "@/components/Icons";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
@@ -13,15 +13,15 @@ export default function CitasLista({ onCambio }) {
   const [cargando, setCargando] = useState(true);
   const [comprobante, setComprobante] = useState(null); // {url}
 
-  function cargar() {
+  const cargar = useCallback(() => {
     setCargando(true);
     fetch(`/api/citas?fecha=${fecha}`)
       .then((r) => r.json())
       .then((d) => setCitas(d.citas || []))
       .finally(() => setCargando(false));
-  }
+  }, [fecha]);
 
-  useEffect(() => { cargar(); /* eslint-disable-next-line */ }, [fecha]);
+  useEffect(() => { cargar(); }, [cargar]);
 
   async function accion(id, accion, extra = {}) {
     if (accion === "rechazar") {

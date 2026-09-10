@@ -20,8 +20,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ["Oswald", "Impact", "sans-serif"],
-        body: ["Inter", "system-ui", "sans-serif"],
+        display: ["var(--font-oswald)", "Impact", "sans-serif"],
+        body: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       boxShadow: {
         card: "0 4px 20px rgba(0,0,0,0.08)",

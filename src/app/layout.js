@@ -1,5 +1,19 @@
 import "./globals.css";
+import { Inter, Oswald } from "next/font/google";
 import InstallPrompt from "@/components/InstallPrompt";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
+const oswald = Oswald({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-oswald",
+  display: "swap",
+});
 
 export const metadata = {
   title: "770 Barbería — Agendá tu motilada",
@@ -23,15 +37,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="es" className={`${inter.variable} ${oswald.variable}`}>
       <body>
         {children}
         <InstallPrompt />
