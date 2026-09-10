@@ -1,0 +1,124 @@
+// Constantes de negocio de CitasBarber
+
+export const ROLES = {
+  ADMIN: "admin",
+  BARBERO: "barbero",
+};
+
+export const ESTADO_BARBERO = {
+  PENDIENTE: "pendiente",
+  ACTIVO: "activo",
+  RECHAZADO: "rechazado",
+  INACTIVO: "inactivo", // suscripción vencida
+};
+
+export const ESTADO_CITA = {
+  SOLICITADA: "solicitada",
+  CONFIRMADA: "confirmada",
+  RECHAZADA: "rechazada",
+  COMPLETADA: "completada",
+  CANCELADA: "cancelada",
+};
+
+export const METODOS_PAGO = {
+  NEQUI: "nequi",
+  DAVIPLATA: "daviplata",
+  QR: "qr",
+  CUENTA: "cuenta",
+  EFECTIVO: "efectivo",
+};
+
+export const METODOS_PAGO_LABEL = {
+  nequi: "Nequi",
+  daviplata: "Daviplata",
+  qr: "Código QR",
+  cuenta: "Cuenta bancaria",
+  efectivo: "Efectivo",
+};
+
+// Duración de cada plan en minutos (incluye 5 min de buffer entre citas)
+// Bronce: 30 - 5 = 25 ; Plata/Oro: 60 - 5 = 55
+export const PLANES_KEYS = ["bronce", "plata", "oro"];
+
+// Plantilla por defecto de planes cuando el admin configura a un barbero.
+// Los precios son ejemplos editables por el admin.
+// Emojis como Unicode escapes para evitar problemas de encoding en Windows
+const _E = {
+  TIJERAS:  "\u{2702}\u{FE0F}",  // ✂️
+  MASAJE:   "\u{1F486}",         // 💆
+  BRILLO:   "\u{2728}",          // ✨
+  CERVEZA:  "\u{1F37B}",         // 🍻
+  CHOCOLATE:"\u{1F36B}",         // 🍫
+};
+
+export const PLANES_DEFAULT = [
+  {
+    key: "bronce",
+    nombre: "Bronce",
+    servicios: [`${_E.TIJERAS} Corte básico`],
+    precio: 20000,
+    duracion: 25,
+    anticipo: 0,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta", "efectivo"],
+    activo: true,
+  },
+  {
+    key: "plata",
+    nombre: "Plata",
+    servicios: [
+      `${_E.TIJERAS} Corte`,
+      `${_E.MASAJE} Mascarilla puntos negros`,
+      `${_E.BRILLO} Depilación de oídos y nariz`,
+    ],
+    precio: 45000,
+    duracion: 55,
+    anticipo: 50,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta"],
+    activo: true,
+  },
+  {
+    key: "oro",
+    nombre: "Oro",
+    servicios: [
+      `${_E.TIJERAS} Corte`,
+      `${_E.MASAJE} Mascarilla puntos negros`,
+      `${_E.BRILLO} Depilación de oídos y nariz`,
+      `${_E.CERVEZA} Bebida a gusto`,
+      `${_E.CHOCOLATE} Snack`,
+    ],
+    precio: 70000,
+    duracion: 55,
+    anticipo: 50,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta"],
+    activo: true,
+  },
+];
+
+export const DIAS_SEMANA = [
+  "domingo",
+  "lunes",
+  "martes",
+  "miércoles",
+  "jueves",
+  "viernes",
+  "sábado",
+];
+
+// Horario laboral por defecto de un barbero nuevo
+export const HORARIO_DEFAULT = {
+  horaInicio: "10:00",
+  horaFin: "19:00",
+  // 1=lunes ... 6=sábado (0=domingo). Por defecto lunes a sábado.
+  diasLaborales: [1, 2, 3, 4, 5, 6],
+};
+
+export const VENTANA_CANCELACION_HORAS_DEFAULT = 24;
+
+export function formatoCOP(valor) {
+  if (valor == null || isNaN(valor)) return "$0";
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(valor);
+}

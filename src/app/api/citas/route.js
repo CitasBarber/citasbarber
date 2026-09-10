@@ -1,0 +1,109 @@
+import { dbConnect } from "@/lib/db";
+import Barbero from "@/models/Barbero";
+import Cita from "@/models/Cita";
+import Cliente from "@/models/Cliente";
+import { ok, fail, handler } from "@/lib/api";
+import { getSession } from "@/lib/auth";
+import { calcularSlots, minAHhmm, hhmmAMin } from "@/lib/disponibilidad";
+import { normalizarCelular, linkWhatsApp, mensajeNuevaCita } from "@/lib/whatsapp";
+import { ESTADO_CITA, ROLES } from "@/lib/constants";
+import { serializarCita } from "@/lib/serializers";
+
+// GET /api/citas  -> lista de citas del barbero autenticado (opcional ?fecha=)
+export const GET = handler(async (req) => {
+  await dbConnect();
+  const session = getSession();
+  if (!session || session.role !== ROLES.BARBERO)
+    return fail("No autorizado", 403);
+
+  const { searchParams } = new URL(req.url);
+  const fecha = searchParams.get("fecha");
+  const query = { barbero: session.barberoId };
+  if (fecha) query.fecha = fecha;
+
+  const citas = await Cita.find(query).sort({ fecha: 1, horaInicio: 1 }).lean();
+  return ok({ citas: citas.map(serializarCita) });
+});
+
+// POST /api/citas  -> el cliente crea una solicitud de cita
+export const POST = handler(async (req) => {
+  await dbConnect();
+  const body = await req.json();
+  const { barberoId, plan: planKey, fecha, horaInicio, metodoPago, comprobante } = body;
+  let { clienteNombre, clienteCelular } = body;
+
+  if (!barberoId || !planKey || !fecha || !horaInicio)
+    return fail("Faltan datos de la cita");
+  if (!clienteNombre || !clienteCelular)
+    return fail("Nombre y celular del cliente son obligatorios");
+
+  clienteCelular = normalizarCelular(clienteCelular);
+
+  const barbero = await Barbero.findById(barberoId);
+  if (!barbero) return fail("Barbero no encontrado", 404);
+
+  const plan = (barbero.planes || []).find((p) => p.key === planKey && p.activo);
+  if (!plan) return fail("Plan no disponible", 400);
+
+  if (metodoPago && !plan.metodosPago.includes(metodoPago))
+    return fail("Método de pago no permitido para este plan", 400);
+
+  // Recalcular disponibilidad para evitar doble reserva
+  const citasDia = await Cita.find({
+    barbero: barbero._id,
+    fecha,
+    estado: { $in: [ESTADO_CITA.SOLICITADA, ESTADO_CITA.CONFIRMADA] },
+  })
+    .select("horaInicio horaFin")
+    .lean();
+
+  const slots = calcularSlots({ barbero, fecha, duracion: plan.duracion, citas: citasDia });
+  if (!slots.includes(horaInicio))
+    return fail("Ese horario ya no está disponible. Elige otro.", 409);
+
+  const horaFin = minAHhmm(hhmmAMin(horaInicio) + plan.duracion);
+
+  // Registrar/actualizar cliente
+  let cliente = await Cliente.findOne({ celular: clienteCelular });
+  if (!cliente) {
+    cliente = await Cliente.create({ nombre: clienteNombre.trim(), celular: clienteCelular });
+  }
+
+  const requiereAnticipo = (plan.anticipo || 0) > 0;
+  const cita = await Cita.create({
+    barbero: barbero._id,
+    cliente: cliente._id,
+    clienteNombre: clienteNombre.trim(),
+    clienteCelular,
+    plan: plan.key,
+    planSnapshot: {
+      key: plan.key,
+      nombre: plan.nombre,
+      servicios: plan.servicios,
+      precio: plan.precio,
+      duracion: plan.duracion,
+      anticipo: plan.anticipo,
+    },
+    fecha,
+    horaInicio,
+    horaFin,
+    metodoPago: metodoPago || null,
+    pagoAnticipo: {
+      requerido: requiereAnticipo,
+      monto: requiereAnticipo ? Math.round((plan.precio * plan.anticipo) / 100) : 0,
+      comprobante: comprobante || "",
+      estado: "pendiente",
+    },
+    estado: ESTADO_CITA.SOLICITADA,
+  });
+
+  const linkWhatsappBarbero = linkWhatsApp(barbero.celular, mensajeNuevaCita(cita, barbero));
+
+  return ok(
+    {
+      cita: serializarCita(cita.toObject()),
+      linkWhatsappBarbero,
+    },
+    201
+  );
+});

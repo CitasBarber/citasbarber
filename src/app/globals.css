@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --barber-red: #e11d2a;
+  --barber-blue: #1e50a0;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: #f5f3ef;
+  color: #111111;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+/* Elimina el flash azul en iOS al tocar, y el delay de 300ms */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Evita que iOS haga zoom al enfocar inputs */
+input, select, textarea {
+  font-size: max(16px, 1em);
+}
+
+/* Barra fija de hora seleccionada en agendamiento */
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.sticky-hora-bar {
+  animation: slide-up 0.22s ease-out;
+}
+
+/* Animación de entrada para tarjetas (#4) */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  opacity: 0;
+  animation: fade-up 0.5s ease-out forwards;
+}
+
+/* Touch targets mínimos en nav del header */
+header nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+h1, h2, h3, .font-display {
+  font-family: Oswald, Impact, "Arial Narrow", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* Franja diagonal tipo poste de barbero */
+.barber-pole {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--barber-red) 0 12px,
+    #ffffff 12px 24px,
+    var(--barber-blue) 24px 36px,
+    #ffffff 36px 48px
+  );
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px];
+  }
+  .btn-primary {
+    @apply btn bg-barber-red text-white hover:bg-barber-red-dark;
+  }
+  .btn-blue {
+    @apply btn bg-barber-blue text-white hover:bg-barber-blue-dark;
+  }
+  .btn-dark {
+    @apply btn bg-barber-ink text-white hover:bg-black;
+  }
+  .btn-outline {
+    @apply btn border-2 border-barber-ink text-barber-ink hover:bg-barber-ink hover:text-white;
+  }
+  .btn-wa {
+    @apply btn bg-[#25D366] text-white hover:bg-[#1da851];
+  }
+  .card {
+    @apply rounded-2xl bg-white shadow-card border border-black/5;
+  }
+  .input {
+    @apply w-full rounded-lg border border-gray-300 px-3 py-2.5 outline-none focus:border-barber-blue focus:ring-1 focus:ring-barber-blue;
+  }
+  .label {
+    @apply block text-sm font-semibold text-barber-ink mb-1;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+}
