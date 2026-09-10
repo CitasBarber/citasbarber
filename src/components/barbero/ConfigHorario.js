@@ -10,7 +10,12 @@ export default function ConfigHorario({ perfil, onGuardado }) {
   const [dias, setDias] = useState(perfil.horario?.diasLaborales || [1, 2, 3, 4, 5, 6]);
   const [ventana, setVentana] = useState(perfil.ventanaCancelacionHoras ?? 24);
   const [diasBloqueados, setDiasBloqueados] = useState(perfil.diasBloqueados || []);
+  const [franjas, setFranjas] = useState(perfil.franjasBloqueadas || []);
   const [nuevoBloqueo, setNuevoBloqueo] = useState(fechaLocalHoy());
+  const [modoBloqueo, setModoBloqueo] = useState("dia"); // "dia" | "horas"
+  const [franjaIni, setFranjaIni] = useState("12:00");
+  const [franjaFin, setFranjaFin] = useState("13:00");
+  const [franjaMotivo, setFranjaMotivo] = useState("");
   const [datosPago, setDatosPago] = useState(perfil.datosPago || {});
   const [foto, setFoto] = useState(perfil.foto || "");
   const [redes, setRedes] = useState(perfil.redes || {});
@@ -25,6 +30,21 @@ export default function ConfigHorario({ perfil, onGuardado }) {
   }
   function quitarBloqueo(f) {
     setDiasBloqueados(diasBloqueados.filter((x) => x !== f));
+  }
+  function agregarFranja() {
+    if (!nuevoBloqueo) return;
+    if (franjaIni >= franjaFin) { setMsg("La hora de fin debe ser mayor que la de inicio."); return; }
+    const nueva = { fecha: nuevoBloqueo, horaInicio: franjaIni, horaFin: franjaFin, motivo: franjaMotivo.trim() };
+    const existe = franjas.some((f) => f.fecha === nueva.fecha && f.horaInicio === nueva.horaInicio && f.horaFin === nueva.horaFin);
+    if (existe) return;
+    setFranjas(
+      [...franjas, nueva].sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio))
+    );
+    setFranjaMotivo("");
+    setMsg("");
+  }
+  function quitarFranja(idx) {
+    setFranjas(franjas.filter((_, i) => i !== idx));
   }
   function onQR(e) {
     const file = e.target.files?.[0];
@@ -51,6 +71,7 @@ export default function ConfigHorario({ perfil, onGuardado }) {
         horario: { horaInicio, horaFin, diasLaborales: dias },
         ventanaCancelacionHoras: Number(ventana),
         diasBloqueados,
+        franjasBloqueadas: franjas,
         datosPago,
         foto,
         redes,
@@ -185,23 +206,95 @@ export default function ConfigHorario({ perfil, onGuardado }) {
         </div>
       </section>
 
-      <section className="card p-6 space-y-3">
-        <h2 className="font-display text-xl">Días libres / vacaciones</h2>
-        <p className="text-sm text-barber-gray">Bloqueá fechas en las que no vas a atender. Los clientes no podrán agendar esos días.</p>
-        <div className="flex gap-2">
-          <input type="date" className="input" value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
-          <button type="button" className="btn-outline text-sm whitespace-nowrap" onClick={agregarBloqueo}>+ Bloquear</button>
+      <section className="card p-6 space-y-4">
+        <div>
+          <h2 className="font-display text-xl">Ausencias</h2>
+          <p className="text-sm text-barber-gray mt-0.5">Bloqueá días completos o franjas de horas en las que no vas a atender. Los clientes no podrán agendar en ese tiempo.</p>
         </div>
-        <div className="flex flex-wrap gap-2 mt-1">
-          {diasBloqueados.length === 0
-            ? <span className="text-sm text-barber-gray">Ningún día bloqueado.</span>
-            : diasBloqueados.map((f) => (
-                <span key={f} className="inline-flex items-center gap-1.5 bg-gray-100 border border-gray-200 rounded-full px-3 py-1 text-sm font-medium">
-                  📅 {formatFechaBloq(f)}
-                  <button onClick={() => quitarBloqueo(f)} className="text-red-500 hover:text-red-700 font-bold leading-none" aria-label="Quitar">×</button>
-                </span>
-              ))
-          }
+
+        {/* Selector de modo */}
+        <div className="grid grid-cols-2 gap-1.5 bg-gray-100 rounded-xl p-1">
+          {[
+            { key: "dia", label: "Día completo" },
+            { key: "horas", label: "Solo unas horas" },
+          ].map((op) => (
+            <button
+              key={op.key}
+              type="button"
+              onClick={() => setModoBloqueo(op.key)}
+              className={`rounded-lg py-2 text-sm font-bold transition ${
+                modoBloqueo === op.key ? "bg-white text-barber-ink shadow-sm" : "text-barber-gray"
+              }`}
+            >
+              {op.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Formulario según modo */}
+        {modoBloqueo === "dia" ? (
+          <div className="flex gap-2">
+            <input type="date" className="input" value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
+            <button type="button" className="btn-outline text-sm whitespace-nowrap" onClick={agregarBloqueo}>+ Bloquear</button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="label text-xs">Fecha</label>
+                <input type="date" className="input" value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
+              </div>
+              <div>
+                <label className="label text-xs">Desde</label>
+                <input type="time" className="input" value={franjaIni} onChange={(e) => setFranjaIni(e.target.value)} />
+              </div>
+              <div>
+                <label className="label text-xs">Hasta</label>
+                <input type="time" className="input" value={franjaFin} onChange={(e) => setFranjaFin(e.target.value)} />
+              </div>
+            </div>
+            <input
+              className="input"
+              value={franjaMotivo}
+              onChange={(e) => setFranjaMotivo(e.target.value)}
+              placeholder="Motivo (opcional): cita médica, diligencia…"
+              maxLength={60}
+            />
+            <button type="button" className="btn-outline text-sm w-full sm:w-auto" onClick={agregarFranja}>+ Bloquear horas</button>
+          </div>
+        )}
+
+        {/* Lista de días completos bloqueados */}
+        <div>
+          <p className="label text-xs mb-1.5">Días completos bloqueados</p>
+          <div className="flex flex-wrap gap-2">
+            {diasBloqueados.length === 0
+              ? <span className="text-sm text-barber-gray">Ninguno.</span>
+              : diasBloqueados.map((f) => (
+                  <span key={f} className="inline-flex items-center gap-1.5 bg-gray-100 border border-gray-200 rounded-full px-3 py-1 text-sm font-medium">
+                    📅 {formatFechaBloq(f)}
+                    <button onClick={() => quitarBloqueo(f)} className="text-red-500 hover:text-red-700 font-bold leading-none" aria-label="Quitar">×</button>
+                  </span>
+                ))
+            }
+          </div>
+        </div>
+
+        {/* Lista de franjas de horas bloqueadas */}
+        <div>
+          <p className="label text-xs mb-1.5">Horas bloqueadas</p>
+          <div className="flex flex-wrap gap-2">
+            {franjas.length === 0
+              ? <span className="text-sm text-barber-gray">Ninguna.</span>
+              : franjas.map((f, i) => (
+                  <span key={`${f.fecha}-${f.horaInicio}-${i}`} className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-sm font-medium">
+                    🕐 {formatFechaBloq(f.fecha)} · {hora12simple(f.horaInicio)}–{hora12simple(f.horaFin)}
+                    {f.motivo ? <span className="text-barber-gray font-normal">({f.motivo})</span> : null}
+                    <button onClick={() => quitarFranja(i)} className="text-red-500 hover:text-red-700 font-bold leading-none" aria-label="Quitar">×</button>
+                  </span>
+                ))
+            }
+          </div>
         </div>
       </section>
 

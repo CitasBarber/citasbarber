@@ -219,6 +219,21 @@ function SegmentoTimeline({ seg, abierta, onToggle, onAccion }) {
     );
   }
 
+  if (seg.tipo === "bloqueo") {
+    const f = seg.franja || {};
+    return (
+      <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-gray-300 bg-gray-100">
+        <div className="w-1 rounded-full shrink-0 bg-gray-400" />
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-mono text-xs text-barber-gray">{hora12(seg.inicio)} – {hora12(seg.fin)}</span>
+          <span className="text-sm font-semibold text-barber-gray">
+            🚫 Bloqueado{f.motivo ? ` · ${f.motivo}` : ""}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   const c = seg.cita;
   const estilo = CITA_ESTILO[c.estado] || { wrap: "border-gray-200 bg-gray-50", barra: "bg-gray-400" };
   const celular = (c.clienteCelular || "").replace(/\D/g, "");
@@ -306,17 +321,32 @@ function buildTimeline(fecha, perfil, citasDia) {
 
   const inicioMin = hhmmAMin(horario.horaInicio || "10:00");
   const finMin = hhmmAMin(horario.horaFin || "19:00");
+
+  // Ocupaciones del día: citas + franjas de horas bloqueadas, ordenadas por hora.
+  const ocupaciones = [];
+  for (const cita of citasDia) {
+    ocupaciones.push({ tipo: "cita", cita, ini: hhmmAMin(cita.horaInicio), fin: hhmmAMin(cita.horaFin) });
+  }
+  for (const f of perfil.franjasBloqueadas || []) {
+    if (f.fecha === fecha) {
+      ocupaciones.push({ tipo: "bloqueo", franja: f, ini: hhmmAMin(f.horaInicio), fin: hhmmAMin(f.horaFin) });
+    }
+  }
+  ocupaciones.sort((a, b) => a.ini - b.ini);
+
   const segmentos = [];
   let cursor = inicioMin;
 
-  for (const cita of citasDia) {
-    const citaIni = hhmmAMin(cita.horaInicio);
-    const citaFin = hhmmAMin(cita.horaFin);
-    if (citaIni > cursor) {
-      segmentos.push({ tipo: "libre", inicio: minAHhmm(cursor), fin: minAHhmm(citaIni), duracion: citaIni - cursor });
+  for (const oc of ocupaciones) {
+    if (oc.ini > cursor) {
+      segmentos.push({ tipo: "libre", inicio: minAHhmm(cursor), fin: minAHhmm(oc.ini), duracion: oc.ini - cursor });
     }
-    segmentos.push({ tipo: "cita", cita, inicio: cita.horaInicio, fin: cita.horaFin, duracion: citaFin - citaIni });
-    cursor = citaFin;
+    if (oc.tipo === "cita") {
+      segmentos.push({ tipo: "cita", cita: oc.cita, inicio: minAHhmm(oc.ini), fin: minAHhmm(oc.fin), duracion: oc.fin - oc.ini });
+    } else {
+      segmentos.push({ tipo: "bloqueo", franja: oc.franja, inicio: minAHhmm(oc.ini), fin: minAHhmm(oc.fin), duracion: oc.fin - oc.ini });
+    }
+    cursor = Math.max(cursor, oc.fin);
   }
 
   if (cursor < finMin) {
