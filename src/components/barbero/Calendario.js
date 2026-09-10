@@ -221,34 +221,57 @@ function SegmentoTimeline({ seg, abierta, onToggle, onAccion }) {
 
   const c = seg.cita;
   const estilo = CITA_ESTILO[c.estado] || { wrap: "border-gray-200 bg-gray-50", barra: "bg-gray-400" };
-  const expandida = abierta === c.id;
   const celular = (c.clienteCelular || "").replace(/\D/g, "");
+  const esSolicitada = c.estado === "solicitada";
+
+  // La cita tiene acciones ocultas (bajo el desplegable) cuando NO es solicitada
+  // pero sí hay algo que hacer: completar (confirmada) o contactar por WhatsApp.
+  const tieneAccionesOcultas =
+    !esSolicitada && (c.estado === "confirmada" || !!celular);
+  const expandida = abierta === c.id;
+  // Las solicitadas muestran sus acciones siempre; el resto, al expandir.
+  const mostrarAcciones = esSolicitada || expandida;
+
+  const cabecera = (
+    <>
+      <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-mono text-xs text-barber-gray">{hora12(seg.inicio)} – {hora12(seg.fin)}</span>
+          <span className="font-bold text-sm">{c.clienteNombre}</span>
+        </div>
+        <p className="text-xs text-barber-gray mt-0.5">
+          {c.planSnapshot?.nombre} · {formatDur(seg.duracion)}
+        </p>
+      </div>
+      <div className="shrink-0 self-center flex items-center gap-1.5">
+        <EstadoBadge estado={c.estado} />
+        {tieneAccionesOcultas && (
+          <span className={`text-barber-gray transition-transform ${expandida ? "rotate-180" : ""}`}>⌄</span>
+        )}
+      </div>
+    </>
+  );
 
   return (
-    <div className={`rounded-lg border ${estilo.wrap}`}>
-      <button
-        type="button"
-        onClick={() => onToggle(c.id)}
-        className="w-full flex items-stretch gap-3 px-3 py-2.5 text-left"
-      >
-        <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-xs text-barber-gray">{hora12(seg.inicio)} – {hora12(seg.fin)}</span>
-            <span className="font-bold text-sm">{c.clienteNombre}</span>
-          </div>
-          <p className="text-xs text-barber-gray mt-0.5">
-            {c.planSnapshot?.nombre} · {formatDur(seg.duracion)}
-          </p>
+    <div className={`rounded-lg border ${estilo.wrap} ${esSolicitada ? "ring-1 ring-amber-300" : ""}`}>
+      {tieneAccionesOcultas ? (
+        <button
+          type="button"
+          onClick={() => onToggle(c.id)}
+          className="w-full flex items-stretch gap-3 px-3 py-2.5 text-left"
+        >
+          {cabecera}
+        </button>
+      ) : (
+        <div className="w-full flex items-stretch gap-3 px-3 py-2.5">
+          {cabecera}
         </div>
-        <div className="shrink-0 self-center">
-          <EstadoBadge estado={c.estado} />
-        </div>
-      </button>
+      )}
 
-      {expandida && (
+      {mostrarAcciones && (
         <div className="flex flex-wrap gap-2 px-3 pb-3 pt-0">
-          {c.estado === "solicitada" && (
+          {esSolicitada && (
             <>
               <button className="btn-blue text-sm py-1.5" onClick={() => onAccion(c.id, "confirmar")}>Aceptar</button>
               <button className="btn-outline text-sm py-1.5" onClick={() => onAccion(c.id, "rechazar")}>Rechazar</button>
