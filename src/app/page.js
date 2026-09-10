@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import { Bigote, PosteBarbero } from "@/components/Icons";
 import { Scissors, Knife, Armchair } from "@phosphor-icons/react";
 import { formatoCOP } from "@/lib/constants";
+import ContactoAdmin from "@/components/ContactoAdmin";
 
 export default function HomePage() {
   const [barberos, setBarberos] = useState([]);
@@ -130,6 +131,9 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Contacto: barbero interesado en la app escribe al admin */}
+      <ContactoAdmin />
 
       <footer className="bg-barber-black text-white/70 text-sm">
         <div className="h-1 sm:h-1.5 barber-pole" />

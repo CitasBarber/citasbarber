@@ -3,7 +3,7 @@ import Barbero from "@/models/Barbero";
 import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
-import { calcularSlots, minAHhmm, hhmmAMin } from "@/lib/disponibilidad";
+import { calcularSlots, minAHhmm, hhmmAMin, fechaLocalHoy } from "@/lib/disponibilidad";
 import { normalizarCelular } from "@/lib/whatsapp";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { serializarCita } from "@/lib/serializers";
@@ -20,6 +20,8 @@ export const POST = handler(async (req) => {
   let { clienteCelular } = body;
   if (!planKey || !fecha || !horaInicio || !clienteNombre)
     return fail("Faltan datos de la cita");
+  if (fecha < fechaLocalHoy())
+    return fail("No puedes agendar en una fecha que ya pasó.", 400);
 
   const barbero = await Barbero.findById(session.barberoId);
   if (!barbero) return fail("Barbero no encontrado", 404);

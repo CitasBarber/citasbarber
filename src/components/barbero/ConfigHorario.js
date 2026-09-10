@@ -234,7 +234,7 @@ export default function ConfigHorario({ perfil, onGuardado }) {
         {/* Formulario según modo */}
         {modoBloqueo === "dia" ? (
           <div className="flex gap-2">
-            <input type="date" className="input" value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
+            <input type="date" className="input" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
             <button type="button" className="btn-outline text-sm whitespace-nowrap" onClick={agregarBloqueo}>+ Bloquear</button>
           </div>
         ) : (
@@ -242,7 +242,7 @@ export default function ConfigHorario({ perfil, onGuardado }) {
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <label className="label text-xs">Fecha</label>
-                <input type="date" className="input" value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
+                <input type="date" className="input" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
               </div>
               <div>
                 <label className="label text-xs">Desde</label>
