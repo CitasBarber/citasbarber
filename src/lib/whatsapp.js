@@ -1,18 +1,5 @@
 import { METODOS_PAGO_LABEL, formatoCOP } from "./constants";
-
-// String.fromCodePoint evita problemas de encoding en Windows con emoji U+1F000+.
-// El archivo fuente queda en ASCII puro; los caracteres se generan en runtime.
-const E = {
-  NAVAJA:   String.fromCodePoint(0x1F488), // 💈
-  TIJERAS:  String.fromCodePoint(0x2702, 0xFE0F), // ✂️
-  UBICACION:String.fromCodePoint(0x1F4CD), // 📍
-  RELOJ:    String.fromCodePoint(0x1F550), // 🕐
-  CELULAR:  String.fromCodePoint(0x1F4F2), // 📲
-  BILLETE:  String.fromCodePoint(0x1F4B5), // 💵
-  DINERO:   String.fromCodePoint(0x1F4B0), // 💰
-  CALENDARIO:String.fromCodePoint(0x1F4C5),// 📅
-  PERSONA:  String.fromCodePoint(0x1F464), // 👤
-};
+import { EMOJI as E } from "./emojis";
 
 export function normalizarCelular(celular) {
   if (!celular) return "";

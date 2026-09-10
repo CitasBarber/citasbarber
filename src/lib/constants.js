@@ -1,5 +1,7 @@
 // Constantes de negocio de CitasBarber
 
+import { EMOJI } from "./emojis";
+
 export const ROLES = {
   ADMIN: "admin",
   BARBERO: "barbero",
@@ -42,20 +44,12 @@ export const PLANES_KEYS = ["bronce", "plata", "oro"];
 
 // Plantilla por defecto de planes cuando el admin configura a un barbero.
 // Los precios son ejemplos editables por el admin.
-// Emojis como Unicode escapes para evitar problemas de encoding en Windows
-const _E = {
-  TIJERAS:  "\u{2702}\u{FE0F}",  // ✂️
-  MASAJE:   "\u{1F486}",         // 💆
-  BRILLO:   "\u{2728}",          // ✨
-  CERVEZA:  "\u{1F37B}",         // 🍻
-  CHOCOLATE:"\u{1F36B}",         // 🍫
-};
-
+// Los emojis vienen del módulo centralizado y seguro (ver ./emojis).
 export const PLANES_DEFAULT = [
   {
     key: "bronce",
     nombre: "Bronce",
-    servicios: [`${_E.TIJERAS} Corte básico`],
+    servicios: [`${EMOJI.TIJERAS} Corte básico`],
     precio: 20000,
     duracion: 25,
     anticipo: 0,
@@ -66,9 +60,9 @@ export const PLANES_DEFAULT = [
     key: "plata",
     nombre: "Plata",
     servicios: [
-      `${_E.TIJERAS} Corte`,
-      `${_E.MASAJE} Mascarilla puntos negros`,
-      `${_E.BRILLO} Depilación de oídos y nariz`,
+      `${EMOJI.TIJERAS} Corte`,
+      `${EMOJI.MASAJE} Mascarilla puntos negros`,
+      `${EMOJI.BRILLO} Depilación de oídos y nariz`,
     ],
     precio: 45000,
     duracion: 55,
@@ -80,11 +74,11 @@ export const PLANES_DEFAULT = [
     key: "oro",
     nombre: "Oro",
     servicios: [
-      `${_E.TIJERAS} Corte`,
-      `${_E.MASAJE} Mascarilla puntos negros`,
-      `${_E.BRILLO} Depilación de oídos y nariz`,
-      `${_E.CERVEZA} Bebida a gusto`,
-      `${_E.CHOCOLATE} Snack`,
+      `${EMOJI.TIJERAS} Corte`,
+      `${EMOJI.MASAJE} Mascarilla puntos negros`,
+      `${EMOJI.BRILLO} Depilación de oídos y nariz`,
+      `${EMOJI.CERVEZA} Bebida a gusto`,
+      `${EMOJI.CHOCOLATE} Snack`,
     ],
     precio: 70000,
     duracion: 55,
