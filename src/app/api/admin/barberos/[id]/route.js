@@ -1,6 +1,7 @@
 import { dbConnect } from "@/lib/db";
 import Barbero from "@/models/Barbero";
 import Usuario from "@/models/Usuario";
+import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { ESTADO_BARBERO, ROLES, PLANES_DEFAULT } from "@/lib/constants";
@@ -72,4 +73,20 @@ export const PATCH = handler(async (req, { params }) => {
   }
   await b.save();
   return ok({ ok: true, estado: b.estado });
+});
+
+// DELETE /api/admin/barberos/:id
+// Eliminación permanente en cascada: borra el barbero, su usuario/login y todas sus citas.
+export const DELETE = handler(async (req, { params }) => {
+  await dbConnect();
+  requireAdmin();
+
+  const b = await Barbero.findById(params.id);
+  if (!b) return fail("Barbero no encontrado", 404);
+
+  const citas = await Cita.deleteMany({ barbero: b._id });
+  await Usuario.deleteOne({ barbero: b._id });
+  await b.deleteOne();
+
+  return ok({ ok: true, citasEliminadas: citas.deletedCount || 0 });
 });
