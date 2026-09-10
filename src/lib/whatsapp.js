@@ -91,6 +91,17 @@ export function mensajeRechazo(cita, barbero) {
   );
 }
 
+export function mensajeCancelacion(cita, barbero, { motivo = "" } = {}) {
+  const detalleMotivo = motivo ? `\n\n*Motivo:* ${motivo}` : "";
+  return (
+    `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${barbero?.local || "la barberia"}*.\n\n` +
+    `Tuve que cancelar tu cita confirmada para el ` +
+    `${formatearFecha(cita.fecha)} a las ${cita.horaInicio}.` +
+    detalleMotivo +
+    `\n\n_Escríbeme para reprogramar cuando quieras._`
+  );
+}
+
 function formatearFecha(fechaISO) {
   if (!fechaISO) return "";
   try {

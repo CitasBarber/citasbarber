@@ -8,6 +8,7 @@ import {
   linkWhatsApp,
   mensajeConfirmacion,
   mensajeRechazo,
+  mensajeCancelacion,
   normalizarCelular,
 } from "@/lib/whatsapp";
 import { serializarCita } from "@/lib/serializers";
@@ -83,9 +84,19 @@ export const PATCH = handler(async (req, { params }) => {
             400
           );
       }
+      const eraConfirmada = cita.estado === ESTADO_CITA.CONFIRMADA;
       cita.estado = ESTADO_CITA.CANCELADA;
       await cita.save();
-      return ok({ cita: serializarCita(cita.toObject()) });
+
+      // Si el barbero cancela una cita ya confirmada, avisar al cliente por WhatsApp.
+      let link;
+      if (esBarberoDueno && eraConfirmada && cita.clienteCelular) {
+        link = linkWhatsApp(
+          cita.clienteCelular,
+          mensajeCancelacion(cita, barbero, { motivo })
+        );
+      }
+      return ok({ cita: serializarCita(cita.toObject()), linkWhatsApp: link });
     }
 
     default:

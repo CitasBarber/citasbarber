@@ -28,6 +28,12 @@ export default function CitasLista({ onCambio }) {
       const motivo = prompt("Motivo del rechazo (opcional):") || "";
       extra.motivo = motivo;
     }
+    if (accion === "cancelar") {
+      if (!confirm("¿Seguro que quieres cancelar esta cita confirmada? Se le avisará al cliente por WhatsApp."))
+        return;
+      const motivo = prompt("Motivo de la cancelación (opcional):") || "";
+      extra.motivo = motivo;
+    }
     const res = await fetch(`/api/citas/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -82,10 +88,10 @@ export default function CitasLista({ onCambio }) {
                   </>
                 )}
                 {c.estado === "confirmada" && (
-                  <button className="btn-dark text-sm py-1.5" onClick={() => accion(c.id, "completar")}>Marcar completada</button>
-                )}
-                {["solicitada", "confirmada"].includes(c.estado) && (
-                  <button className="btn-outline text-sm py-1.5" onClick={() => accion(c.id, "cancelar")}>Cancelar</button>
+                  <>
+                    <button className="btn-dark text-sm py-1.5" onClick={() => accion(c.id, "completar")}>Marcar completada</button>
+                    <button className="btn-outline text-sm py-1.5" onClick={() => accion(c.id, "cancelar")}>Cancelar</button>
+                  </>
                 )}
                 {c.pagoAnticipo?.requerido && c.pagoAnticipo?.comprobante && (
                   <button className="btn-outline text-sm py-1.5" onClick={() => verComprobante(c.id)}>Ver comprobante</button>
