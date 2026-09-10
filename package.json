@@ -21,6 +21,8 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2",
     "mongodb-memory-server": "^10.1.2",
     "playwright": "^1.62.1",
     "postcss": "^8.4.47",

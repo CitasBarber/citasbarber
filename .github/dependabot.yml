@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Actualizaciones de dependencias npm (seguridad y versiones)
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dependencias-menores:
+        update-types: ["minor", "patch"]
+
+  # Actualizaciones de las propias GitHub Actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

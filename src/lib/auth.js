@@ -2,8 +2,16 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-citasbarber";
-const JWT_EXPIRES_IN = parseInt(process.env.JWT_EXPIRES_IN || "604800", 10);
+// El secret NUNCA debe tener un fallback en producción: si faltara, cualquiera
+// podría firmar tokens (incluido rol admin). En desarrollo se permite uno local.
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === "production") {
+  throw new Error(
+    "JWT_SECRET es obligatorio en producción. Configúralo en las variables de entorno."
+  );
+}
+const JWT_SECRET = process.env.JWT_SECRET || "dev-only-secret-no-usar-en-produccion";
+// Sesión más corta por defecto (2 días) para limitar el daño de un token robado.
+const JWT_EXPIRES_IN = parseInt(process.env.JWT_EXPIRES_IN || "172800", 10);
 export const COOKIE_NAME = "cb_token";
 
 export async function hashPassword(password) {

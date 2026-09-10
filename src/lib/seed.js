@@ -154,7 +154,7 @@ export async function seedIfEmpty() {
     estado: ESTADO_CITA.SOLICITADA,
   });
 
-  console.log(`✅ Seed listo. Admin: ${adminEmail} / ${adminPass}`);
-  console.log("   Barberos de 770 Barbería: brahian@, andres@, santiago@citasbarber.com (clave: barbero123)");
+  // No imprimir credenciales en logs (quedarían expuestas en el proveedor).
+  console.log("✅ Seed de desarrollo listo. Consulta scripts/seed y .env.example para las credenciales locales.");
   return true;
 }

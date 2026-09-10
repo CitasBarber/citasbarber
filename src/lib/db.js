@@ -62,8 +62,13 @@ export async function dbConnect() {
     throw e;
   }
 
-  // Auto-seed: si la base está vacía, se cargan datos de ejemplo (una sola vez).
-  if (!global._seedDone) {
+  // Auto-seed: SOLO en desarrollo/pruebas y de forma explícita.
+  // Nunca en producción: evita crear cuentas de ejemplo con contraseñas conocidas
+  // (barbero123 / admin123) en la base real. En producción, el admin se crea con
+  // `node scripts/crear-admin.mjs` usando una contraseña fuerte.
+  const seedPermitido =
+    process.env.NODE_ENV !== "production" && process.env.ALLOW_SEED !== "false";
+  if (seedPermitido && !global._seedDone) {
     global._seedDone = true;
     try {
       const { seedIfEmpty } = await import("./seed");
