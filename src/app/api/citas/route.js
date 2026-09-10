@@ -8,6 +8,7 @@ import { calcularSlots, minAHhmm, hhmmAMin } from "@/lib/disponibilidad";
 import { normalizarCelular, linkWhatsApp, mensajeNuevaCita } from "@/lib/whatsapp";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { serializarCita } from "@/lib/serializers";
+import { validarComprobante } from "@/lib/validaciones";
 
 // GET /api/citas  -> lista de citas del barbero autenticado (opcional ?fecha=)
 export const GET = handler(async (req) => {
@@ -47,6 +48,10 @@ export const POST = handler(async (req) => {
 
   if (metodoPago && !plan.metodosPago.includes(metodoPago))
     return fail("Método de pago no permitido para este plan", 400);
+
+  // Validar el comprobante en el servidor (tipo y tamaño real), no confiar en el cliente.
+  const comp = validarComprobante(comprobante);
+  if (!comp.ok) return fail(comp.error, 400);
 
   // Recalcular disponibilidad para evitar doble reserva
   const citasDia = await Cita.find({
@@ -91,13 +96,16 @@ export const POST = handler(async (req) => {
     pagoAnticipo: {
       requerido: requiereAnticipo,
       monto: requiereAnticipo ? Math.round((plan.precio * plan.anticipo) / 100) : 0,
-      comprobante: comprobante || "",
+      comprobante: comp.valor,
       estado: "pendiente",
     },
     estado: ESTADO_CITA.SOLICITADA,
   });
 
-  const linkWhatsappBarbero = linkWhatsApp(barbero.celular, mensajeNuevaCita(cita, barbero));
+  const linkWhatsappBarbero = linkWhatsApp(
+    barbero.celular,
+    mensajeNuevaCita(cita, barbero, { plano: !!body.plano })
+  );
 
   return ok(
     {

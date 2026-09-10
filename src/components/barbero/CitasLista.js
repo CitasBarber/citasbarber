@@ -5,6 +5,7 @@ import EstadoBadge from "@/components/EstadoBadge";
 import { WhatsAppIcon } from "@/components/Icons";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { esMovil } from "@/lib/dispositivo";
 
 export default function CitasLista({ onCambio }) {
   const [fecha, setFecha] = useState(fechaLocalHoy());
@@ -30,7 +31,7 @@ export default function CitasLista({ onCambio }) {
     const res = await fetch(`/api/citas/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accion, ...extra }),
+      body: JSON.stringify({ accion, plano: !esMovil(), ...extra }),
     });
     const d = await res.json();
     if (!res.ok) return alert(d.error);

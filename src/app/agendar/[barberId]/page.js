@@ -9,6 +9,7 @@ import SocialLinks from "@/components/SocialLinks";
 import { WhatsAppIcon } from "@/components/Icons";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { esMovil } from "@/lib/dispositivo";
 
 export default function AgendarPage() {
   const { barberId } = useParams();
@@ -108,6 +109,7 @@ export default function AgendarPage() {
           comprobante,
           clienteNombre: nombre,
           clienteCelular: celular,
+          plano: !esMovil(),
         }),
       });
       const d = await res.json();

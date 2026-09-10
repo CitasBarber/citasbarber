@@ -16,7 +16,7 @@ import { serializarCita } from "@/lib/serializers";
 // acciones: confirmar | rechazar | completar (barbero) ; cancelar (barbero o cliente)
 export const PATCH = handler(async (req, { params }) => {
   await dbConnect();
-  const { accion, motivo, celular } = await req.json();
+  const { accion, motivo, celular, plano } = await req.json();
   const cita = await Cita.findById(params.id);
   if (!cita) return fail("Cita no encontrada", 404);
 
@@ -32,7 +32,7 @@ export const PATCH = handler(async (req, { params }) => {
         return fail("Solo se pueden confirmar citas solicitadas", 400);
       cita.estado = ESTADO_CITA.CONFIRMADA;
       await cita.save();
-      const link = linkWhatsApp(cita.clienteCelular, mensajeConfirmacion(cita, barbero));
+      const link = linkWhatsApp(cita.clienteCelular, mensajeConfirmacion(cita, barbero, { plano: !!plano }));
       return ok({ cita: serializarCita(cita.toObject()), linkWhatsApp: link });
     }
 
