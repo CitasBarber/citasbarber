@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
 
 export default function CitaManual({ planes, onCreada }) {
@@ -14,6 +14,15 @@ export default function CitaManual({ planes, onCreada }) {
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const btnCrearRef = useRef(null);
+
+  // Al elegir una hora, acercar el botón "Crear cita" para evitar scroll.
+  function seleccionarHora(s) {
+    setHora(s);
+    requestAnimationFrame(() =>
+      btnCrearRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+    );
+  }
 
   useEffect(() => {
     if (!planKey || !fecha) return;
@@ -85,7 +94,7 @@ export default function CitaManual({ planes, onCreada }) {
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {slots.map((s) => (
-              <button type="button" key={s} onClick={() => setHora(s)}
+              <button type="button" key={s} onClick={() => seleccionarHora(s)}
                 className={`rounded-lg border min-h-[44px] py-2 text-sm font-semibold transition active:scale-95 ${hora === s ? "bg-barber-blue text-white border-barber-blue" : "border-gray-300 hover:border-barber-blue"}`}>
                 {s}
               </button>
@@ -93,7 +102,7 @@ export default function CitaManual({ planes, onCreada }) {
           </div>
         )}
       </div>
-      <button className="btn-primary w-full" disabled={enviando || !hora}>{enviando ? "Creando…" : "Crear cita"}</button>
+      <button ref={btnCrearRef} className="btn-primary w-full" disabled={enviando || !hora}>{enviando ? "Creando…" : "Crear cita"}</button>
     </form>
   );
 }
