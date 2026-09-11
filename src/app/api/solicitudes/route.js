@@ -2,6 +2,8 @@ import { dbConnect } from "@/lib/db";
 import Solicitud from "@/models/Solicitud";
 import { ok, fail, handler } from "@/lib/api";
 import { normalizarCelular } from "@/lib/whatsapp";
+import { enviarPush } from "@/lib/push";
+import { ROLES } from "@/lib/constants";
 
 // POST /api/solicitudes  -> contacto público: un barbero/local pide la app al admin.
 export const POST = handler(async (req) => {
@@ -26,6 +28,16 @@ export const POST = handler(async (req) => {
     local,
     mensaje,
   });
+
+  // Notificación push a los administradores (sin ownerId = a todos los admin).
+  await enviarPush(
+    { ownerRole: ROLES.ADMIN },
+    {
+      title: "Nuevo contacto",
+      body: `${nombre}${local ? ` · ${local}` : ""}: ${mensaje.slice(0, 80)}`,
+      url: "/admin/panel",
+    }
+  );
 
   return ok({ mensaje: "Solicitud enviada. El administrador te contactará pronto." }, 201);
 });

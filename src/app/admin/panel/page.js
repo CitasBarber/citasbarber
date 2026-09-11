@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import EstadoBadge from "@/components/EstadoBadge";
 import EditorPlanes from "@/components/admin/EditorPlanes";
 import EditorInfoBarbero from "@/components/admin/EditorInfoBarbero";
+import ActivarNotificaciones from "@/components/ActivarNotificaciones";
 
 const FILTROS = [
   { key: "pendiente", label: "Pendientes" },
@@ -113,6 +114,10 @@ export default function AdminPanelPage() {
       </Header>
       <main className="mx-auto max-w-5xl px-4 py-6">
         <h1 className="font-display text-3xl">Panel de administración</h1>
+
+        <div className="mt-4">
+          <ActivarNotificaciones descripcion="Recibí un aviso apenas alguien te contacte desde la web, aunque tengas la app cerrada." />
+        </div>
 
         {/* Navegación de vistas */}
         <div className="mt-4 flex gap-2">

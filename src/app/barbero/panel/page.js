@@ -9,6 +9,7 @@ import Calendario from "@/components/barbero/Calendario";
 import CitaManual from "@/components/barbero/CitaManual";
 import ConfigHorario from "@/components/barbero/ConfigHorario";
 import ResumenDiario from "@/components/barbero/ResumenDiario";
+import ActivarNotificaciones from "@/components/ActivarNotificaciones";
 
 const TABS = [
   { key: "calendario", label: "Calendario",       short: "Agenda" },
@@ -68,6 +69,10 @@ export default function PanelBarberoPage() {
 
       <main className="mx-auto max-w-5xl px-4 py-4 sm:py-6">
         <h1 className="font-display text-2xl sm:text-3xl">Hola, {sesion.nombre.split(" ")[0]} 👋</h1>
+
+        <div className="mt-4">
+          <ActivarNotificaciones descripcion="Recibí un aviso apenas un cliente te solicite una cita, aunque tengas la app cerrada." />
+        </div>
 
         <div className="mt-3 sm:mt-4 flex overflow-x-auto border-b border-black/10 scrollbar-none">
           {TABS.map((t) => (

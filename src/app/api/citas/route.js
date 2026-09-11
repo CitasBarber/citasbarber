@@ -9,6 +9,7 @@ import { normalizarCelular, linkWhatsApp, mensajeNuevaCita } from "@/lib/whatsap
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { serializarCita } from "@/lib/serializers";
 import { validarComprobante } from "@/lib/validaciones";
+import { enviarPush } from "@/lib/push";
 
 // GET /api/citas  -> lista de citas del barbero autenticado (opcional ?fecha=)
 export const GET = handler(async (req) => {
@@ -107,6 +108,17 @@ export const POST = handler(async (req) => {
   const linkWhatsappBarbero = linkWhatsApp(
     barbero.celular,
     mensajeNuevaCita(cita, barbero, { plano: !!body.plano })
+  );
+
+  // Notificación push al barbero (no bloquea ni rompe la respuesta si falla).
+  await enviarPush(
+    { ownerRole: ROLES.BARBERO, ownerId: barbero._id },
+    {
+      title: "Nueva cita solicitada",
+      body: `${cita.clienteNombre} · ${plan.nombre} · ${cita.fecha} a las ${cita.horaInicio}`,
+      url: "/barbero/panel",
+      tag: `cita-${cita._id}`,
+    }
   );
 
   return ok(
