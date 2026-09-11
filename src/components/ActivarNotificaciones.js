@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+// Marca para no volver a lanzar la solicitud automática de permiso en cada
+// apertura si el usuario la cerró sin decidir (evita ser insistentes).
+const AUTO_KEY = "push-auto-intentado";
 
 // Convierte la clave pública VAPID (base64url) al Uint8Array que exige el
 // navegador en pushManager.subscribe.
@@ -15,11 +18,22 @@ function urlBase64ToUint8Array(base64String) {
   return arr;
 }
 
+// ¿La web está abierta como app instalada (PWA en pantalla completa)?
+function esAppInstalada() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
+}
+
 // Botón para activar/desactivar las notificaciones push en este dispositivo.
+// Cuando la web se abre como app instalada, intenta activarlas por defecto:
+// si ya había permiso, se suscribe solo; si no, pide el permiso al abrir.
 // `descripcion` personaliza el texto según quién lo use (barbero/admin).
 export default function ActivarNotificaciones({ descripcion }) {
   const [estado, setEstado] = useState("cargando"); // cargando | no-soportado | activo | inactivo | denegado
   const [ocupado, setOcupado] = useState(false);
+  const autoHecho = useRef(false);
 
   const soportado =
     typeof window !== "undefined" &&
@@ -28,6 +42,48 @@ export default function ActivarNotificaciones({ descripcion }) {
     "Notification" in window &&
     !!VAPID_PUBLIC;
 
+  // Registra la suscripción en el servidor. `pedirPermiso` decide si se muestra
+  // el diálogo del navegador (activación manual o auto en modo app).
+  const suscribir = useCallback(
+    async ({ pedirPermiso, silencioso = false } = {}) => {
+      setOcupado(true);
+      try {
+        let permiso = Notification.permission;
+        if (permiso === "default" && pedirPermiso) {
+          permiso = await Notification.requestPermission();
+        }
+        if (permiso !== "granted") {
+          setEstado(permiso === "denied" ? "denegado" : "inactivo");
+          return false;
+        }
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC),
+          });
+        }
+        const res = await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription: sub.toJSON(), userAgent: navigator.userAgent }),
+        });
+        if (!res.ok) throw new Error("No se pudo registrar");
+        setEstado("activo");
+        return true;
+      } catch (e) {
+        if (!silencioso) alert("No se pudieron activar las notificaciones. Intentá de nuevo.");
+        setEstado((prev) => (prev === "activo" ? prev : "inactivo"));
+        return false;
+      } finally {
+        setOcupado(false);
+      }
+    },
+    []
+  );
+
+  // Estado inicial: ¿ya está suscrito este dispositivo?
   useEffect(() => {
     if (!soportado) {
       setEstado("no-soportado");
@@ -43,33 +99,30 @@ export default function ActivarNotificaciones({ descripcion }) {
       .catch(() => setEstado("inactivo"));
   }, [soportado]);
 
-  async function activar() {
-    setOcupado(true);
-    try {
-      const permiso = await Notification.requestPermission();
-      if (permiso !== "granted") {
-        setEstado(permiso === "denied" ? "denegado" : "inactivo");
-        return;
-      }
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC),
-      });
-      const res = await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscription: sub.toJSON(), userAgent: navigator.userAgent }),
-      });
-      if (!res.ok) throw new Error("No se pudo registrar");
-      setEstado("activo");
-    } catch (e) {
-      alert("No se pudieron activar las notificaciones. Intentá de nuevo.");
-      setEstado("inactivo");
-    } finally {
-      setOcupado(false);
+  // Auto-activación al abrir como app instalada.
+  useEffect(() => {
+    if (estado !== "inactivo" || autoHecho.current) return;
+    if (!esAppInstalada()) return;
+    autoHecho.current = true;
+
+    // Si el permiso ya estaba concedido, nos suscribimos en silencio.
+    if (Notification.permission === "granted") {
+      suscribir({ pedirPermiso: false, silencioso: true });
+      return;
     }
-  }
+    // Si aún no lo decidió, pedimos el permiso automáticamente una sola vez.
+    if (Notification.permission === "default") {
+      let intentado = false;
+      try {
+        intentado = localStorage.getItem(AUTO_KEY) === "1";
+      } catch {}
+      if (intentado) return;
+      try {
+        localStorage.setItem(AUTO_KEY, "1");
+      } catch {}
+      suscribir({ pedirPermiso: true, silencioso: true });
+    }
+  }, [estado, suscribir]);
 
   async function desactivar() {
     setOcupado(true);
@@ -122,7 +175,11 @@ export default function ActivarNotificaciones({ descripcion }) {
         )}
       </div>
       {estado === "inactivo" && (
-        <button onClick={activar} disabled={ocupado} className="btn-primary text-sm py-1.5 px-4 shrink-0">
+        <button
+          onClick={() => suscribir({ pedirPermiso: true })}
+          disabled={ocupado}
+          className="btn-primary text-sm py-1.5 px-4 shrink-0"
+        >
           {ocupado ? "Activando…" : "Activar"}
         </button>
       )}
