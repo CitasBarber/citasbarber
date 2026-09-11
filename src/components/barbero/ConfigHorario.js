@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DIAS_SEMANA } from "@/lib/constants";
-import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
 
 export default function ConfigHorario({ perfil, onGuardado }) {
   const [horaInicio, setHoraInicio] = useState(perfil.horario?.horaInicio || "10:00");
@@ -25,6 +25,10 @@ export default function ConfigHorario({ perfil, onGuardado }) {
 
   function toggleDia(d) {
     setDias((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort()));
+  }
+  function elegirFechaBloqueo(valor) {
+    if (esFechaPasada(valor)) { setMsg("No puedes bloquear una fecha que ya pasó."); return; }
+    setMsg(""); setNuevoBloqueo(valor);
   }
   function agregarBloqueo() {
     if (!diasBloqueados.includes(nuevoBloqueo)) setDiasBloqueados([...diasBloqueados, nuevoBloqueo].sort());
@@ -241,7 +245,7 @@ export default function ConfigHorario({ perfil, onGuardado }) {
         {/* Formulario según modo */}
         {modoBloqueo === "dia" ? (
           <div className="flex gap-2">
-            <input type="date" className="input" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
+            <input type="date" className="input" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => elegirFechaBloqueo(e.target.value)} />
             <button type="button" className="btn-outline text-sm whitespace-nowrap" onClick={agregarBloqueo}>+ Bloquear</button>
           </div>
         ) : (
@@ -249,7 +253,7 @@ export default function ConfigHorario({ perfil, onGuardado }) {
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <label className="label text-xs">Fecha</label>
-                <input type="date" className="input" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => setNuevoBloqueo(e.target.value)} />
+                <input type="date" className="input" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => elegirFechaBloqueo(e.target.value)} />
               </div>
               <div>
                 <label className="label text-xs">Desde</label>

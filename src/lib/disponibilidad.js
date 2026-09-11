@@ -111,6 +111,12 @@ export function fechaLocalHoy() {
   }).format(new Date());
 }
 
+// true si la fecha 'YYYY-MM-DD' es anterior a hoy (zona Colombia). La comparación
+// lexicográfica de strings 'YYYY-MM-DD' equivale a comparar fechas.
+export function esFechaPasada(fecha) {
+  return !!fecha && fecha < fechaLocalHoy();
+}
+
 // Minutos transcurridos del día (0..1439) ahora mismo en Colombia.
 export function minutosActualesColombia() {
   const partes = new Intl.DateTimeFormat("en-GB", {

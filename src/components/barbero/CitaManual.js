@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
 
 export default function CitaManual({ planes, onCreada }) {
   const activos = (planes || []).filter((p) => p.activo);
@@ -85,7 +85,11 @@ export default function CitaManual({ planes, onCreada }) {
       </div>
       <div>
         <label className="label">Fecha</label>
-        <input type="date" className="input" min={fechaLocalHoy()} value={fecha} onChange={(e) => setFecha(e.target.value)} />
+        <input type="date" className="input" min={fechaLocalHoy()} value={fecha} onChange={(e) => {
+          const v = e.target.value;
+          if (esFechaPasada(v)) { setError("No puedes agendar en una fecha que ya pasó."); return; }
+          setError(""); setFecha(v);
+        }} />
       </div>
       <div>
         <label className="label">Hora</label>

@@ -8,7 +8,7 @@ import Avatar from "@/components/Avatar";
 import SocialLinks from "@/components/SocialLinks";
 import { WhatsAppIcon } from "@/components/Icons";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
-import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 
 export default function AgendarPage() {
@@ -88,6 +88,18 @@ export default function AgendarPage() {
   function seleccionarHora(s) {
     setHora(s);
     setPaso(4);
+  }
+
+  // Cambia la fecha rechazando cualquier día ya pasado (el atributo min del
+  // input no lo garantiza si se escribe la fecha a mano).
+  function elegirFecha(valor) {
+    setFechaManual(true);
+    if (esFechaPasada(valor)) {
+      setError("No podés agendar en una fecha que ya pasó. Elegí de hoy en adelante.");
+      return; // no actualiza: el input controlado revierte a la fecha válida
+    }
+    setError("");
+    setFecha(valor);
   }
 
   // Retrocede un paso, sin perder los datos ya ingresados
@@ -257,7 +269,7 @@ export default function AgendarPage() {
             {chipsFecha().map((c) => (
               <button
                 key={c.valor}
-                onClick={() => { setFechaManual(true); setFecha(c.valor); }}
+                onClick={() => elegirFecha(c.valor)}
                 className={`px-3 py-1.5 rounded-full text-sm font-semibold border ${fecha === c.valor ? "bg-barber-ink text-white border-barber-ink" : "border-gray-300 hover:border-barber-ink"}`}
               >
                 {c.label}
@@ -266,7 +278,7 @@ export default function AgendarPage() {
           </div>
           <div>
             <label className="label">O elige otra fecha</label>
-            <input type="date" className="input" min={fechaLocalHoy()} value={fecha} onChange={(e) => { setFechaManual(true); setFecha(e.target.value); }} />
+            <input type="date" className="input" min={fechaLocalHoy()} value={fecha} onChange={(e) => elegirFecha(e.target.value)} />
           </div>
 
           <div>
