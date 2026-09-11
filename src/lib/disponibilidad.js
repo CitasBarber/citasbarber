@@ -2,6 +2,7 @@
 // días/franjas bloqueadas, citas existentes y la duración exacta del plan.
 
 const GRANULARIDAD_MIN = 15; // paso entre posibles horas de inicio
+const ZONA_HORARIA = "America/Bogota"; // Colombia (UTC-5, sin horario de verano)
 
 export function hhmmAMin(hhmm) {
   const [h, m] = String(hhmm).split(":").map(Number);
@@ -58,13 +59,12 @@ export function calcularSlots({ barbero, fecha, duracion, citas = [] }) {
     }
   }
 
-  // No permitir horas en el pasado si la fecha es hoy
-  const ahora = new Date();
+  // No permitir horas en el pasado si la fecha es hoy (según hora de Colombia,
+  // no la del servidor, que en producción corre en UTC).
   const hoyStr = fechaLocalHoy();
   let minPermitido = inicioJornada;
   if (fecha === hoyStr) {
-    const minActual = ahora.getHours() * 60 + ahora.getMinutes();
-    minPermitido = Math.max(inicioJornada, minActual);
+    minPermitido = Math.max(inicioJornada, minutosActualesColombia());
   }
 
   const slots = [];
@@ -79,10 +79,26 @@ export function calcularSlots({ barbero, fecha, duracion, citas = [] }) {
   return slots;
 }
 
+// Fecha 'YYYY-MM-DD' de hoy en zona horaria de Colombia, sin depender de la
+// zona del servidor (UTC en Vercel) ni del navegador del cliente.
 export function fechaLocalHoy() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: ZONA_HORARIA,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+// Minutos transcurridos del día (0..1439) ahora mismo en Colombia.
+export function minutosActualesColombia() {
+  const partes = new Intl.DateTimeFormat("en-GB", {
+    timeZone: ZONA_HORARIA,
+    hourCycle: "h23",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(new Date());
+  const h = Number(partes.find((p) => p.type === "hour").value);
+  const m = Number(partes.find((p) => p.type === "minute").value);
+  return h * 60 + m;
 }
