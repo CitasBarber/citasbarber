@@ -21,6 +21,7 @@ export default function ConfigHorario({ perfil, onGuardado }) {
   const [redes, setRedes] = useState(perfil.redes || {});
   const [msg, setMsg] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [conflictos, setConflictos] = useState([]);
 
   function toggleDia(d) {
     setDias((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort()));
@@ -77,9 +78,15 @@ export default function ConfigHorario({ perfil, onGuardado }) {
         redes,
       }),
     });
+    const data = await res.json().catch(() => ({}));
     setGuardando(false);
-    if (res.ok) { setMsg("Cambios guardados ✔"); onGuardado?.(); }
-    else setMsg("Error al guardar");
+    if (res.ok) {
+      setMsg("Cambios guardados ✔");
+      setConflictos(data.conflictos || []);
+      onGuardado?.();
+    } else {
+      setMsg("Error al guardar");
+    }
   }
 
   return (
@@ -319,6 +326,49 @@ export default function ConfigHorario({ perfil, onGuardado }) {
         <button className="btn-primary" onClick={guardar} disabled={guardando}>{guardando ? "Guardando…" : "Guardar cambios"}</button>
         {msg && <span className="text-sm font-semibold text-green-700">{msg}</span>}
       </div>
+
+      {conflictos.length > 0 && (
+        <section className="card p-6 space-y-3 border-2 border-amber-300 bg-amber-50">
+          <div className="flex items-start gap-2">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <h2 className="font-display text-xl">Ojo: tenés {conflictos.length} cita{conflictos.length !== 1 ? "s" : ""} en el tiempo que bloqueaste</h2>
+              <p className="text-sm text-barber-gray mt-0.5">
+                El bloqueo evita <b>nuevas</b> reservas, pero estas citas ya estaban agendadas y siguen activas. Contactá al cliente y, si toca, cancelá la cita desde el calendario.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {conflictos.map((c) => {
+              const celular = (c.clienteCelular || "").replace(/\D/g, "");
+              return (
+                <div key={c.id} className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-white px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm truncate">{c.clienteNombre}</p>
+                    <p className="text-xs text-barber-gray">
+                      📅 {formatFechaBloq(c.fecha)} · {hora12simple(c.horaInicio)}–{hora12simple(c.horaFin)}
+                      {c.planSnapshot?.nombre ? ` · ${c.planSnapshot.nombre}` : ""} · {c.estado}
+                    </p>
+                  </div>
+                  {celular && (
+                    <a
+                      className="btn-wa text-sm py-1.5 shrink-0"
+                      href={`https://wa.me/${celular}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      WhatsApp
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-barber-gray">
+            Para cancelar o reagendar, andá a la pestaña <b>Calendario</b> y abrí la cita.
+          </p>
+        </section>
+      )}
     </div>
   );
 }

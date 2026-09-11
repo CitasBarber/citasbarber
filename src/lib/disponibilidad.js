@@ -21,8 +21,29 @@ export function diaSemanaDeFecha(fechaStr) {
   return new Date(y, m - 1, d).getDay();
 }
 
-function seSolapa(inicioA, finA, inicioB, finB) {
+export function seSolapa(inicioA, finA, inicioB, finB) {
   return inicioA < finB && inicioB < finA;
+}
+
+/**
+ * Dadas unas citas y la configuración de ausencias del barbero, devuelve las
+ * citas que quedan dentro de un día completo bloqueado o de una franja de horas
+ * bloqueada (solape). Sirve para avisar al barbero al configurar ausencias.
+ * @param {Object} params
+ * @param {Array}  params.citas             citas activas [{fecha, horaInicio, horaFin, ...}]
+ * @param {string[]} params.diasBloqueados  ['YYYY-MM-DD']
+ * @param {Array}  params.franjasBloqueadas [{fecha, horaInicio, horaFin}]
+ * @returns {Array} subconjunto de `citas` en conflicto
+ */
+export function citasEnConflicto({ citas = [], diasBloqueados = [], franjasBloqueadas = [] }) {
+  return citas.filter((c) => {
+    if (diasBloqueados.includes(c.fecha)) return true;
+    const ini = hhmmAMin(c.horaInicio);
+    const fin = hhmmAMin(c.horaFin);
+    return franjasBloqueadas.some(
+      (f) => f.fecha === c.fecha && seSolapa(ini, fin, hhmmAMin(f.horaInicio), hhmmAMin(f.horaFin))
+    );
+  });
 }
 
 /**

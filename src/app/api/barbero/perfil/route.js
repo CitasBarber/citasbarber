@@ -1,8 +1,11 @@
 import { dbConnect } from "@/lib/db";
 import Barbero from "@/models/Barbero";
+import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
-import { ROLES } from "@/lib/constants";
+import { ROLES, ESTADO_CITA } from "@/lib/constants";
+import { citasEnConflicto } from "@/lib/disponibilidad";
+import { serializarCita } from "@/lib/serializers";
 
 function requireBarbero() {
   const session = getSession();
@@ -64,5 +67,30 @@ export const PUT = handler(async (req) => {
   if (body.redes) b.redes = { ...(b.redes || {}), ...body.redes };
 
   await b.save();
-  return ok({ ok: true });
+
+  // Detectar citas activas que quedaron dentro de un día/franja bloqueada, para
+  // avisar al barbero. No se cancela nada: él decide qué hacer con cada una.
+  const diasBloqueados = b.diasBloqueados || [];
+  const franjasBloqueadas = (b.franjasBloqueadas || []).map((f) => ({
+    fecha: f.fecha,
+    horaInicio: f.horaInicio,
+    horaFin: f.horaFin,
+  }));
+  const fechasRelevantes = [
+    ...new Set([...diasBloqueados, ...franjasBloqueadas.map((f) => f.fecha)]),
+  ];
+
+  let conflictos = [];
+  if (fechasRelevantes.length > 0) {
+    const citas = await Cita.find({
+      barbero: b._id,
+      fecha: { $in: fechasRelevantes },
+      estado: { $in: [ESTADO_CITA.SOLICITADA, ESTADO_CITA.CONFIRMADA] },
+    }).lean();
+    conflictos = citasEnConflicto({ citas, diasBloqueados, franjasBloqueadas }).map(
+      serializarCita
+    );
+  }
+
+  return ok({ ok: true, conflictos });
 });
