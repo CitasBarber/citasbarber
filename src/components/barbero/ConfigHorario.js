@@ -22,34 +22,62 @@ export default function ConfigHorario({ perfil, onGuardado }) {
   const [msg, setMsg] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [conflictos, setConflictos] = useState([]);
+  const [ausenciaMsg, setAusenciaMsg] = useState("");
 
   function toggleDia(d) {
     setDias((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort()));
   }
   function elegirFechaBloqueo(valor) {
-    if (esFechaPasada(valor)) { setMsg("No puedes bloquear una fecha que ya pasó."); return; }
-    setMsg(""); setNuevoBloqueo(valor);
+    if (esFechaPasada(valor)) { setAusenciaMsg("No puedes bloquear una fecha que ya pasó."); return; }
+    setAusenciaMsg(""); setNuevoBloqueo(valor);
+  }
+  // Las ausencias se guardan al instante (no dependen del botón "Guardar cambios"):
+  // así un día/hora bloqueado queda aplicado de inmediato para los clientes.
+  async function persistirAusencias(nextDias, nextFranjas) {
+    setAusenciaMsg("Guardando…");
+    try {
+      const res = await fetch("/api/barbero/perfil", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ diasBloqueados: nextDias, franjasBloqueadas: nextFranjas }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error();
+      setConflictos(data.conflictos || []);
+      setAusenciaMsg("Ausencias guardadas ✔");
+      onGuardado?.();
+    } catch {
+      setAusenciaMsg("⚠️ No se pudo guardar. Revisá tu conexión e intentá de nuevo.");
+    }
   }
   function agregarBloqueo() {
-    if (!diasBloqueados.includes(nuevoBloqueo)) setDiasBloqueados([...diasBloqueados, nuevoBloqueo].sort());
+    if (esFechaPasada(nuevoBloqueo)) { setAusenciaMsg("No puedes bloquear una fecha que ya pasó."); return; }
+    if (diasBloqueados.includes(nuevoBloqueo)) return;
+    const next = [...diasBloqueados, nuevoBloqueo].sort();
+    setDiasBloqueados(next);
+    persistirAusencias(next, franjas);
   }
   function quitarBloqueo(f) {
-    setDiasBloqueados(diasBloqueados.filter((x) => x !== f));
+    const next = diasBloqueados.filter((x) => x !== f);
+    setDiasBloqueados(next);
+    persistirAusencias(next, franjas);
   }
   function agregarFranja() {
     if (!nuevoBloqueo) return;
-    if (franjaIni >= franjaFin) { setMsg("La hora de fin debe ser mayor que la de inicio."); return; }
+    if (esFechaPasada(nuevoBloqueo)) { setAusenciaMsg("No puedes bloquear una fecha que ya pasó."); return; }
+    if (franjaIni >= franjaFin) { setAusenciaMsg("La hora de fin debe ser mayor que la de inicio."); return; }
     const nueva = { fecha: nuevoBloqueo, horaInicio: franjaIni, horaFin: franjaFin, motivo: franjaMotivo.trim() };
     const existe = franjas.some((f) => f.fecha === nueva.fecha && f.horaInicio === nueva.horaInicio && f.horaFin === nueva.horaFin);
     if (existe) return;
-    setFranjas(
-      [...franjas, nueva].sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio))
-    );
+    const next = [...franjas, nueva].sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio));
+    setFranjas(next);
     setFranjaMotivo("");
-    setMsg("");
+    persistirAusencias(diasBloqueados, next);
   }
   function quitarFranja(idx) {
-    setFranjas(franjas.filter((_, i) => i !== idx));
+    const next = franjas.filter((_, i) => i !== idx);
+    setFranjas(next);
+    persistirAusencias(diasBloqueados, next);
   }
   function onQR(e) {
     const file = e.target.files?.[0];
@@ -220,7 +248,12 @@ export default function ConfigHorario({ perfil, onGuardado }) {
       <section className="card p-6 space-y-4">
         <div>
           <h2 className="font-display text-xl">Ausencias</h2>
-          <p className="text-sm text-barber-gray mt-0.5">Bloqueá días completos o franjas de horas en las que no vas a atender. Los clientes no podrán agendar en ese tiempo.</p>
+          <p className="text-sm text-barber-gray mt-0.5">Bloqueá días completos o franjas de horas en las que no vas a atender. Se guardan al instante y los clientes no podrán agendar en ese tiempo.</p>
+          {ausenciaMsg && (
+            <p className={`text-sm font-semibold mt-2 ${ausenciaMsg.startsWith("⚠️") || ausenciaMsg.startsWith("No ") || ausenciaMsg.startsWith("La ") ? "text-red-600" : "text-green-700"}`}>
+              {ausenciaMsg}
+            </p>
+          )}
         </div>
 
         {/* Selector de modo */}
