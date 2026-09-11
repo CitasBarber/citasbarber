@@ -7,6 +7,7 @@ import { Bigote, PosteBarbero } from "@/components/Icons";
 import { Scissors, Knife, Armchair } from "@phosphor-icons/react";
 import { formatoCOP } from "@/lib/constants";
 import ContactoAdmin from "@/components/ContactoAdmin";
+import BotonInstalarApp from "@/components/BotonInstalarApp";
 
 export default function HomePage() {
   const [barberos, setBarberos] = useState([]);
@@ -136,7 +137,8 @@ export default function HomePage() {
         <div className="h-1 sm:h-1.5 barber-pole" />
         <div className="mx-auto max-w-6xl px-4 py-5 sm:py-6 flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 text-center sm:text-left">
           <span>© {new Date().getFullYear()} 770 Barbería · Caldas, Antioquia</span>
-          <div className="flex justify-center sm:justify-end gap-4">
+          <div className="flex justify-center sm:justify-end items-center gap-4">
+            <BotonInstalarApp className="inline-flex items-center font-semibold text-white hover:text-barber-red" />
             <ContactoAdmin className="hover:text-white" />
             <Link href="/barbero/registro" className="hover:text-white">Soy barbero</Link>
             <Link href="/admin/login" className="hover:text-white">Administrador</Link>
