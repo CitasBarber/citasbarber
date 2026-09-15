@@ -121,7 +121,7 @@ export default function ResumenDiario() {
             )}
           </h2>
           <p className="text-xs sm:text-sm text-barber-gray mt-0.5">
-            Cuadre de caja en tiempo real y balance de productividad
+            Tu resumen de hoy: cómo va la plata y los turnos
           </p>
         </div>
       </div>
@@ -136,15 +136,15 @@ export default function ResumenDiario() {
         </div>
       ) : (
         <>
-          {/* BARRA DE PROGRESO DE LA JORNADA (Numeral 3) */}
+          {/* BARRA DE RITMO DEL DÍA */}
           <div className="card p-4 sm:p-5 bg-gradient-to-r from-white to-neutral-50 border border-black/5">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs uppercase tracking-wider font-bold text-barber-gray">
-                  Avance de la Jornada
+                  Ritmo de hoy
                 </span>
                 <span className="badge bg-neutral-100 text-barber-ink font-semibold">
-                  {data.estados?.completadas || 0} de {data.totalCitas} citas
+                  Llevás {data.estados?.completadas || 0} de {data.totalCitas} turnos
                 </span>
               </div>
               <span className="font-display text-lg text-barber-ink font-bold">
@@ -164,7 +164,7 @@ export default function ResumenDiario() {
             <div className="flex items-center gap-3 mt-3 text-xs text-barber-gray flex-wrap">
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <strong className="text-barber-ink">{data.estados?.completadas || 0}</strong> completadas
+                <strong className="text-barber-ink">{data.estados?.completadas || 0}</strong> listos
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-barber-blue" />
@@ -179,19 +179,19 @@ export default function ResumenDiario() {
               {data.estados?.canceladas > 0 && (
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-red-400" />
-                  <strong className="text-barber-ink">{data.estados?.canceladas}</strong> canceladas
+                  <strong className="text-barber-ink">{data.estados?.canceladas}</strong> cancelados
                 </span>
               )}
             </div>
           </div>
 
-          {/* TARJETAS KPI PRINCIPALES (Numeral 1 y 3) */}
+          {/* TARJETAS KPI PRINCIPALES */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* 1. Cobrado Real */}
+            {/* 1. Ya en el bolsillo */}
             <div className="card p-4 border-l-4 border-l-emerald-500 flex flex-col justify-between">
               <div>
                 <p className="text-xs uppercase tracking-wider font-semibold text-barber-gray">
-                  Caja Cobrada
+                  Ya en el bolsillo
                 </p>
                 <p className="text-2xl sm:text-3xl font-display text-emerald-600 font-bold mt-1">
                   {formatoCOP(data.ingresosCobrados)}
@@ -199,30 +199,30 @@ export default function ResumenDiario() {
               </div>
               <div className="mt-3 pt-2 border-t border-black/5 text-[11px] text-barber-gray flex flex-col gap-0.5">
                 <span>💵 Efectivo: <strong className="text-barber-ink">{formatoCOP(data.efectivo?.cobrado || 0)}</strong></span>
-                <span>📱 Digital: <strong className="text-barber-ink">{formatoCOP(data.digital?.cobrado || 0)}</strong></span>
+                <span>📱 Transferencias: <strong className="text-barber-ink">{formatoCOP(data.digital?.cobrado || 0)}</strong></span>
               </div>
             </div>
 
-            {/* 2. Por Cobrar */}
+            {/* 2. Falta por entrar */}
             <div className="card p-4 border-l-4 border-l-amber-500 flex flex-col justify-between">
               <div>
                 <p className="text-xs uppercase tracking-wider font-semibold text-barber-gray">
-                  Por Cobrar
+                  Falta por entrar
                 </p>
                 <p className="text-2xl sm:text-3xl font-display text-amber-600 font-bold mt-1">
                   {formatoCOP(data.ingresosPendientes)}
                 </p>
               </div>
               <p className="mt-3 pt-2 border-t border-black/5 text-[11px] text-barber-gray">
-                En <strong className="text-barber-ink">{data.estados?.confirmadas || 0}</strong> cita(s) pendiente(s)
+                De <strong className="text-barber-ink">{data.estados?.confirmadas || 0}</strong> cliente(s) que falta(n) hoy
               </p>
             </div>
 
-            {/* 3. Ticket Promedio */}
+            {/* 3. Promedio por cliente */}
             <div className="card p-4 border-l-4 border-l-barber-blue flex flex-col justify-between">
               <div>
                 <p className="text-xs uppercase tracking-wider font-semibold text-barber-gray">
-                  Ticket Promedio
+                  Promedio por cliente
                 </p>
                 <p className="text-2xl sm:text-3xl font-display text-barber-blue font-bold mt-1">
                   {formatoCOP(data.ticketPromedio)}
@@ -230,47 +230,47 @@ export default function ResumenDiario() {
               </div>
               <p className="mt-3 pt-2 border-t border-black/5 text-[11px] text-barber-gray">
                 {data.estados?.completadas > 0
-                  ? "Por cliente atendido hoy"
-                  : "Promedio estimado del día"}
+                  ? "Te está dejando cada cliente hoy"
+                  : "Estimado para los turnos de hoy"}
               </p>
             </div>
 
-            {/* 4. Tiempo en Sillón */}
+            {/* 4. Tiempo motilando */}
             <div className="card p-4 border-l-4 border-l-barber-red flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
                   <p className="text-xs uppercase tracking-wider font-semibold text-barber-gray">
-                    Tiempo en Sillón
+                    Tiempo motilando
                   </p>
-                  <Silla className="w-4 h-4 text-barber-red opacity-80" />
+                  <Tijeras className="w-4 h-4 text-barber-red opacity-80" />
                 </div>
                 <p className="text-2xl sm:text-3xl font-display text-barber-ink font-bold mt-1">
                   {formatearMinutos(data.productividad?.minutosTrabajados)}
                 </p>
               </div>
               <p className="mt-3 pt-2 border-t border-black/5 text-[11px] text-barber-gray">
-                De <strong className="text-barber-ink">{formatearMinutos(data.productividad?.minutosTotales)}</strong> agendados
+                De <strong className="text-barber-ink">{formatearMinutos(data.productividad?.minutosTotales)}</strong> agendados hoy
               </p>
             </div>
           </div>
 
-          {/* CUADRE DE CAJA POR MÉTODO DE PAGO (Numeral 1) */}
+          {/* ¿POR DÓNDE TE PAGARON? */}
           <div className="card p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-display text-lg font-bold">Cuadre por Método de Pago</h3>
+                <h3 className="font-display text-lg font-bold">¿Por dónde te pagaron?</h3>
                 <p className="text-xs text-barber-gray">
-                  Detalle del dinero cobrado en mano vs transferencias recibidas
+                  La plata en efectivo en mano vs transferencias (Nequi, Daviplata, etc.)
                 </p>
               </div>
               <span className="badge bg-neutral-100 text-barber-gray text-xs">
-                Total del día: {formatoCOP(data.ingresosTotales)}
+                Total de hoy: {formatoCOP(data.ingresosTotales)}
               </span>
             </div>
 
             {!data.desgloseMetodos || data.desgloseMetodos.length === 0 ? (
               <p className="text-xs text-barber-gray py-4 text-center">
-                No hay transacciones registradas para este día.
+                No hay movimientos registrados para este día.
               </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -293,20 +293,20 @@ export default function ResumenDiario() {
                           </span>
                         </div>
                         <span className="text-xs text-barber-gray">
-                          {m.cantidad} cita{m.cantidad !== 1 ? "s" : ""}
+                          {m.cantidad} turno{m.cantidad !== 1 ? "s" : ""}
                         </span>
                       </div>
 
                       <div className="flex items-baseline justify-between pt-1 border-t border-black/5">
                         <div>
-                          <p className="text-xs text-barber-gray">Cobrado</p>
+                          <p className="text-xs text-barber-gray">Ya entró</p>
                           <p className="font-display text-base font-bold text-emerald-600">
                             {formatoCOP(m.cobrado)}
                           </p>
                         </div>
                         {m.pendiente > 0 && (
                           <div className="text-right">
-                            <p className="text-xs text-barber-gray">Pendiente</p>
+                            <p className="text-xs text-barber-gray">Falta</p>
                             <p className="font-display text-sm text-amber-600">
                               {formatoCOP(m.pendiente)}
                             </p>
@@ -323,31 +323,31 @@ export default function ResumenDiario() {
             <div className="mt-4 p-3 rounded-xl bg-neutral-100/80 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-4">
                 <span>
-                  💵 <strong>Efectivo en caja:</strong>{" "}
+                  💵 <strong>Efectivo en mano:</strong>{" "}
                   <span className="text-emerald-700 font-semibold">
                     {formatoCOP(data.efectivo?.cobrado || 0)}
                   </span>
                 </span>
                 <span>
-                  📱 <strong>Digital en bancos:</strong>{" "}
+                  📱 <strong>En transferencias/bancos:</strong>{" "}
                   <span className="text-barber-blue font-semibold">
                     {formatoCOP(data.digital?.cobrado || 0)}
                   </span>
                 </span>
               </div>
               <span className="text-barber-gray">
-                Total proyectado del día: <strong>{formatoCOP(data.ingresosTotales)}</strong>
+                Total proyectado de hoy: <strong>{formatoCOP(data.ingresosTotales)}</strong>
               </span>
             </div>
           </div>
 
-          {/* DESGLOSE POR PLAN DE SERVICIO (Numeral 3 y Estética) */}
+          {/* LO QUE MÁS SALIÓ HOY */}
           <div className="card p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-display text-lg font-bold">Producción por Servicio</h3>
+                <h3 className="font-display text-lg font-bold">Lo que más salió hoy</h3>
                 <p className="text-xs text-barber-gray">
-                  Rendimiento y distribución según el plan contratado
+                  Cómo se movieron los planes y cortes
                 </p>
               </div>
               <Tijeras className="w-5 h-5 text-barber-gray" />
@@ -377,7 +377,7 @@ export default function ResumenDiario() {
                           {p.nombre}
                         </span>
                         <span className="text-xs text-barber-gray">
-                          ({item.cantidad} cita{item.cantidad !== 1 ? "s" : ""})
+                          ({item.cantidad} corte{item.cantidad !== 1 ? "s" : ""})
                         </span>
                       </div>
                       <div className="text-right">
@@ -397,11 +397,11 @@ export default function ResumenDiario() {
 
                     <div className="flex items-center justify-between text-[11px] text-barber-gray mt-2">
                       <span>
-                        {item.completadas} completada{item.completadas !== 1 ? "s" : ""} ·{" "}
-                        {item.pendientes} pendiente{item.pendientes !== 1 ? "s" : ""}
+                        {item.completadas} listo{item.completadas !== 1 ? "s" : ""} ·{" "}
+                        {item.pendientes} por hacer
                       </span>
                       <span>
-                        Cobrado: <strong className="text-emerald-600">{formatoCOP(item.ingresosCobrados)}</strong>
+                        Ya entró: <strong className="text-emerald-600">{formatoCOP(item.ingresosCobrados)}</strong>
                       </span>
                     </div>
                   </div>
