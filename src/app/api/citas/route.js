@@ -99,7 +99,7 @@ export const POST = handler(async (req) => {
     pagoAnticipo: {
       requerido: requiereAnticipo,
       monto: requiereAnticipo ? Math.round((plan.precio * plan.anticipo) / 100) : 0,
-      comprobante: comp.valor,
+      comprobante: "", // El cliente lo comparte directamente al WhatsApp del barbero (0 bytes en BD)
       estado: "pendiente",
     },
     estado: ESTADO_CITA.SOLICITADA,

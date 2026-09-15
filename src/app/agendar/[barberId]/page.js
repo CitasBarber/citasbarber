@@ -29,11 +29,10 @@ export default function AgendarPage() {
   const [buscando, setBuscando] = useState(false);
   const [hora, setHora] = useState(null);
   const [metodoPago, setMetodoPago] = useState(null);
-  const [comprobante, setComprobante] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [resultado, setResultado] = useState(null); // {cita, linkWhatsappBarbero}
 
   const [error, setError] = useState("");
-  const [enviando, setEnviando] = useState(false);
-  const [resultado, setResultado] = useState(null);
 
   useEffect(() => {
     fetch(`/api/barberos/${barberId}`)
@@ -108,18 +107,6 @@ export default function AgendarPage() {
     setPaso((p) => Math.max(1, p - 1));
   }
 
-  function onArchivo(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-      setError("El comprobante no debe superar 3 MB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => setComprobante(reader.result);
-    reader.readAsDataURL(file);
-  }
-
   async function crearCita() {
     setError("");
     setEnviando(true);
@@ -133,7 +120,6 @@ export default function AgendarPage() {
           fecha,
           horaInicio: hora,
           metodoPago,
-          comprobante,
           clienteNombre: nombre,
           clienteCelular: celular,
           plano: !esMovil(),
@@ -333,26 +319,29 @@ export default function AgendarPage() {
           </div>
 
           {requiereAnticipo && (
-            <div className="rounded-lg bg-barber-cream p-4 border border-black/10 space-y-2">
-              <p className="font-semibold">
-                Anticipo requerido: {formatoCOP(montoAnticipo)} ({plan.anticipo}%)
-              </p>
-              <DatosPago datosPago={barbero.datosPago} metodo={metodoPago} />
-              <div>
-                <label className="label mt-2">Sube tu comprobante</label>
-                <input type="file" accept="image/*" onChange={onArchivo} className="text-sm" />
-                {comprobante && <p className="text-green-700 text-xs mt-1">✔ Comprobante cargado</p>}
+            <div className="rounded-xl bg-amber-50/80 p-4 border border-amber-200/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-amber-900 text-sm sm:text-base">
+                  Anticipo requerido: {formatoCOP(montoAnticipo)} ({plan.anticipo}%)
+                </p>
+                <span className="badge bg-amber-200/80 text-amber-900 text-xs font-semibold">
+                  Seña de cupo
+                </span>
               </div>
-              <p className="text-xs text-barber-gray">
-                Al confirmar, se abrirá WhatsApp para que envíes el comprobante al barbero.
-              </p>
+              <DatosPago datosPago={barbero.datosPago} metodo={metodoPago} />
+              <div className="p-3 bg-white/80 rounded-lg border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+                <span className="text-base leading-none">📲</span>
+                <p>
+                  <strong>Envío por WhatsApp:</strong> Haz la transferencia del anticipo. Al darle clic a <em>«¡Enviar solicitud!»</em>, se abrirá WhatsApp con los datos de tu reserva para que le compartas la foto del comprobante directamente a tu barbero.
+                </p>
+              </div>
             </div>
           )}
 
           <button
             type="submit"
             className="btn-primary w-full"
-            disabled={enviando || !metodoPago || (requiereAnticipo && !comprobante)}
+            disabled={enviando || !metodoPago}
           >
             {enviando ? "Enviando…" : "¡Enviar solicitud!"}
           </button>
@@ -370,8 +359,8 @@ export default function AgendarPage() {
           <Resumen barbero={barbero} plan={plan} fecha={fecha} hora={hora} />
 
           {resultado.linkWhatsappBarbero && (
-            <a href={resultado.linkWhatsappBarbero} target="_blank" rel="noreferrer" className="btn-wa w-full">
-              <WhatsAppIcon /> {requiereAnticipo ? "Enviar comprobante al barbero" : "Notificar al barbero"}
+            <a href={resultado.linkWhatsappBarbero} target="_blank" rel="noreferrer" className="btn-wa w-full py-3 text-base font-bold shadow-md shadow-emerald-500/20">
+              <WhatsAppIcon className="w-5 h-5" /> {requiereAnticipo ? "Enviar comprobante por WhatsApp al barbero" : "Avisarle al barbero por WhatsApp"}
             </a>
           )}
           <div className="flex gap-3">

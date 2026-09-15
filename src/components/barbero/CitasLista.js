@@ -76,6 +76,13 @@ export default function CitasLista({ onCambio }) {
                     {c.metodoPago ? ` · ${METODOS_PAGO_LABEL[c.metodoPago] || c.metodoPago}` : ""}
                     {c.esManual ? " · Manual" : ""}
                   </p>
+                  {c.pagoAnticipo?.requerido && (
+                    <div className="mt-1">
+                      <span className="badge bg-amber-100 text-amber-900 border border-amber-300/80 text-[11px] font-semibold">
+                        Anticipo: {formatoCOP(c.pagoAnticipo.monto)} · Verificar en WhatsApp
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <EstadoBadge estado={c.estado} />
               </div>
