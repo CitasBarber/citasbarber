@@ -48,12 +48,8 @@ export default function MisCitasPage() {
       });
       setConsultado(true);
 
-      // Si no tiene próximas pero sí historial, abrir pestaña historial automáticamente
-      if ((d.proximas?.length || 0) === 0 && (d.historial?.length || 0) > 0) {
-        setTab("historial");
-      } else {
-        setTab("proximas");
-      }
+      // Predeterminado siempre en próximas citas
+      setTab("proximas");
 
       // Guardar en localStorage para recordar al cliente
       try {
