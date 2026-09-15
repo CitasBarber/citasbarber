@@ -44,5 +44,6 @@ const CitaSchema = new mongoose.Schema(
 
 CitaSchema.index({ barbero: 1, fecha: 1 });
 CitaSchema.index({ clienteCelular: 1 });
+CitaSchema.index({ clienteCelular: 1, fecha: -1, horaInicio: -1 });
 
 export default mongoose.models.Cita || mongoose.model("Cita", CitaSchema);

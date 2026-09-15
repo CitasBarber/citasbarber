@@ -4,6 +4,8 @@ import Barbero from "@/models/Barbero";
 import { ok, fail, handler } from "@/lib/api";
 import { normalizarCelular } from "@/lib/whatsapp";
 import { serializarCita } from "@/lib/serializers";
+import { ESTADO_CITA } from "@/lib/constants";
+import { fechaLocalHoy } from "@/lib/disponibilidad";
 
 // GET /api/citas/consulta?celular=...  -> el cliente consulta sus citas por celular
 export const GET = handler(async (req) => {
@@ -13,7 +15,10 @@ export const GET = handler(async (req) => {
   if (!celularRaw) return fail("El celular es obligatorio");
 
   const celular = normalizarCelular(celularRaw);
+  
+  // Excluimos pagoAnticipo.comprobante para ahorrar consumo de RAM y ancho de banda
   const citas = await Cita.find({ clienteCelular: celular })
+    .select("-pagoAnticipo.comprobante")
     .sort({ fecha: -1, horaInicio: -1 })
     .lean();
 
@@ -35,5 +40,39 @@ export const GET = handler(async (req) => {
     };
   });
 
-  return ok({ citas: data });
+  const hoy = fechaLocalHoy();
+  const proximas = [];
+  const historial = [];
+
+  for (const c of data) {
+    const esActiva =
+      c.estado === ESTADO_CITA.SOLICITADA || c.estado === ESTADO_CITA.CONFIRMADA;
+    const esFuturaOHoy = c.fecha >= hoy;
+
+    if (esActiva && esFuturaOHoy) {
+      proximas.push(c);
+    } else {
+      historial.push(c);
+    }
+  }
+
+  // Próximas en orden cronológico (lo más cercano primero)
+  proximas.sort((a, b) => {
+    if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
+    return a.horaInicio.localeCompare(b.horaInicio);
+  });
+
+  // Historial en orden inverso (lo más reciente arriba)
+  historial.sort((a, b) => {
+    if (a.fecha !== b.fecha) return b.fecha.localeCompare(a.fecha);
+    return b.horaInicio.localeCompare(a.horaInicio);
+  });
+
+  return ok({
+    proximas,
+    historial,
+    citas: data,
+    totalProximas: proximas.length,
+    totalHistorial: historial.length,
+  });
 });
