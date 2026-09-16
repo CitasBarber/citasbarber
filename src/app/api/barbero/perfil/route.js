@@ -57,6 +57,13 @@ export const PUT = handler(async (req) => {
     b.horario.horaFin = body.horario.horaFin ?? b.horario.horaFin;
     if (Array.isArray(body.horario.diasLaborales))
       b.horario.diasLaborales = body.horario.diasLaborales;
+    if (body.horario.almuerzo) {
+      b.horario.almuerzo = {
+        activo: !!body.horario.almuerzo.activo,
+        horaInicio: body.horario.almuerzo.horaInicio ?? b.horario.almuerzo?.horaInicio,
+        horaFin: body.horario.almuerzo.horaFin ?? b.horario.almuerzo?.horaFin,
+      };
+    }
   }
   if (Array.isArray(body.diasBloqueados)) b.diasBloqueados = body.diasBloqueados;
   if (Array.isArray(body.franjasBloqueadas)) b.franjasBloqueadas = body.franjasBloqueadas;

@@ -80,6 +80,15 @@ export function calcularSlots({ barbero, fecha, duracion, citas = [] }) {
     }
   }
 
+  // Hora de almuerzo: se aplica a todos los días laborales (ya validamos arriba
+  // que la fecha es un día laboral), así que no queda disponible para agendar.
+  const almuerzo = horario.almuerzo;
+  if (almuerzo && almuerzo.activo && almuerzo.horaInicio && almuerzo.horaFin) {
+    const ini = hhmmAMin(almuerzo.horaInicio);
+    const fin = hhmmAMin(almuerzo.horaFin);
+    if (fin > ini) ocupados.push([ini, fin]);
+  }
+
   // No permitir horas en el pasado si la fecha es hoy (según hora de Colombia,
   // no la del servidor, que en producción corre en UTC).
   const hoyStr = fechaLocalHoy();

@@ -158,44 +158,48 @@ export default function Calendario({ perfil }) {
 
         {timeline?.tipo === "laboral" && (
           <div>
-            <p className="text-xs text-barber-gray mb-3">
+            <p className="text-xs text-barber-gray mb-2">
               Jornada{" "}
               <span className="font-semibold text-barber-ink">{hora12(timeline.inicio)}</span>
               {" "}–{" "}
               <span className="font-semibold text-barber-ink">{hora12(timeline.fin)}</span>
-              {timeline.segmentos.length > 0 && (
-                <>
-                  {" · "}
-                  <span className="text-green-700 font-semibold">
-                    {timeline.segmentos.filter(s => s.tipo === "libre" && s.duracion >= 25).length} espacios libres
-                  </span>
-                  {" · "}
-                  <span className="font-semibold">
-                    {timeline.segmentos.filter(s => s.tipo === "cita").length} cita{timeline.segmentos.filter(s => s.tipo === "cita").length !== 1 ? "s" : ""}
-                  </span>
-                </>
-              )}
+              {" · "}
+              <span className="text-green-700 font-semibold">
+                {timeline.totalLibres} libre{timeline.totalLibres !== 1 ? "s" : ""}
+              </span>
+              {" · "}
+              <span className="font-semibold">
+                {timeline.totalCitas} cita{timeline.totalCitas !== 1 ? "s" : ""}
+              </span>
             </p>
 
-            {timeline.segmentos.length === 0 && (
+            {/* Leyenda de estados */}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-barber-gray mb-3">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block" /> Libre</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> Solicitada</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-600 inline-block" /> Confirmada</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-gray-400 inline-block" /> Ausencia</span>
+            </div>
+
+            {timeline.slots.length === 0 ? (
               <div className="card p-5 text-center text-barber-gray">
-                <p className="text-2xl mb-1">✅</p>
-                <p className="text-sm font-semibold">Día libre — sin citas</p>
-                <p className="text-xs mt-0.5">Todo el horario disponible para nuevas citas.</p>
+                <p className="text-2xl mb-1">⚠️</p>
+                <p className="text-sm font-semibold">Horario sin franjas</p>
+                <p className="text-xs mt-0.5">Revisá que la hora de cierre sea posterior a la de apertura.</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {timeline.slots.map((slot, i) => (
+                  <SlotFila
+                    key={i}
+                    slot={slot}
+                    abierta={abierta}
+                    onToggle={(id) => setAbierta((prev) => (prev === id ? null : id))}
+                    onAccion={accion}
+                  />
+                ))}
               </div>
             )}
-
-            <div className="space-y-1.5">
-              {timeline.segmentos.map((seg, i) => (
-                <SegmentoTimeline
-                  key={i}
-                  seg={seg}
-                  abierta={abierta}
-                  onToggle={(id) => setAbierta((prev) => (prev === id ? null : id))}
-                  onAccion={accion}
-                />
-              ))}
-            </div>
           </div>
         )}
       </div>
@@ -203,41 +207,64 @@ export default function Calendario({ perfil }) {
   );
 }
 
-function SegmentoTimeline({ seg, abierta, onToggle, onAccion }) {
-  if (seg.tipo === "libre") {
-    const suficiente = seg.duracion >= 25;
+function SlotFila({ slot, abierta, onToggle, onAccion }) {
+  const rangoSlot = `${hora12(slot.inicio)} – ${hora12(slot.fin)}`;
+
+  if (slot.tipo === "libre") {
     return (
-      <div className={`flex items-stretch gap-3 px-3 py-2 rounded-lg border ${suficiente ? "border-green-200 bg-green-50" : "border-gray-100 bg-gray-50"}`}>
-        <div className={`w-1 rounded-full shrink-0 ${suficiente ? "bg-green-400" : "bg-gray-300"}`} />
+      <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-green-200 bg-green-50">
+        <div className="w-1 rounded-full shrink-0 bg-green-400" />
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-xs text-barber-gray">{hora12(seg.inicio)} – {hora12(seg.fin)}</span>
-          <span className={`text-sm font-semibold ${suficiente ? "text-green-700" : "text-barber-gray"}`}>
-            {suficiente ? "Libre" : "Pausa"} · {formatDur(seg.duracion)}
-          </span>
+          <span className="font-mono text-xs text-barber-gray">{rangoSlot}</span>
+          <span className="text-sm font-semibold text-green-700">Libre</span>
         </div>
       </div>
     );
   }
 
-  if (seg.tipo === "bloqueo") {
-    const f = seg.franja || {};
+  if (slot.tipo === "ausencia") {
+    const f = slot.franja || {};
+    if (!slot.esInicio) {
+      return (
+        <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50">
+          <div className="w-1 rounded-full shrink-0 bg-gray-300" />
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-xs text-barber-gray">{rangoSlot}</span>
+            <span className="text-xs text-barber-gray">⤷ sigue ausencia</span>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-gray-300 bg-gray-100">
         <div className="w-1 rounded-full shrink-0 bg-gray-400" />
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-xs text-barber-gray">{hora12(seg.inicio)} – {hora12(seg.fin)}</span>
+          <span className="font-mono text-xs text-barber-gray">{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
           <span className="text-sm font-semibold text-barber-gray">
-            🚫 Bloqueado{f.motivo ? ` · ${f.motivo}` : ""}
+            🚫 Ausencia{f.motivo ? ` · ${f.motivo}` : ""}
           </span>
         </div>
       </div>
     );
   }
 
-  const c = seg.cita;
+  const c = slot.cita;
   const estilo = CITA_ESTILO[c.estado] || { wrap: "border-gray-200 bg-gray-50", barra: "bg-gray-400" };
   const celular = (c.clienteCelular || "").replace(/\D/g, "");
   const esSolicitada = c.estado === "solicitada";
+
+  // Slots siguientes de una cita que abarca varias medias horas: renglón compacto.
+  if (!slot.esInicio) {
+    return (
+      <div className={`flex items-stretch gap-3 px-3 py-2 rounded-lg border ${estilo.wrap} opacity-70`}>
+        <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-mono text-xs text-barber-gray">{rangoSlot}</span>
+          <span className="text-xs text-barber-gray">⤷ sigue: {c.clienteNombre}</span>
+        </div>
+      </div>
+    );
+  }
 
   // La cita tiene acciones ocultas (bajo el desplegable) cuando NO es solicitada
   // pero sí hay algo que hacer: completar (confirmada) o contactar por WhatsApp.
@@ -252,11 +279,11 @@ function SegmentoTimeline({ seg, abierta, onToggle, onAccion }) {
       <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-xs text-barber-gray">{hora12(seg.inicio)} – {hora12(seg.fin)}</span>
+          <span className="font-mono text-xs text-barber-gray">{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
           <span className="font-bold text-sm">{c.clienteNombre}</span>
         </div>
         <p className="text-xs text-barber-gray mt-0.5">
-          {c.planSnapshot?.nombre} · {formatDur(seg.duracion)}
+          {c.planSnapshot?.nombre} · {formatDur(slot.duracion)}
         </p>
       </div>
       <div className="shrink-0 self-center flex items-center gap-1.5">
@@ -311,6 +338,12 @@ function SegmentoTimeline({ seg, abierta, onToggle, onAccion }) {
   );
 }
 
+const SLOT_MIN = 30;
+
+// Construye la jornada como una lista de franjas fijas de media hora.
+// Cada slot queda marcado como libre, cita (solicitada/confirmada/…) o ausencia.
+// Una cita/ausencia que abarca varios slots los ocupa todos: el primero muestra
+// el detalle completo y los siguientes quedan como "continuación".
 function buildTimeline(fecha, perfil, citasDia) {
   const horario = perfil.horario || {};
   const diasLaborales = horario.diasLaborales || [1, 2, 3, 4, 5, 6];
@@ -322,38 +355,55 @@ function buildTimeline(fecha, perfil, citasDia) {
   const inicioMin = hhmmAMin(horario.horaInicio || "10:00");
   const finMin = hhmmAMin(horario.horaFin || "19:00");
 
-  // Ocupaciones del día: citas + franjas de horas bloqueadas, ordenadas por hora.
-  const ocupaciones = [];
-  for (const cita of citasDia) {
-    ocupaciones.push({ tipo: "cita", cita, ini: hhmmAMin(cita.horaInicio), fin: hhmmAMin(cita.horaFin) });
-  }
-  for (const f of perfil.franjasBloqueadas || []) {
-    if (f.fecha === fecha) {
-      ocupaciones.push({ tipo: "bloqueo", franja: f, ini: hhmmAMin(f.horaInicio), fin: hhmmAMin(f.horaFin) });
+  const citas = citasDia.map((c) => ({
+    cita: c, ini: hhmmAMin(c.horaInicio), fin: hhmmAMin(c.horaFin),
+  }));
+  const bloqueos = (perfil.franjasBloqueadas || [])
+    .filter((f) => f.fecha === fecha)
+    .map((f) => ({ franja: f, ini: hhmmAMin(f.horaInicio), fin: hhmmAMin(f.horaFin) }));
+
+  const slots = [];
+  const citaVista = new Set();
+  const bloqVista = new Set();
+
+  for (let s = inicioMin; s < finMin; s += SLOT_MIN) {
+    const e = Math.min(s + SLOT_MIN, finMin);
+    const base = { inicio: minAHhmm(s), fin: minAHhmm(e) };
+
+    const oc = citas.find((o) => o.ini < e && o.fin > s);
+    if (oc) {
+      const esInicio = !citaVista.has(oc.cita.id);
+      citaVista.add(oc.cita.id);
+      slots.push({
+        ...base, tipo: "cita", cita: oc.cita, esInicio,
+        duracion: oc.fin - oc.ini, inicioReal: minAHhmm(oc.ini), finReal: minAHhmm(oc.fin),
+      });
+      continue;
     }
-  }
-  ocupaciones.sort((a, b) => a.ini - b.ini);
 
-  const segmentos = [];
-  let cursor = inicioMin;
-
-  for (const oc of ocupaciones) {
-    if (oc.ini > cursor) {
-      segmentos.push({ tipo: "libre", inicio: minAHhmm(cursor), fin: minAHhmm(oc.ini), duracion: oc.ini - cursor });
+    const bl = bloqueos.find((o) => o.ini < e && o.fin > s);
+    if (bl) {
+      const key = `${bl.franja.horaInicio}-${bl.franja.horaFin}`;
+      const esInicio = !bloqVista.has(key);
+      bloqVista.add(key);
+      slots.push({
+        ...base, tipo: "ausencia", franja: bl.franja, esInicio,
+        inicioReal: minAHhmm(bl.ini), finReal: minAHhmm(bl.fin),
+      });
+      continue;
     }
-    if (oc.tipo === "cita") {
-      segmentos.push({ tipo: "cita", cita: oc.cita, inicio: minAHhmm(oc.ini), fin: minAHhmm(oc.fin), duracion: oc.fin - oc.ini });
-    } else {
-      segmentos.push({ tipo: "bloqueo", franja: oc.franja, inicio: minAHhmm(oc.ini), fin: minAHhmm(oc.fin), duracion: oc.fin - oc.ini });
-    }
-    cursor = Math.max(cursor, oc.fin);
+
+    slots.push({ ...base, tipo: "libre" });
   }
 
-  if (cursor < finMin) {
-    segmentos.push({ tipo: "libre", inicio: minAHhmm(cursor), fin: minAHhmm(finMin), duracion: finMin - cursor });
-  }
-
-  return { tipo: "laboral", inicio: minAHhmm(inicioMin), fin: minAHhmm(finMin), segmentos };
+  return {
+    tipo: "laboral",
+    inicio: minAHhmm(inicioMin),
+    fin: minAHhmm(finMin),
+    slots,
+    totalLibres: slots.filter((x) => x.tipo === "libre").length,
+    totalCitas: citas.length,
+  };
 }
 
 function hora12(hhmm) {

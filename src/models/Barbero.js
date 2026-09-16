@@ -59,6 +59,13 @@ const BarberoSchema = new mongoose.Schema(
       horaInicio: { type: String, default: HORARIO_DEFAULT.horaInicio },
       horaFin: { type: String, default: HORARIO_DEFAULT.horaFin },
       diasLaborales: { type: [Number], default: HORARIO_DEFAULT.diasLaborales },
+      // Hora de almuerzo: se aplica a todos los días laborales y no queda
+      // disponible para agendar citas.
+      almuerzo: {
+        activo: { type: Boolean, default: HORARIO_DEFAULT.almuerzo.activo },
+        horaInicio: { type: String, default: HORARIO_DEFAULT.almuerzo.horaInicio },
+        horaFin: { type: String, default: HORARIO_DEFAULT.almuerzo.horaFin },
+      },
     },
     diasBloqueados: { type: [String], default: [] }, // ['YYYY-MM-DD']
     franjasBloqueadas: { type: [FranjaBloqueadaSchema], default: [] },

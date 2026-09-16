@@ -8,6 +8,9 @@ export default function ConfigHorario({ perfil, onGuardado }) {
   const [horaInicio, setHoraInicio] = useState(perfil.horario?.horaInicio || "10:00");
   const [horaFin, setHoraFin] = useState(perfil.horario?.horaFin || "19:00");
   const [dias, setDias] = useState(perfil.horario?.diasLaborales || [1, 2, 3, 4, 5, 6]);
+  const [almuerzoActivo, setAlmuerzoActivo] = useState(perfil.horario?.almuerzo?.activo || false);
+  const [almuerzoIni, setAlmuerzoIni] = useState(perfil.horario?.almuerzo?.horaInicio || "13:00");
+  const [almuerzoFin, setAlmuerzoFin] = useState(perfil.horario?.almuerzo?.horaFin || "14:00");
   const [ventana, setVentana] = useState(perfil.ventanaCancelacionHoras ?? 24);
   const [diasBloqueados, setDiasBloqueados] = useState(perfil.diasBloqueados || []);
   const [franjas, setFranjas] = useState(perfil.franjasBloqueadas || []);
@@ -96,12 +99,21 @@ export default function ConfigHorario({ perfil, onGuardado }) {
   }
 
   async function guardar() {
+    if (almuerzoActivo && almuerzoIni >= almuerzoFin) {
+      setMsg("La hora de fin del almuerzo debe ser mayor que la de inicio.");
+      return;
+    }
     setGuardando(true); setMsg("");
     const res = await fetch("/api/barbero/perfil", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        horario: { horaInicio, horaFin, diasLaborales: dias },
+        horario: {
+          horaInicio,
+          horaFin,
+          diasLaborales: dias,
+          almuerzo: { activo: almuerzoActivo, horaInicio: almuerzoIni, horaFin: almuerzoFin },
+        },
         ventanaCancelacionHoras: Number(ventana),
         diasBloqueados,
         franjasBloqueadas: franjas,
@@ -219,6 +231,41 @@ export default function ConfigHorario({ perfil, onGuardado }) {
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-barber-blue inline-block" /> Trabajás</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm border border-gray-300 inline-block" /> Descanso</span>
           </div>
+        </div>
+
+        {/* Hora de almuerzo — se aplica a todos los días de trabajo */}
+        <div className="rounded-xl border border-black/10 p-4 space-y-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              className="w-4 h-4 accent-barber-blue"
+              checked={almuerzoActivo}
+              onChange={(e) => setAlmuerzoActivo(e.target.checked)}
+            />
+            <span className="font-semibold text-sm">🍽️ Tengo hora de almuerzo</span>
+          </label>
+          {almuerzoActivo && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Desde</label>
+                  <input type="time" className="input" value={almuerzoIni} onChange={(e) => setAlmuerzoIni(e.target.value)} />
+                </div>
+                <div>
+                  <label className="label">Hasta</label>
+                  <input type="time" className="input" value={almuerzoFin} onChange={(e) => setAlmuerzoFin(e.target.value)} />
+                </div>
+              </div>
+              {almuerzoIni >= almuerzoFin ? (
+                <p className="text-xs text-red-600">⚠️ La hora de fin debe ser mayor que la de inicio.</p>
+              ) : (
+                <p className="text-xs text-barber-gray">
+                  De <b>{hora12simple(almuerzoIni)}</b> a <b>{hora12simple(almuerzoFin)}</b> no podrán agendarte citas.
+                  Aplica a los {dias.length} día{dias.length !== 1 ? "s" : ""} que trabajás.
+                </p>
+              )}
+            </>
+          )}
         </div>
 
         {/* Cancelación — explicado en lenguaje claro */}

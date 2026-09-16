@@ -104,6 +104,12 @@ export const HORARIO_DEFAULT = {
   horaFin: "19:00",
   // 1=lunes ... 6=sábado (0=domingo). Por defecto lunes a sábado.
   diasLaborales: [1, 2, 3, 4, 5, 6],
+  // Hora de almuerzo (se aplica a los días laborales). Desactivada por defecto.
+  almuerzo: {
+    activo: false,
+    horaInicio: "13:00",
+    horaFin: "14:00",
+  },
 };
 
 export const VENTANA_CANCELACION_HORAS_DEFAULT = 24;
