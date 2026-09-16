@@ -368,10 +368,31 @@ export default function AgendarPage() {
           </p>
           <Resumen barbero={barbero} plan={plan} fecha={fecha} hora={hora} />
 
+          {/* Datos para pagar: se repiten aquí para que el cliente pueda copiar el
+              Nequi/cuenta o escanear el QR justo antes de mandar el comprobante,
+              sin tener que devolverse al paso de pago. */}
+          {metodoPago && metodoPago !== "efectivo" && (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left">
+              <p className="text-xs font-semibold text-barber-gray uppercase tracking-wide mb-2">
+                {requiereAnticipo
+                  ? `1. Paga el anticipo de ${formatoCOP(montoAnticipo)} a ${barbero.nombre?.split(" ")[0] || "tu barbero"}`
+                  : `Datos para pagarle a ${barbero.nombre?.split(" ")[0] || "tu barbero"}`}
+              </p>
+              <DatosPago datosPago={barbero.datosPago} metodo={metodoPago} />
+            </div>
+          )}
+
           {resultado.linkWhatsappBarbero && (
-            <a href={resultado.linkWhatsappBarbero} target="_blank" rel="noreferrer" className="btn-wa w-full py-3 text-base font-bold shadow-md shadow-emerald-500/20">
-              <WhatsAppIcon className="w-5 h-5" /> {requiereAnticipo ? "Enviar comprobante por WhatsApp al barbero" : "Avisarle al barbero por WhatsApp"}
-            </a>
+            <div className="space-y-1.5">
+              {metodoPago && metodoPago !== "efectivo" && (
+                <p className="text-sm font-semibold text-barber-ink text-left">
+                  {requiereAnticipo ? "2. Envía el comprobante:" : "Luego avísale al barbero:"}
+                </p>
+              )}
+              <a href={resultado.linkWhatsappBarbero} target="_blank" rel="noreferrer" className="btn-wa w-full py-3 text-base font-bold shadow-md shadow-emerald-500/20">
+                <WhatsAppIcon className="w-5 h-5" /> {requiereAnticipo ? "Enviar comprobante por WhatsApp al barbero" : "Avisarle al barbero por WhatsApp"}
+              </a>
+            </div>
           )}
           <div className="flex gap-3">
             <Link href="/mis-citas" className="btn-outline flex-1">Ver mis citas</Link>

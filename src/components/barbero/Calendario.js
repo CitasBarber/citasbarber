@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import EstadoBadge from "@/components/EstadoBadge";
 import { WhatsAppIcon } from "@/components/Icons";
 import { DIAS_SEMANA } from "@/lib/constants";
-import { fechaLocalHoy, hhmmAMin, minAHhmm, diaSemanaDeFecha } from "@/lib/disponibilidad";
+import { fechaLocalHoy, minAHhmm, jornadaDelDia, PASO_MIN } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 import { useDialog } from "@/components/DialogProvider";
 
@@ -246,15 +246,30 @@ function SlotFila({ slot, abierta, onToggle, onAccion }) {
     );
   }
 
+  if (slot.tipo === "pasado") {
+    return (
+      <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-gray-100 bg-gray-50 opacity-60">
+        <div className="w-1 rounded-full shrink-0 bg-gray-200" />
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={COL_HORA}>{rangoSlot}</span>
+          <span className="text-sm text-barber-gray">Ya pasó</span>
+        </div>
+      </div>
+    );
+  }
+
   if (slot.tipo === "ausencia") {
     const f = slot.franja || {};
+    const etiqueta = slot.esAlmuerzo
+      ? "🍽️ Almuerzo"
+      : `🚫 Ausencia${f.motivo ? ` · ${f.motivo}` : ""}`;
     if (!slot.esInicio) {
       return (
         <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50">
           <div className="w-1 rounded-full shrink-0 bg-gray-300" />
           <div className="flex items-center gap-2 flex-wrap">
             <span className={COL_HORA}>{rangoSlot}</span>
-            <span className="text-xs text-barber-gray">⤷ sigue ausencia</span>
+            <span className="text-xs text-barber-gray">⤷ sigue {slot.esAlmuerzo ? "almuerzo" : "ausencia"}</span>
           </div>
         </div>
       );
@@ -264,9 +279,7 @@ function SlotFila({ slot, abierta, onToggle, onAccion }) {
         <div className="w-1 rounded-full shrink-0 bg-gray-400" />
         <div className="flex items-center gap-2 flex-wrap">
           <span className={COL_HORA}>{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
-          <span className="text-sm font-semibold text-barber-gray">
-            🚫 Ausencia{f.motivo ? ` · ${f.motivo}` : ""}
-          </span>
+          <span className="text-sm font-semibold text-barber-gray">{etiqueta}</span>
         </div>
       </div>
     );
@@ -362,62 +375,48 @@ function SlotFila({ slot, abierta, onToggle, onAccion }) {
   );
 }
 
-const SLOT_MIN = 30;
-
-// Construye la jornada como una lista de franjas fijas de media hora.
-// Cada slot queda marcado como libre, cita (solicitada/confirmada/…) o ausencia.
-// Una cita/ausencia que abarca varios slots los ocupa todos: el primero muestra
-// el detalle completo y los siguientes quedan como "continuación".
+// Construye la jornada como una lista de franjas fijas de media hora, usando el
+// mismo motor (`jornadaDelDia`) que el agendamiento manual y público, para que
+// lo que aquí se ve como libre/ocupado coincida con lo que se puede agendar.
+// Cada slot queda marcado como libre, cita, ausencia, almuerzo o pasado. Una
+// cita/ausencia que abarca varios slots los ocupa todos: el primero muestra el
+// detalle completo y los siguientes quedan como "continuación".
 function buildTimeline(fecha, perfil, citasDia) {
-  const horario = perfil.horario || {};
-  const diasLaborales = horario.diasLaborales || [1, 2, 3, 4, 5, 6];
-  const dia = diaSemanaDeFecha(fecha);
+  const jornada = jornadaDelDia({ barbero: perfil, fecha, citas: citasDia });
+  if (jornada.tipo !== "laboral") return { tipo: jornada.tipo };
 
-  if (!diasLaborales.includes(dia)) return { tipo: "noLaboral" };
-  if ((perfil.diasBloqueados || []).includes(fecha)) return { tipo: "bloqueado" };
-
-  const inicioMin = hhmmAMin(horario.horaInicio || "10:00");
-  const finMin = hhmmAMin(horario.horaFin || "19:00");
-
-  const citas = citasDia.map((c) => ({
-    cita: c, ini: hhmmAMin(c.horaInicio), fin: hhmmAMin(c.horaFin),
-  }));
-  const bloqueos = (perfil.franjasBloqueadas || [])
-    .filter((f) => f.fecha === fecha)
-    .map((f) => ({ franja: f, ini: hhmmAMin(f.horaInicio), fin: hhmmAMin(f.horaFin) }));
+  const { inicioMin, finMin, ocupados, minPermitido } = jornada;
 
   const slots = [];
-  const citaVista = new Set();
-  const bloqVista = new Set();
+  const vistos = new Set(); // citas/ausencias que abarcan varios slots
 
-  for (let s = inicioMin; s < finMin; s += SLOT_MIN) {
-    const e = Math.min(s + SLOT_MIN, finMin);
+  for (let s = inicioMin; s < finMin; s += PASO_MIN) {
+    const e = Math.min(s + PASO_MIN, finMin);
     const base = { inicio: minAHhmm(s), fin: minAHhmm(e) };
 
-    const oc = citas.find((o) => o.ini < e && o.fin > s);
+    // Las citas van primero en `ocupados`, así que ganan al pintar si solapan.
+    const oc = ocupados.find((o) => o.ini < e && o.fin > s);
     if (oc) {
-      const esInicio = !citaVista.has(oc.cita.id);
-      citaVista.add(oc.cita.id);
-      slots.push({
-        ...base, tipo: "cita", cita: oc.cita, esInicio,
-        duracion: oc.fin - oc.ini, inicioReal: minAHhmm(oc.ini), finReal: minAHhmm(oc.fin),
-      });
+      const key = oc.tipo === "cita" ? `cita-${oc.cita.id}` : `${oc.tipo}-${oc.ini}-${oc.fin}`;
+      const esInicio = !vistos.has(key);
+      vistos.add(key);
+      if (oc.tipo === "cita") {
+        slots.push({
+          ...base, tipo: "cita", cita: oc.cita, esInicio,
+          duracion: oc.fin - oc.ini, inicioReal: minAHhmm(oc.ini), finReal: minAHhmm(oc.fin),
+        });
+      } else {
+        slots.push({
+          ...base, tipo: "ausencia", franja: oc.franja, esInicio, esAlmuerzo: oc.tipo === "almuerzo",
+          inicioReal: minAHhmm(oc.ini), finReal: minAHhmm(oc.fin),
+        });
+      }
       continue;
     }
 
-    const bl = bloqueos.find((o) => o.ini < e && o.fin > s);
-    if (bl) {
-      const key = `${bl.franja.horaInicio}-${bl.franja.horaFin}`;
-      const esInicio = !bloqVista.has(key);
-      bloqVista.add(key);
-      slots.push({
-        ...base, tipo: "ausencia", franja: bl.franja, esInicio,
-        inicioReal: minAHhmm(bl.ini), finReal: minAHhmm(bl.fin),
-      });
-      continue;
-    }
-
-    slots.push({ ...base, tipo: "libre" });
+    // Hueco sin ocupar: libre solo si aún no ha pasado; si ya pasó (hoy), no
+    // cuenta como disponible, se muestra atenuado igual que Manual lo omite.
+    slots.push({ ...base, tipo: s < minPermitido ? "pasado" : "libre" });
   }
 
   return {
@@ -426,7 +425,7 @@ function buildTimeline(fecha, perfil, citasDia) {
     fin: minAHhmm(finMin),
     slots,
     totalLibres: slots.filter((x) => x.tipo === "libre").length,
-    totalCitas: citas.length,
+    totalCitas: ocupados.filter((o) => o.tipo === "cita").length,
   };
 }
 

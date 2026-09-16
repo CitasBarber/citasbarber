@@ -1,7 +1,9 @@
 // Motor de disponibilidad: calcula slots libres según horario laboral,
 // días/franjas bloqueadas, citas existentes y la duración exacta del plan.
 
-const GRANULARIDAD_MIN = 15; // paso entre posibles horas de inicio
+// Paso único de tiempo, compartido por el agendamiento (posibles horas de inicio)
+// y por la rejilla del Calendario del barbero, para que ambos coincidan.
+export const PASO_MIN = 30;
 const ZONA_HORARIA = "America/Bogota"; // Colombia (UTC-5, sin horario de verano)
 
 export function hhmmAMin(hhmm) {
@@ -47,36 +49,41 @@ export function citasEnConflicto({ citas = [], diasBloqueados = [], franjasBloqu
 }
 
 /**
- * Calcula los slots disponibles para un barbero en una fecha y duración dadas.
+ * Núcleo de disponibilidad y única fuente de verdad de la jornada de un barbero
+ * en una fecha. La usan tanto `calcularSlots` (agendamiento manual y público)
+ * como la rejilla del Calendario del barbero, para que ambos coincidan siempre.
+ *
  * @param {Object} params
  * @param {Object} params.barbero  documento del barbero (horario, diasBloqueados, franjasBloqueadas)
  * @param {string} params.fecha    'YYYY-MM-DD'
- * @param {number} params.duracion minutos que ocupa la cita (según plan)
- * @param {Array}  params.citas    citas ocupadas ese día [{horaInicio, horaFin}]
- * @returns {string[]} lista de horas de inicio 'HH:mm' disponibles
+ * @param {Array}  params.citas    citas ocupadas ese día [{horaInicio, horaFin, ...}]
+ * @returns {Object} { tipo: 'noLaboral' | 'bloqueado' | 'laboral', ... }
+ *   Para 'laboral' incluye: inicioMin, finMin, ocupados[], minPermitido.
+ *   Cada ocupado: { tipo: 'cita'|'ausencia'|'almuerzo', ini, fin, cita?, franja? }.
  */
-export function calcularSlots({ barbero, fecha, duracion, citas = [] }) {
+export function jornadaDelDia({ barbero, fecha, citas = [] }) {
   const horario = barbero.horario || {};
   const dia = diaSemanaDeFecha(fecha);
 
   // ¿Es día laboral?
   const diasLaborales = horario.diasLaborales || [1, 2, 3, 4, 5, 6];
-  if (!diasLaborales.includes(dia)) return [];
+  if (!diasLaborales.includes(dia)) return { tipo: "noLaboral" };
 
   // ¿Día completo bloqueado?
-  if ((barbero.diasBloqueados || []).includes(fecha)) return [];
+  if ((barbero.diasBloqueados || []).includes(fecha)) return { tipo: "bloqueado" };
 
-  const inicioJornada = hhmmAMin(horario.horaInicio || "10:00");
-  const finJornada = hhmmAMin(horario.horaFin || "19:00");
+  const inicioMin = hhmmAMin(horario.horaInicio || "10:00");
+  const finMin = hhmmAMin(horario.horaFin || "19:00");
 
-  // Intervalos ocupados: citas + franjas bloqueadas de ese día
+  // Intervalos ocupados, en orden de prioridad: primero las citas (que ganan al
+  // pintar el calendario si solapan), luego franjas bloqueadas y el almuerzo.
   const ocupados = [];
   for (const c of citas) {
-    ocupados.push([hhmmAMin(c.horaInicio), hhmmAMin(c.horaFin)]);
+    ocupados.push({ tipo: "cita", ini: hhmmAMin(c.horaInicio), fin: hhmmAMin(c.horaFin), cita: c });
   }
   for (const f of barbero.franjasBloqueadas || []) {
     if (f.fecha === fecha) {
-      ocupados.push([hhmmAMin(f.horaInicio), hhmmAMin(f.horaFin)]);
+      ocupados.push({ tipo: "ausencia", ini: hhmmAMin(f.horaInicio), fin: hhmmAMin(f.horaFin), franja: f });
     }
   }
 
@@ -86,22 +93,47 @@ export function calcularSlots({ barbero, fecha, duracion, citas = [] }) {
   if (almuerzo && almuerzo.activo && almuerzo.horaInicio && almuerzo.horaFin) {
     const ini = hhmmAMin(almuerzo.horaInicio);
     const fin = hhmmAMin(almuerzo.horaFin);
-    if (fin > ini) ocupados.push([ini, fin]);
+    if (fin > ini) {
+      ocupados.push({
+        tipo: "almuerzo",
+        ini,
+        fin,
+        franja: { horaInicio: almuerzo.horaInicio, horaFin: almuerzo.horaFin, motivo: "Almuerzo" },
+      });
+    }
   }
 
   // No permitir horas en el pasado si la fecha es hoy (según hora de Colombia,
   // no la del servidor, que en producción corre en UTC).
   const hoyStr = fechaLocalHoy();
-  let minPermitido = inicioJornada;
+  let minPermitido = inicioMin;
   if (fecha === hoyStr) {
-    minPermitido = Math.max(inicioJornada, minutosActualesColombia());
+    minPermitido = Math.max(inicioMin, minutosActualesColombia());
   }
 
+  return { tipo: "laboral", inicioMin, finMin, ocupados, minPermitido };
+}
+
+/**
+ * Calcula los slots disponibles para un barbero en una fecha y duración dadas.
+ * @param {Object} params
+ * @param {Object} params.barbero  documento del barbero (horario, diasBloqueados, franjasBloqueadas)
+ * @param {string} params.fecha    'YYYY-MM-DD'
+ * @param {number} params.duracion minutos que ocupa la cita (según plan)
+ * @param {Array}  params.citas    citas ocupadas ese día [{horaInicio, horaFin}]
+ * @returns {string[]} lista de horas de inicio 'HH:mm' disponibles
+ */
+export function calcularSlots({ barbero, fecha, duracion, citas = [] }) {
+  const jornada = jornadaDelDia({ barbero, fecha, citas });
+  if (jornada.tipo !== "laboral") return [];
+
+  const { inicioMin, finMin, ocupados, minPermitido } = jornada;
+
   const slots = [];
-  for (let t = inicioJornada; t + duracion <= finJornada; t += GRANULARIDAD_MIN) {
+  for (let t = inicioMin; t + duracion <= finMin; t += PASO_MIN) {
     if (t < minPermitido) continue;
     const fin = t + duracion;
-    const chocaConOcupado = ocupados.some(([oi, of]) => seSolapa(t, fin, oi, of));
+    const chocaConOcupado = ocupados.some((o) => seSolapa(t, fin, o.ini, o.fin));
     if (!chocaConOcupado) {
       slots.push(minAHhmm(t));
     }
