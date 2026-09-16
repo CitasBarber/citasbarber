@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Avatar from "@/components/Avatar";
 import SocialLinks from "@/components/SocialLinks";
 import { WhatsAppIcon } from "@/components/Icons";
+import ActivarRecordatoriosCliente from "@/components/ActivarRecordatoriosCliente";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
 import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
@@ -418,6 +419,12 @@ export default function AgendarPage() {
               </a>
             </div>
           )}
+
+          {/* Recordatorio push del día de la cita (opt-in, gratis). */}
+          <div className="text-left">
+            <ActivarRecordatoriosCliente celular={celular} />
+          </div>
+
           <div className="flex gap-3">
             <Link href="/mis-citas" className="btn-outline flex-1">Ver mis citas</Link>
             <Link href="/" className="btn-dark flex-1">Inicio</Link>

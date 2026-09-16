@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
+import { esMovil } from "@/lib/dispositivo";
 
 export default function CitaManual({ planes, onCreada, prefill }) {
   const activos = (planes || []).filter((p) => p.activo);
@@ -62,11 +63,18 @@ export default function CitaManual({ planes, onCreada, prefill }) {
       const res = await fetch("/api/citas/manual", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clienteNombre, clienteCelular, plan: planKey, fecha, horaInicio: hora }),
+        body: JSON.stringify({ clienteNombre, clienteCelular, plan: planKey, fecha, horaInicio: hora, plano: !esMovil() }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "Error");
-      setMsg("Cita manual creada y confirmada.");
+      // Si se registró celular, abrimos WhatsApp con la confirmación para el
+      // cliente (así ambos quedan con el contacto guardado).
+      if (d.linkWhatsApp) window.open(d.linkWhatsApp, "_blank");
+      setMsg(
+        d.linkWhatsApp
+          ? "Cita creada y confirmada. Abrimos WhatsApp para enviarle la confirmación al cliente."
+          : "Cita manual creada y confirmada."
+      );
       setNombre(""); setCelular(""); setHora("");
       onCreada?.();
     } catch (e) {

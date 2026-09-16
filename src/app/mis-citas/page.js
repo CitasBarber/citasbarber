@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import EstadoBadge from "@/components/EstadoBadge";
+import ActivarRecordatoriosCliente from "@/components/ActivarRecordatoriosCliente";
 import { WhatsAppIcon, Tijeras } from "@/components/Icons";
 import { formatoCOP } from "@/lib/constants";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
@@ -226,6 +227,7 @@ export default function MisCitasPage() {
             {/* CONTENIDO PESTAÑA: PRÓXIMAS CITAS */}
             {tab === "proximas" && (
               <div className="space-y-4">
+                {totalProximas > 0 && <ActivarRecordatoriosCliente celular={celular} />}
                 {totalProximas === 0 ? (
                   <div className="card p-8 text-center space-y-3">
                     <p className="font-semibold text-barber-ink">

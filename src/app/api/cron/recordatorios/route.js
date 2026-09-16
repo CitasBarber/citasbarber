@@ -1,8 +1,10 @@
 import { dbConnect } from "@/lib/db";
 import Cita from "@/models/Cita";
+import Barbero from "@/models/Barbero";
 import { ok, fail, handler } from "@/lib/api";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { enviarPush } from "@/lib/push";
+import { normalizarCelular } from "@/lib/whatsapp";
 import { fechaLocalHoy, hhmmAMin, minutosActualesColombia } from "@/lib/disponibilidad";
 
 // Minutos de antelación con que se avisa al barbero de una cita sin confirmar.
@@ -61,5 +63,45 @@ export const GET = handler(async (req) => {
     enviadas++;
   }
 
-  return ok({ revisadas: candidatas.length, notificadas: enviadas });
+  // --- Recordatorio al CLIENTE el día de su cita ---
+  // Citas confirmadas de hoy, con celular, aún no recordadas. Se le avisa una
+  // sola vez, a partir de la hora en que abre el barbero ese día.
+  const citasHoy = await Cita.find({
+    estado: ESTADO_CITA.CONFIRMADA,
+    fecha: hoy,
+    clienteCelular: { $nin: [null, ""] },
+    recordatorioClienteEnviado: { $ne: true },
+  }).lean();
+
+  let recordadasCliente = 0;
+  if (citasHoy.length > 0) {
+    const barberoIds = [...new Set(citasHoy.map((c) => String(c.barbero)))];
+    const barberos = await Barbero.find({ _id: { $in: barberoIds } })
+      .select("nombre local horario")
+      .lean();
+    const mapaBarbero = new Map(barberos.map((b) => [String(b._id), b]));
+
+    for (const cita of citasHoy) {
+      const barbero = mapaBarbero.get(String(cita.barbero));
+      const apertura = barbero?.horario?.horaInicio || "00:00";
+      // Aún no abre el local (hora de Colombia): esperamos a un próximo ciclo.
+      if (ahoraMin < hhmmAMin(apertura)) continue;
+
+      const local = barbero?.local || "la barbería";
+      await enviarPush(
+        { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
+        {
+          title: "Recordatorio de tu cita ✂️",
+          body: `Hoy tenés cita a las ${cita.horaInicio} con ${barbero?.nombre || "tu barbero"} en ${local}.`,
+          url: "/mis-citas",
+          tag: `recordatorio-cliente-${cita._id}`,
+        }
+      );
+      // Marcamos aunque no haya suscripción activa: evita reintentar en bucle.
+      await Cita.updateOne({ _id: cita._id }, { $set: { recordatorioClienteEnviado: true } });
+      recordadasCliente++;
+    }
+  }
+
+  return ok({ revisadas: candidatas.length, notificadas: enviadas, recordadasCliente });
 });

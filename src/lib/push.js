@@ -22,12 +22,13 @@ export function pushHabilitado() {
 // Envía una notificación a todas las suscripciones de un dueño (o de un rol
 // completo, p. ej. todos los admin). Limpia las suscripciones caducadas (404/410).
 // Nunca lanza: los errores se registran pero no rompen el flujo que la invoca.
-export async function enviarPush({ ownerRole, ownerId }, payload) {
+export async function enviarPush({ ownerRole, ownerId, clienteCelular }, payload) {
   try {
     if (!pushHabilitado()) return { enviadas: 0, motivo: "sin-config" };
 
     const filtro = { ownerRole };
     if (ownerId) filtro.ownerId = ownerId;
+    if (clienteCelular) filtro.clienteCelular = clienteCelular;
 
     const subs = await PushSubscription.find(filtro).lean();
     if (subs.length === 0) return { enviadas: 0 };
