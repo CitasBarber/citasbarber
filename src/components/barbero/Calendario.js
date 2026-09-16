@@ -27,7 +27,7 @@ const CITA_ESTILO = {
 // que van a la derecha (Libre / nombre / ausencia) quedan alineadas en columna.
 const COL_HORA = "font-mono text-xs text-barber-gray w-[23ch] shrink-0 whitespace-nowrap tabular-nums";
 
-export default function Calendario({ perfil, diaInicial }) {
+export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
   const { pedirMotivo } = useDialog();
   const [citas, setCitas] = useState([]);
   const hoy = fechaLocalHoy();
@@ -217,9 +217,11 @@ export default function Calendario({ perfil, diaInicial }) {
                   <SlotFila
                     key={i}
                     slot={slot}
+                    fecha={diaSel}
                     abierta={abierta}
                     onToggle={(id) => setAbierta((prev) => (prev === id ? null : id))}
                     onAccion={accion}
+                    onAgendarManual={onAgendarManual}
                   />
                 ))}
               </div>
@@ -231,17 +233,24 @@ export default function Calendario({ perfil, diaInicial }) {
   );
 }
 
-function SlotFila({ slot, abierta, onToggle, onAccion }) {
+function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual }) {
   const rangoSlot = `${hora12(slot.inicio)} – ${hora12(slot.fin)}`;
 
   if (slot.tipo === "libre") {
     return (
-      <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-green-200 bg-green-50">
-        <div className="w-1 rounded-full shrink-0 bg-green-400" />
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={COL_HORA}>{rangoSlot}</span>
-          <span className="text-sm font-semibold text-green-700">Libre</span>
-        </div>
+      <div className="flex items-center gap-3 px-3 py-2 rounded-lg border border-green-200 bg-green-50">
+        <div className="w-1 self-stretch rounded-full shrink-0 bg-green-400" />
+        <span className={COL_HORA}>{rangoSlot}</span>
+        <span className="text-sm font-semibold text-green-700 flex-1 min-w-0">Libre</span>
+        {onAgendarManual && (
+          <button
+            type="button"
+            onClick={() => onAgendarManual(fecha, slot.inicio)}
+            className="btn-primary text-xs py-1.5 px-3 shrink-0 whitespace-nowrap"
+          >
+            + Agendar manual
+          </button>
+        )}
       </div>
     );
   }

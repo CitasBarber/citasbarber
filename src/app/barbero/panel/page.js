@@ -26,6 +26,8 @@ export default function PanelBarberoPage() {
   const [tab, setTab] = useState("calendario");
   const [refresh, setRefresh] = useState(0);
   const [irACitaFecha, setIrACitaFecha] = useState(null);
+  // Fecha y hora que el barbero elige desde el Calendario para agendar manual.
+  const [prefillManual, setPrefillManual] = useState(null);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -79,7 +81,7 @@ export default function PanelBarberoPage() {
           {TABS.map((t) => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => { setPrefillManual(null); setTab(t.key); }}
               className={`px-3 sm:px-4 py-2.5 font-semibold whitespace-nowrap border-b-2 -mb-px flex-1 sm:flex-none min-w-0 ${tab === t.key ? "border-barber-red text-barber-red" : "border-transparent text-barber-gray hover:text-barber-ink"}`}
             >
               <span className="text-sm sm:text-base">{t.label}</span>
@@ -89,8 +91,20 @@ export default function PanelBarberoPage() {
 
         <div className="mt-6">
           {tab === "lista" && <CitasLista onCambio={recargar} />}
-          {tab === "calendario" && <Calendario perfil={perfil} diaInicial={irACitaFecha} />}
-          {tab === "manual" && perfil && <CitaManual planes={perfil.planes} onCreada={() => setTab("lista")} />}
+          {tab === "calendario" && (
+            <Calendario
+              perfil={perfil}
+              diaInicial={irACitaFecha}
+              onAgendarManual={(fecha, hora) => { setPrefillManual({ fecha, hora }); setTab("manual"); }}
+            />
+          )}
+          {tab === "manual" && perfil && (
+            <CitaManual
+              planes={perfil.planes}
+              prefill={prefillManual}
+              onCreada={() => { setPrefillManual(null); setTab("lista"); }}
+            />
+          )}
           {tab === "resumen" && <ResumenDiario />}
           {tab === "config" && perfil && (
             <ConfigHorario

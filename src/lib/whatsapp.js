@@ -1,6 +1,19 @@
 import { METODOS_PAGO_LABEL, formatoCOP } from "./constants";
 import { EMOJI as E } from "./emojis";
 
+// Sitio del proyecto: se usa como firma promocional en los mensajes que llegan
+// al cliente final, para dar a conocer la plataforma.
+const SITIO_URL = "https://770barberia.vercel.app";
+
+// Pie promocional para mensajes dirigidos al cliente. Respeta el modo "plano"
+// (PC/WhatsApp Desktop) donde los emojis se corrompen.
+function firmaSitio({ plano = false } = {}) {
+  if (plano) {
+    return `\n\nAgenda tus citas facil con 770 Barberia:\n${SITIO_URL}`;
+  }
+  return `\n\n${E.CALENDARIO} _Agenda tus citas fácil con_ *770 Barbería*\n👉 ${SITIO_URL}`;
+}
+
 export function normalizarCelular(celular) {
   if (!celular) return "";
   let n = String(celular).replace(/\D/g, "");
@@ -54,7 +67,7 @@ export function mensajeNuevaCita(cita, barbero, { plano = false } = {}) {
     const monto = Math.round((plan.precio * plan.anticipo) / 100);
     texto += `\n${em("BILLETE")}*Anticipo (${plan.anticipo}%):* ${formatoCOP(monto)} - te adjunto el comprobante.\n`;
   }
-  texto += `\n${em("CELULAR")}_Entra al panel para confirmar o rechazar._`;
+  texto += `\n_¡Quedo atento a la confirmación!_`;
   return texto;
 }
 
@@ -78,7 +91,8 @@ export function mensajeConfirmacion(cita, barbero, { plano = false } = {}) {
     `${em("RELOJ")}*Hora:* ${cita.horaInicio} - ${cita.horaFin} (${plan.duracion} min)\n` +
     `${em("BILLETE")}*Valor:* ${formatoCOP(plan.precio)}` +
     direccion +
-    `\n\n_Ahi lo esperamos!_`
+    `\n\n_Ahi lo esperamos!_` +
+    firmaSitio({ plano })
   );
 }
 

@@ -3,18 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
 
-export default function CitaManual({ planes, onCreada }) {
+export default function CitaManual({ planes, onCreada, prefill }) {
   const activos = (planes || []).filter((p) => p.activo);
   const [clienteNombre, setNombre] = useState("");
   const [clienteCelular, setCelular] = useState("");
   const [planKey, setPlanKey] = useState(activos[0]?.key || "");
-  const [fecha, setFecha] = useState(fechaLocalHoy());
+  const [fecha, setFecha] = useState(prefill?.fecha || fechaLocalHoy());
   const [slots, setSlots] = useState([]);
   const [hora, setHora] = useState("");
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [enviando, setEnviando] = useState(false);
   const btnCrearRef = useRef(null);
+  // Hora que llega preseleccionada desde el Calendario. Se aplica en cuanto
+  // cargan los slots del día/plan, y solo si sigue disponible para ese plan.
+  const horaDeseada = useRef(prefill?.hora || "");
 
   // Al elegir una hora, acercar el botón "Crear cita" para evitar scroll.
   function seleccionarHora(s) {
@@ -34,7 +37,21 @@ export default function CitaManual({ planes, onCreada }) {
       .then((id) =>
         fetch(`/api/barberos/${id}/disponibilidad?fecha=${fecha}&plan=${planKey}`)
           .then((r) => r.json())
-          .then((x) => setSlots(x.slots || []))
+          .then((x) => {
+            const lista = x.slots || [];
+            setSlots(lista);
+            // Aplicar la hora que vino del Calendario (una sola vez).
+            const h = horaDeseada.current;
+            if (h) {
+              horaDeseada.current = "";
+              if (lista.includes(h)) {
+                seleccionarHora(h);
+                setError("");
+              } else {
+                setError(`La hora ${h} no alcanza para este plan; elegí otra de la lista.`);
+              }
+            }
+          })
       );
   }, [planKey, fecha]);
 
