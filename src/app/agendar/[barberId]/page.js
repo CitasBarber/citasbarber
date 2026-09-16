@@ -10,6 +10,7 @@ import { WhatsAppIcon } from "@/components/Icons";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
 import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
+import { linkWhatsApp } from "@/lib/whatsapp";
 
 export default function AgendarPage() {
   const { barberId } = useParams();
@@ -212,6 +213,29 @@ export default function AgendarPage() {
           >
             Continuar
           </button>
+
+          {/* Opción secundaria: si el cliente va manejando o prefiere no llenar el
+              formulario, puede escribirle directamente al barbero por WhatsApp. */}
+          {barbero.celular && (
+            <div className="pt-2">
+              <div className="flex items-center gap-3 text-xs text-barber-gray">
+                <span className="h-px flex-1 bg-black/10" />
+                ¿Vas manejando o prefieres escribir?
+                <span className="h-px flex-1 bg-black/10" />
+              </div>
+              <a
+                href={linkWhatsApp(
+                  barbero.celular,
+                  `Hola ${barbero.nombre?.split(" ")[0] || ""}, quiero agendar una cita contigo.`
+                )}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-wa w-full mt-3"
+              >
+                <WhatsAppIcon className="w-5 h-5" /> Agendar por WhatsApp
+              </a>
+            </div>
+          )}
         </form>
       )}
 
