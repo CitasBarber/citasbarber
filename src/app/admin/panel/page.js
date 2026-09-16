@@ -8,6 +8,7 @@ import EstadoBadge from "@/components/EstadoBadge";
 import EditorPlanes from "@/components/admin/EditorPlanes";
 import EditorInfoBarbero from "@/components/admin/EditorInfoBarbero";
 import ActivarNotificaciones from "@/components/ActivarNotificaciones";
+import { useDialog } from "@/components/DialogProvider";
 
 const FILTROS = [
   { key: "pendiente", label: "Pendientes" },
@@ -19,6 +20,7 @@ const FILTROS = [
 
 export default function AdminPanelPage() {
   const router = useRouter();
+  const { confirmar } = useDialog();
   const [sesion, setSesion] = useState(undefined);
   const [filtro, setFiltro] = useState("pendiente");
   const [barberos, setBarberos] = useState([]);
@@ -57,7 +59,13 @@ export default function AdminPanelPage() {
 
   async function accionSolicitud(id, accion) {
     if (accion === "eliminar") {
-      if (!window.confirm("¿Eliminar esta solicitud?")) return;
+      const ok = await confirmar({
+        titulo: "Eliminar solicitud",
+        mensaje: "Se borrará esta solicitud de forma permanente.",
+        confirmarLabel: "Eliminar",
+        peligro: true,
+      });
+      if (!ok) return;
       const res = await fetch(`/api/admin/solicitudes/${id}`, { method: "DELETE" });
       if (!res.ok) { const d = await res.json(); return alert(d.error || "Error"); }
     } else {
@@ -72,12 +80,23 @@ export default function AdminPanelPage() {
   }
 
   const CONFIRMAR = {
-    rechazar: "¿Rechazar la solicitud de este barbero?",
-    desactivar: "¿Desactivar este barbero? No podrá iniciar sesión ni recibir nuevas citas.",
+    rechazar: {
+      titulo: "Rechazar barbero",
+      mensaje: "¿Rechazar la solicitud de este barbero?",
+      confirmarLabel: "Rechazar",
+    },
+    desactivar: {
+      titulo: "Desactivar barbero",
+      mensaje: "No podrá iniciar sesión ni recibir nuevas citas.",
+      confirmarLabel: "Desactivar",
+    },
   };
 
   async function accion(id, accion) {
-    if (CONFIRMAR[accion] && !window.confirm(CONFIRMAR[accion])) return;
+    if (CONFIRMAR[accion]) {
+      const ok = await confirmar({ ...CONFIRMAR[accion], peligro: true });
+      if (!ok) return;
+    }
     const res = await fetch(`/api/admin/barberos/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

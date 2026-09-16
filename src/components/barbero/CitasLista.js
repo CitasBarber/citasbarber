@@ -6,8 +6,10 @@ import { WhatsAppIcon } from "@/components/Icons";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
+import { useDialog } from "@/components/DialogProvider";
 
 export default function CitasLista({ onCambio }) {
+  const { pedirMotivo } = useDialog();
   const [fecha, setFecha] = useState(fechaLocalHoy());
   const [citas, setCitas] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -25,13 +27,26 @@ export default function CitasLista({ onCambio }) {
 
   async function accion(id, accion, extra = {}) {
     if (accion === "rechazar") {
-      const motivo = prompt("Motivo del rechazo (opcional):") || "";
+      const motivo = await pedirMotivo({
+        titulo: "Rechazar cita",
+        mensaje: "Contanos por qué la rechazás. El cliente verá este mensaje.",
+        placeholder: "Motivo del rechazo (opcional)",
+        confirmarLabel: "Rechazar",
+        peligro: true,
+      });
+      if (motivo === null) return;
       extra.motivo = motivo;
     }
     if (accion === "cancelar") {
-      if (!confirm("¿Seguro que quieres cancelar esta cita confirmada? Se le avisará al cliente por WhatsApp."))
-        return;
-      const motivo = prompt("Motivo de la cancelación (opcional):") || "";
+      const motivo = await pedirMotivo({
+        titulo: "Cancelar cita confirmada",
+        mensaje: "Se le avisará al cliente por WhatsApp. Contanos el motivo si querés.",
+        placeholder: "Motivo de la cancelación (opcional)",
+        confirmarLabel: "Sí, cancelar",
+        cancelarLabel: "No",
+        peligro: true,
+      });
+      if (motivo === null) return;
       extra.motivo = motivo;
     }
     const res = await fetch(`/api/citas/${id}`, {

@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Inter, Oswald } from "next/font/google";
 import InstallPrompt from "@/components/InstallPrompt";
+import DialogProvider from "@/components/DialogProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,8 +40,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es" className={`${inter.variable} ${oswald.variable}`}>
       <body>
-        {children}
-        <InstallPrompt />
+        <DialogProvider>
+          {children}
+          <InstallPrompt />
+        </DialogProvider>
       </body>
     </html>
   );

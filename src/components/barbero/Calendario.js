@@ -6,6 +6,7 @@ import { WhatsAppIcon } from "@/components/Icons";
 import { DIAS_SEMANA } from "@/lib/constants";
 import { fechaLocalHoy, hhmmAMin, minAHhmm, diaSemanaDeFecha } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
+import { useDialog } from "@/components/DialogProvider";
 
 const DOT_COLOR = {
   solicitada: "bg-amber-400",
@@ -27,6 +28,7 @@ const CITA_ESTILO = {
 const COL_HORA = "font-mono text-xs text-barber-gray w-[23ch] shrink-0 whitespace-nowrap tabular-nums";
 
 export default function Calendario({ perfil, diaInicial }) {
+  const { pedirMotivo } = useDialog();
   const [citas, setCitas] = useState([]);
   const hoy = fechaLocalHoy();
   const [ref, setRef] = useState(new Date());
@@ -53,7 +55,15 @@ export default function Calendario({ perfil, diaInicial }) {
 
   async function accion(id, accion, extra = {}) {
     if (accion === "rechazar") {
-      extra.motivo = prompt("Motivo del rechazo (opcional):") || "";
+      const motivo = await pedirMotivo({
+        titulo: "Rechazar cita",
+        mensaje: "Contanos por qué la rechazás. El cliente verá este mensaje.",
+        placeholder: "Motivo del rechazo (opcional)",
+        confirmarLabel: "Rechazar",
+        peligro: true,
+      });
+      if (motivo === null) return;
+      extra.motivo = motivo;
     }
     const res = await fetch(`/api/citas/${id}`, {
       method: "PATCH",

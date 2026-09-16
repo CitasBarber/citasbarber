@@ -7,6 +7,7 @@ import EstadoBadge from "@/components/EstadoBadge";
 import { WhatsAppIcon, Tijeras } from "@/components/Icons";
 import { formatoCOP } from "@/lib/constants";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { useDialog } from "@/components/DialogProvider";
 
 const LS_CELULAR_KEY = "cb_cliente_celular";
 
@@ -22,6 +23,7 @@ function formatearFecha(fechaStr) {
 }
 
 export default function MisCitasPage() {
+  const { confirmar } = useDialog();
   const [celular, setCelular] = useState("");
   const [datos, setDatos] = useState(null); // { proximas: [], historial: [] }
   const [cargando, setCargando] = useState(false);
@@ -74,7 +76,14 @@ export default function MisCitasPage() {
   }, [consultar]);
 
   async function cancelar(id) {
-    if (!confirm("¿Seguro que deseas cancelar esta cita?")) return;
+    const ok = await confirmar({
+      titulo: "Cancelar cita",
+      mensaje: "¿Seguro que deseas cancelar esta cita?",
+      confirmarLabel: "Sí, cancelar",
+      cancelarLabel: "No",
+      peligro: true,
+    });
+    if (!ok) return;
     const res = await fetch(`/api/citas/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
