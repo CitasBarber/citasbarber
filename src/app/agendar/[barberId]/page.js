@@ -276,7 +276,7 @@ export default function AgendarPage() {
 
           {/* Accesos rápidos de fecha */}
           <div className="flex flex-wrap gap-2">
-            {chipsFecha().map((c) => (
+            {chipsFecha(barbero.horario?.diasLaborales).map((c) => (
               <button
                 key={c.valor}
                 onClick={() => elegirFecha(c.valor)}
@@ -514,22 +514,19 @@ function etiquetaFecha(fechaStr, relativo = true) {
   return cap;
 }
 
-// Accesos rápidos: Hoy, Mañana y pasado mañana
-function chipsFecha() {
+// Accesos rápidos: días laborales del barbero desde hoy hasta el fin de la semana
+// (domingo). No incluye días ya pasados ni días en que el barbero no trabaja.
+function chipsFecha(diasLaborales = [1, 2, 3, 4, 5, 6]) {
   const out = [];
   const base = new Date();
-  for (let i = 0; i < 3; i++) {
+  const diasHastaDomingo = (7 - base.getDay()) % 7; // 0=domingo … resto de la semana
+  for (let i = 0; i <= diasHastaDomingo; i++) {
     const d = new Date(base);
     d.setDate(base.getDate() + i);
+    if (!diasLaborales.includes(d.getDay())) continue; // solo días habilitados
     const valor = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    let label;
-    if (i === 0) label = "Hoy";
-    else if (i === 1) label = "Mañana";
-    else {
-      const dia = d.toLocaleDateString("es-CO", { weekday: "long" });
-      label = dia.charAt(0).toUpperCase() + dia.slice(1);
-    }
-    out.push({ valor, label });
+    const dia = d.toLocaleDateString("es-CO", { weekday: "long" });
+    out.push({ valor, label: dia.charAt(0).toUpperCase() + dia.slice(1) });
   }
   return out;
 }
