@@ -318,6 +318,17 @@ export default function AgendarPage() {
             </div>
           </div>
 
+          {/* Datos para pagarle al barbero: se muestran apenas el cliente elige un
+              método digital, tenga o no anticipo el plan. */}
+          {metodoPago && metodoPago !== "efectivo" && (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <p className="text-xs font-semibold text-barber-gray uppercase tracking-wide mb-2">
+                Datos para pagarle a {barbero.nombre?.split(" ")[0] || "tu barbero"}
+              </p>
+              <DatosPago datosPago={barbero.datosPago} metodo={metodoPago} />
+            </div>
+          )}
+
           {requiereAnticipo && (
             <div className="rounded-xl bg-amber-50/80 p-4 border border-amber-200/80 space-y-2.5">
               <div className="flex items-center justify-between">
@@ -328,7 +339,6 @@ export default function AgendarPage() {
                   Seña de cupo
                 </span>
               </div>
-              <DatosPago datosPago={barbero.datosPago} metodo={metodoPago} />
               <div className="p-3 bg-white/80 rounded-lg border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
                 <span className="text-base leading-none">📲</span>
                 <p>
@@ -480,20 +490,68 @@ function chipsFecha() {
 }
 
 function DatosPago({ datosPago = {}, metodo }) {
-  const map = {
-    nequi: datosPago.nequi && `Nequi: ${datosPago.nequi}`,
-    daviplata: datosPago.daviplata && `Daviplata: ${datosPago.daviplata}`,
-    cuenta: datosPago.cuenta && `Cuenta: ${datosPago.cuenta}`,
-    qr: datosPago.qrImagen && "Escanea el QR:",
+  // Pago por QR: mostramos la imagen que cargó el barbero.
+  if (metodo === "qr") {
+    if (!datosPago.qrImagen) {
+      return <p className="text-sm text-barber-gray">El barbero aún no cargó un código QR. Escribile por WhatsApp para pedirle los datos de pago.</p>;
+    }
+    return (
+      <div className="text-sm">
+        <p className="font-medium mb-2">Escaneá este código QR para pagar:</p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={datosPago.qrImagen} alt="Código QR de pago" className="w-48 h-48 object-contain border rounded-lg bg-white p-2" />
+      </div>
+    );
+  }
+
+  // Pago por número/cuenta: mostramos el dato con botón para copiar.
+  const cuentas = {
+    nequi: { label: "Nequi", valor: datosPago.nequi },
+    daviplata: { label: "Daviplata", valor: datosPago.daviplata },
+    cuenta: { label: "Cuenta bancaria", valor: datosPago.cuenta },
   };
-  const texto = map[metodo];
+  const item = cuentas[metodo];
+  if (!item) return null;
+  if (!item.valor) {
+    return <p className="text-sm text-barber-gray">El barbero aún no cargó su {item.label}. Escribile por WhatsApp para pedirle los datos de pago.</p>;
+  }
   return (
     <div className="text-sm">
-      {texto ? <p className="font-medium">{texto}</p> : <p className="text-barber-gray">Solicita los datos de pago al barbero.</p>}
-      {metodo === "qr" && datosPago.qrImagen && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={datosPago.qrImagen} alt="QR de pago" className="mt-2 w-40 h-40 object-contain border rounded" />
-      )}
+      <p className="text-barber-gray mb-1">{item.label}</p>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="font-bold text-base sm:text-lg tracking-wide select-all break-all">{item.valor}</span>
+        <CopiarBtn texto={item.valor} />
+      </div>
     </div>
+  );
+}
+
+function CopiarBtn({ texto }) {
+  const [copiado, setCopiado] = useState(false);
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(texto);
+    } catch {
+      // Fallback para navegadores sin permiso de portapapeles.
+      const ta = document.createElement("textarea");
+      ta.value = texto;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch { /* ignore */ }
+      document.body.removeChild(ta);
+    }
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 1800);
+  }
+  return (
+    <button
+      type="button"
+      onClick={copiar}
+      className={`text-xs font-semibold py-1 px-2.5 rounded-lg border shrink-0 transition ${copiado ? "bg-green-600 text-white border-green-600" : "border-gray-300 hover:border-barber-red"}`}
+    >
+      {copiado ? "¡Copiado!" : "Copiar"}
+    </button>
   );
 }

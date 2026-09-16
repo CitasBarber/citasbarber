@@ -12,11 +12,11 @@ import ResumenDiario from "@/components/barbero/ResumenDiario";
 import ActivarNotificaciones from "@/components/ActivarNotificaciones";
 
 const TABS = [
-  { key: "calendario", label: "Calendario",       short: "Agenda" },
-  { key: "lista",      label: "Lista del día",    short: "Hoy" },
-  { key: "manual",     label: "Cita manual",      short: "Manual" },
-  { key: "resumen",    label: "Resumen diario",   short: "Resumen" },
-  { key: "config",     label: "Horario y pagos",  short: "Config" },
+  { key: "calendario", label: "Calendario" },
+  { key: "lista",      label: "Hoy" },
+  { key: "manual",     label: "Manual" },
+  { key: "resumen",    label: "Resumen" },
+  { key: "config",     label: "Config" },
 ];
 
 export default function PanelBarberoPage() {
@@ -25,6 +25,7 @@ export default function PanelBarberoPage() {
   const [perfil, setPerfil] = useState(null);
   const [tab, setTab] = useState("calendario");
   const [refresh, setRefresh] = useState(0);
+  const [irACitaFecha, setIrACitaFecha] = useState(null);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -81,18 +82,23 @@ export default function PanelBarberoPage() {
               onClick={() => setTab(t.key)}
               className={`px-3 sm:px-4 py-2.5 font-semibold whitespace-nowrap border-b-2 -mb-px flex-1 sm:flex-none min-w-0 ${tab === t.key ? "border-barber-red text-barber-red" : "border-transparent text-barber-gray hover:text-barber-ink"}`}
             >
-              <span className="sm:hidden text-sm">{t.short}</span>
-              <span className="hidden sm:inline">{t.label}</span>
+              <span className="text-sm sm:text-base">{t.label}</span>
             </button>
           ))}
         </div>
 
         <div className="mt-6">
           {tab === "lista" && <CitasLista onCambio={recargar} />}
-          {tab === "calendario" && <Calendario perfil={perfil} />}
+          {tab === "calendario" && <Calendario perfil={perfil} diaInicial={irACitaFecha} />}
           {tab === "manual" && perfil && <CitaManual planes={perfil.planes} onCreada={() => setTab("lista")} />}
           {tab === "resumen" && <ResumenDiario />}
-          {tab === "config" && perfil && <ConfigHorario perfil={perfil} onGuardado={recargar} />}
+          {tab === "config" && perfil && (
+            <ConfigHorario
+              perfil={perfil}
+              onGuardado={recargar}
+              onIrACita={(fecha) => { setIrACitaFecha(fecha); setTab("calendario"); }}
+            />
+          )}
         </div>
 
         <p className="mt-8 text-center text-xs text-barber-gray">

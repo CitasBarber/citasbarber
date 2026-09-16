@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { DIAS_SEMANA } from "@/lib/constants";
 import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
+import { linkWhatsApp } from "@/lib/whatsapp";
 
-export default function ConfigHorario({ perfil, onGuardado }) {
+export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
   const [horaInicio, setHoraInicio] = useState(perfil.horario?.horaInicio || "10:00");
   const [horaFin, setHoraFin] = useState(perfil.horario?.horaFin || "19:00");
   const [dias, setDias] = useState(perfil.horario?.diasLaborales || [1, 2, 3, 4, 5, 6]);
@@ -36,7 +37,9 @@ export default function ConfigHorario({ perfil, onGuardado }) {
   }
   // Las ausencias se guardan al instante (no dependen del botón "Guardar cambios"):
   // así un día/hora bloqueado queda aplicado de inmediato para los clientes.
-  async function persistirAusencias(nextDias, nextFranjas) {
+  // `prev` guarda el estado anterior para poder revertir si el servidor rechaza
+  // el bloqueo (p. ej. porque pisa una cita ya agendada).
+  async function persistirAusencias(nextDias, nextFranjas, prev) {
     setAusenciaMsg("Guardando…");
     try {
       const res = await fetch("/api/barbero/perfil", {
@@ -45,25 +48,36 @@ export default function ConfigHorario({ perfil, onGuardado }) {
         body: JSON.stringify({ diasBloqueados: nextDias, franjasBloqueadas: nextFranjas }),
       });
       const data = await res.json().catch(() => ({}));
+      // 409: el bloqueo choca con una o más citas agendadas. No se aplicó nada:
+      // revertimos el estado local y mostramos las citas para reagendar.
+      if (res.status === 409 && (data.conflictos || []).length) {
+        if (prev) { setDiasBloqueados(prev.dias); setFranjas(prev.franjas); }
+        setConflictos(data.conflictos);
+        setAusenciaMsg("🚫 No se pudo bloquear: hay citas agendadas en ese tiempo.");
+        return;
+      }
       if (!res.ok) throw new Error();
-      setConflictos(data.conflictos || []);
+      setConflictos([]);
       setAusenciaMsg("Ausencias guardadas ✔");
       onGuardado?.();
     } catch {
+      if (prev) { setDiasBloqueados(prev.dias); setFranjas(prev.franjas); }
       setAusenciaMsg("⚠️ No se pudo guardar. Revisá tu conexión e intentá de nuevo.");
     }
   }
   function agregarBloqueo() {
     if (esFechaPasada(nuevoBloqueo)) { setAusenciaMsg("No puedes bloquear una fecha que ya pasó."); return; }
     if (diasBloqueados.includes(nuevoBloqueo)) return;
+    const prev = { dias: diasBloqueados, franjas };
     const next = [...diasBloqueados, nuevoBloqueo].sort();
     setDiasBloqueados(next);
-    persistirAusencias(next, franjas);
+    persistirAusencias(next, franjas, prev);
   }
   function quitarBloqueo(f) {
+    const prev = { dias: diasBloqueados, franjas };
     const next = diasBloqueados.filter((x) => x !== f);
     setDiasBloqueados(next);
-    persistirAusencias(next, franjas);
+    persistirAusencias(next, franjas, prev);
   }
   function agregarFranja() {
     if (!nuevoBloqueo) return;
@@ -72,15 +86,17 @@ export default function ConfigHorario({ perfil, onGuardado }) {
     const nueva = { fecha: nuevoBloqueo, horaInicio: franjaIni, horaFin: franjaFin, motivo: franjaMotivo.trim() };
     const existe = franjas.some((f) => f.fecha === nueva.fecha && f.horaInicio === nueva.horaInicio && f.horaFin === nueva.horaFin);
     if (existe) return;
+    const prev = { dias: diasBloqueados, franjas };
     const next = [...franjas, nueva].sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio));
     setFranjas(next);
     setFranjaMotivo("");
-    persistirAusencias(diasBloqueados, next);
+    persistirAusencias(diasBloqueados, next, prev);
   }
   function quitarFranja(idx) {
+    const prev = { dias: diasBloqueados, franjas };
     const next = franjas.filter((_, i) => i !== idx);
     setFranjas(next);
-    persistirAusencias(diasBloqueados, next);
+    persistirAusencias(diasBloqueados, next, prev);
   }
   function onQR(e) {
     const file = e.target.files?.[0];
@@ -124,9 +140,15 @@ export default function ConfigHorario({ perfil, onGuardado }) {
     });
     const data = await res.json().catch(() => ({}));
     setGuardando(false);
+    if (res.status === 409 && (data.conflictos || []).length) {
+      setConflictos(data.conflictos);
+      setMsg("");
+      setAusenciaMsg("🚫 No se pudo bloquear: hay citas agendadas en ese tiempo.");
+      return;
+    }
     if (res.ok) {
       setMsg("Cambios guardados ✔");
-      setConflictos(data.conflictos || []);
+      setConflictos([]);
       onGuardado?.();
     } else {
       setMsg("Error al guardar");
@@ -412,32 +434,38 @@ export default function ConfigHorario({ perfil, onGuardado }) {
       </div>
 
       {conflictos.length > 0 && (
-        <section className="card p-6 space-y-3 border-2 border-amber-300 bg-amber-50">
+        <section className="card p-6 space-y-3 border-2 border-red-300 bg-red-50">
           <div className="flex items-start gap-2">
-            <span className="text-2xl">⚠️</span>
+            <span className="text-2xl">🚫</span>
             <div>
-              <h2 className="font-display text-xl">Ojo: tenés {conflictos.length} cita{conflictos.length !== 1 ? "s" : ""} en el tiempo que bloqueaste</h2>
+              <h2 className="font-display text-xl">No se pudo bloquear: tenés {conflictos.length} cita{conflictos.length !== 1 ? "s" : ""} agendada{conflictos.length !== 1 ? "s" : ""} en ese tiempo</h2>
               <p className="text-sm text-barber-gray mt-0.5">
-                El bloqueo evita <b>nuevas</b> reservas, pero estas citas ya estaban agendadas y siguen activas. Contactá al cliente y, si toca, cancelá la cita desde el calendario.
+                No se puede marcar ausencia sobre una cita ya agendada. Primero <b>comunicate con el cliente</b> para reagendar y cancelá la cita desde el calendario; luego vas a poder bloquear ese tiempo.
               </p>
             </div>
           </div>
           <div className="space-y-2">
-            {conflictos.map((c) => {
-              const celular = (c.clienteCelular || "").replace(/\D/g, "");
-              return (
-                <div key={c.id} className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-white px-3 py-2">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm truncate">{c.clienteNombre}</p>
-                    <p className="text-xs text-barber-gray">
-                      📅 {formatFechaBloq(c.fecha)} · {hora12simple(c.horaInicio)}–{hora12simple(c.horaFin)}
-                      {c.planSnapshot?.nombre ? ` · ${c.planSnapshot.nombre}` : ""} · {c.estado}
-                    </p>
-                  </div>
-                  {celular && (
+            {conflictos.map((c) => (
+              <div key={c.id} className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-white px-3 py-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm truncate">{c.clienteNombre}</p>
+                  <p className="text-xs text-barber-gray">
+                    📅 {formatFechaBloq(c.fecha)} · {hora12simple(c.horaInicio)}–{hora12simple(c.horaFin)}
+                    {c.planSnapshot?.nombre ? ` · ${c.planSnapshot.nombre}` : ""} · {c.estado}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    className="btn-outline text-sm py-1.5"
+                    onClick={() => onIrACita?.(c.fecha)}
+                  >
+                    Ver la cita
+                  </button>
+                  {c.clienteCelular && (
                     <a
-                      className="btn-wa text-sm py-1.5 shrink-0"
-                      href={`https://wa.me/${celular}`}
+                      className="btn-wa text-sm py-1.5"
+                      href={linkWhatsApp(c.clienteCelular, mensajeReagendar(c, perfil))}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -445,11 +473,11 @@ export default function ConfigHorario({ perfil, onGuardado }) {
                     </a>
                   )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
           <p className="text-xs text-barber-gray">
-            Para cancelar o reagendar, andá a la pestaña <b>Calendario</b> y abrí la cita.
+            Para reagendar, escribile al cliente por WhatsApp y luego cancelá la cita en la pestaña <b>Calendario</b>.
           </p>
         </section>
       )}
@@ -492,4 +520,16 @@ function formatFechaBloq(fechaISO) {
   if (!fechaISO) return fechaISO;
   const [y, m, d] = fechaISO.split("-").map(Number);
   return new Date(y, m - 1, d).toLocaleDateString("es-CO", { weekday: "short", day: "numeric", month: "short" });
+}
+
+// Mensaje de WhatsApp para pedirle al cliente reagendar la cita que impide la ausencia.
+function mensajeReagendar(cita, perfil) {
+  const local = perfil?.local || "la barbería";
+  const fecha = formatFechaBloq(cita.fecha);
+  const hora = hora12simple(cita.horaInicio);
+  return (
+    `Hola ${cita.clienteNombre}, soy de *${local}*.\n\n` +
+    `Necesito reagendar tu cita del ${fecha} a las ${hora}, ya que no voy a poder atender en ese horario.\n\n` +
+    `¿Qué día y hora te quedarían bien? Disculpá las molestias.`
+  );
 }

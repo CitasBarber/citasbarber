@@ -65,6 +65,54 @@ export const PUT = handler(async (req) => {
       };
     }
   }
+  // Antes de aplicar nuevas ausencias, verificar que no pisen citas ya agendadas.
+  // Solo revisamos las ausencias AGREGADAS respecto a lo que ya estaba guardado:
+  // así el barbero puede seguir guardando el resto de su perfil sin tropezar con
+  // ausencias antiguas. Si una ausencia nueva choca con una cita activa, se
+  // rechaza el bloqueo y se devuelven las citas para que contacte al cliente.
+  if (Array.isArray(body.diasBloqueados) || Array.isArray(body.franjasBloqueadas)) {
+    const prevDias = b.diasBloqueados || [];
+    const prevFranjas = b.franjasBloqueadas || [];
+    const nextDias = Array.isArray(body.diasBloqueados) ? body.diasBloqueados : prevDias;
+    const nextFranjas = Array.isArray(body.franjasBloqueadas)
+      ? body.franjasBloqueadas
+      : prevFranjas;
+
+    const diasAgregados = nextDias.filter((d) => !prevDias.includes(d));
+    const franjasAgregadas = nextFranjas.filter(
+      (f) =>
+        !prevFranjas.some(
+          (p) => p.fecha === f.fecha && p.horaInicio === f.horaInicio && p.horaFin === f.horaFin
+        )
+    );
+
+    const fechasNuevas = [
+      ...new Set([...diasAgregados, ...franjasAgregadas.map((f) => f.fecha)]),
+    ];
+    if (fechasNuevas.length > 0) {
+      const citas = await Cita.find({
+        barbero: b._id,
+        fecha: { $in: fechasNuevas },
+        estado: { $in: [ESTADO_CITA.SOLICITADA, ESTADO_CITA.CONFIRMADA] },
+      }).lean();
+      const conflictos = citasEnConflicto({
+        citas,
+        diasBloqueados: diasAgregados,
+        franjasBloqueadas: franjasAgregadas,
+      }).map(serializarCita);
+      if (conflictos.length > 0) {
+        return ok(
+          {
+            error:
+              "No se puede bloquear ese tiempo: ya tenés citas agendadas. Contactá al cliente para reagendar.",
+            conflictos,
+          },
+          409
+        );
+      }
+    }
+  }
+
   if (Array.isArray(body.diasBloqueados)) b.diasBloqueados = body.diasBloqueados;
   if (Array.isArray(body.franjasBloqueadas)) b.franjasBloqueadas = body.franjasBloqueadas;
   if (body.ventanaCancelacionHoras != null)
@@ -75,29 +123,5 @@ export const PUT = handler(async (req) => {
 
   await b.save();
 
-  // Detectar citas activas que quedaron dentro de un día/franja bloqueada, para
-  // avisar al barbero. No se cancela nada: él decide qué hacer con cada una.
-  const diasBloqueados = b.diasBloqueados || [];
-  const franjasBloqueadas = (b.franjasBloqueadas || []).map((f) => ({
-    fecha: f.fecha,
-    horaInicio: f.horaInicio,
-    horaFin: f.horaFin,
-  }));
-  const fechasRelevantes = [
-    ...new Set([...diasBloqueados, ...franjasBloqueadas.map((f) => f.fecha)]),
-  ];
-
-  let conflictos = [];
-  if (fechasRelevantes.length > 0) {
-    const citas = await Cita.find({
-      barbero: b._id,
-      fecha: { $in: fechasRelevantes },
-      estado: { $in: [ESTADO_CITA.SOLICITADA, ESTADO_CITA.CONFIRMADA] },
-    }).lean();
-    conflictos = citasEnConflicto({ citas, diasBloqueados, franjasBloqueadas }).map(
-      serializarCita
-    );
-  }
-
-  return ok({ ok: true, conflictos });
+  return ok({ ok: true, conflictos: [] });
 });

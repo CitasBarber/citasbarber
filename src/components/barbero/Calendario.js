@@ -21,7 +21,12 @@ const CITA_ESTILO = {
   completada: { wrap: "border-blue-200  bg-blue-50",   barra: "bg-blue-500"  },
 };
 
-export default function Calendario({ perfil }) {
+// Columna de la hora con ancho fijo: en fuente monoespaciada, 23ch equivale al
+// rango más largo posible ("12:30 p.m. – 12:30 p.m."), así todas las etiquetas
+// que van a la derecha (Libre / nombre / ausencia) quedan alineadas en columna.
+const COL_HORA = "font-mono text-xs text-barber-gray w-[23ch] shrink-0 whitespace-nowrap tabular-nums";
+
+export default function Calendario({ perfil, diaInicial }) {
   const [citas, setCitas] = useState([]);
   const hoy = fechaLocalHoy();
   const [ref, setRef] = useState(new Date());
@@ -36,6 +41,15 @@ export default function Calendario({ perfil }) {
   }
 
   useEffect(() => { cargar(); }, []);
+
+  // Al llegar desde otra pestaña ("Ver la cita"), posicionar el calendario en
+  // la fecha indicada y expandir su semana/mes.
+  useEffect(() => {
+    if (!diaInicial) return;
+    setDiaSel(diaInicial);
+    const [y, m, d] = diaInicial.split("-").map(Number);
+    setRef(new Date(y, m - 1, d));
+  }, [diaInicial]);
 
   async function accion(id, accion, extra = {}) {
     if (accion === "rechazar") {
@@ -215,7 +229,7 @@ function SlotFila({ slot, abierta, onToggle, onAccion }) {
       <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-green-200 bg-green-50">
         <div className="w-1 rounded-full shrink-0 bg-green-400" />
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-xs text-barber-gray">{rangoSlot}</span>
+          <span className={COL_HORA}>{rangoSlot}</span>
           <span className="text-sm font-semibold text-green-700">Libre</span>
         </div>
       </div>
@@ -229,7 +243,7 @@ function SlotFila({ slot, abierta, onToggle, onAccion }) {
         <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50">
           <div className="w-1 rounded-full shrink-0 bg-gray-300" />
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-xs text-barber-gray">{rangoSlot}</span>
+            <span className={COL_HORA}>{rangoSlot}</span>
             <span className="text-xs text-barber-gray">⤷ sigue ausencia</span>
           </div>
         </div>
@@ -239,7 +253,7 @@ function SlotFila({ slot, abierta, onToggle, onAccion }) {
       <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-gray-300 bg-gray-100">
         <div className="w-1 rounded-full shrink-0 bg-gray-400" />
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-xs text-barber-gray">{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
+          <span className={COL_HORA}>{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
           <span className="text-sm font-semibold text-barber-gray">
             🚫 Ausencia{f.motivo ? ` · ${f.motivo}` : ""}
           </span>
@@ -259,7 +273,7 @@ function SlotFila({ slot, abierta, onToggle, onAccion }) {
       <div className={`flex items-stretch gap-3 px-3 py-2 rounded-lg border ${estilo.wrap} opacity-70`}>
         <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-xs text-barber-gray">{rangoSlot}</span>
+          <span className={COL_HORA}>{rangoSlot}</span>
           <span className="text-xs text-barber-gray">⤷ sigue: {c.clienteNombre}</span>
         </div>
       </div>
@@ -279,7 +293,7 @@ function SlotFila({ slot, abierta, onToggle, onAccion }) {
       <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-xs text-barber-gray">{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
+          <span className={COL_HORA}>{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
           <span className="font-bold text-sm">{c.clienteNombre}</span>
         </div>
         <p className="text-xs text-barber-gray mt-0.5">

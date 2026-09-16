@@ -38,6 +38,10 @@ const CitaSchema = new mongoose.Schema(
     },
     esManual: { type: Boolean, default: false }, // creada por el barbero para cliente presencial
     motivoRechazo: String,
+
+    // true una vez enviado el recordatorio push "cita sin confirmar" (~15 min
+    // antes de la hora). Evita que el cron lo mande más de una vez.
+    recordatorioEnviado: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
