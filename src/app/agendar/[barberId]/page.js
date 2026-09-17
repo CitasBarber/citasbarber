@@ -9,7 +9,7 @@ import SocialLinks from "@/components/SocialLinks";
 import { WhatsAppIcon } from "@/components/Icons";
 import ActivarRecordatoriosCliente from "@/components/ActivarRecordatoriosCliente";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
-import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
+import { fechaLocalHoy, esFechaPasada, formatearHora12 } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 import { linkWhatsApp } from "@/lib/whatsapp";
 
@@ -498,14 +498,8 @@ function GrupoSlots({ titulo, lista, hora, setHora }) {
   );
 }
 
-// 'HH:mm' (24h) -> '2:00 pm'
-function hora12(hhmm) {
-  if (!hhmm) return "";
-  const [h, m] = hhmm.split(":").map(Number);
-  const ampm = h < 12 ? "am" : "pm";
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
-}
+// 'HH:mm' (24h) -> '2:00 p.m.'
+const hora12 = formatearHora12;
 
 // Fecha 'YYYY-MM-DD' -> 'Lunes, 1 de septiembre'. Con relativo=true antepone Hoy/Mañana.
 function etiquetaFecha(fechaStr, relativo = true) {

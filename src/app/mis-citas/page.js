@@ -7,7 +7,7 @@ import EstadoBadge from "@/components/EstadoBadge";
 import ActivarRecordatoriosCliente from "@/components/ActivarRecordatoriosCliente";
 import { WhatsAppIcon, Tijeras } from "@/components/Icons";
 import { formatoCOP } from "@/lib/constants";
-import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { fechaLocalHoy, formatearHora12 } from "@/lib/disponibilidad";
 import { useDialog } from "@/components/DialogProvider";
 
 const LS_CELULAR_KEY = "cb_cliente_celular";
@@ -290,7 +290,7 @@ export default function MisCitasPage() {
                           <div>
                             <p className="text-xs text-barber-gray">Horario</p>
                             <p className="font-semibold text-barber-ink">
-                              {c.fecha} · {c.horaInicio} - {c.horaFin}
+                              {c.fecha} · {formatearHora12(c.horaInicio)} - {formatearHora12(c.horaFin)}
                             </p>
                           </div>
                           <div>
@@ -354,7 +354,7 @@ export default function MisCitasPage() {
                             <span className="text-xs text-barber-gray">({c.barberoNombre})</span>
                           </div>
                           <p className="text-xs text-barber-gray mt-0.5">
-                            {formatearFecha(c.fecha)} ({c.fecha}) · {c.horaInicio}
+                            {formatearFecha(c.fecha)} ({c.fecha}) · {formatearHora12(c.horaInicio)}
                           </p>
                         </div>
                         <EstadoBadge estado={c.estado} />

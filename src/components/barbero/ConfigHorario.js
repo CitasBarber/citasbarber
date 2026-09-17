@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DIAS_SEMANA } from "@/lib/constants";
-import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
+import { fechaLocalHoy, esFechaPasada, formatearHora12 } from "@/lib/disponibilidad";
 import { linkWhatsApp } from "@/lib/whatsapp";
 
 export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
@@ -485,13 +485,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
   );
 }
 
-function hora12simple(hhmm) {
-  if (!hhmm) return "";
-  const [h, m] = hhmm.split(":").map(Number);
-  const ampm = h < 12 ? "a.m." : "p.m.";
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
-}
+const hora12simple = formatearHora12;
 
 function duracionJornada(inicio, fin) {
   if (!inicio || !fin) return "?";
@@ -510,7 +504,9 @@ function cancelacionEjemplo(horas) {
   // Usamos día 2 para que restar horas no pise el día 1 y se calcule bien
   const base = new Date(2000, 0, 2, 15, 0);
   base.setMinutes(base.getMinutes() - h * 60);
-  const hora = base.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: true });
+  const hh = String(base.getHours()).padStart(2, "0");
+  const mm = String(base.getMinutes()).padStart(2, "0");
+  const hora = formatearHora12(`${hh}:${mm}`);
   if (h >= 24) return `${hora} del día anterior`;
   if (h >= 12) return `${hora} (mismo día)`;
   return hora;

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import EstadoBadge from "@/components/EstadoBadge";
 import { WhatsAppIcon } from "@/components/Icons";
 import { DIAS_SEMANA } from "@/lib/constants";
-import { fechaLocalHoy, minAHhmm, jornadaDelDia, PASO_MIN } from "@/lib/disponibilidad";
+import { fechaLocalHoy, minAHhmm, jornadaDelDia, PASO_MIN, formatearHora12 } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 import { useDialog } from "@/components/DialogProvider";
 
@@ -438,13 +438,7 @@ function buildTimeline(fecha, perfil, citasDia) {
   };
 }
 
-function hora12(hhmm) {
-  if (!hhmm) return "";
-  const [h, m] = hhmm.split(":").map(Number);
-  const ampm = h < 12 ? "a.m." : "p.m.";
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
-}
+const hora12 = formatearHora12;
 
 function formatDur(min) {
   if (min < 60) return `${min} min`;

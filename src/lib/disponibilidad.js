@@ -170,3 +170,37 @@ export function minutosActualesColombia() {
   const m = Number(partes.find((p) => p.type === "minute").value);
   return h * 60 + m;
 }
+
+/**
+ * Convierte una hora en formato 'HH:mm' (24h) a formato legible de 12 horas con 'a.m.' o 'p.m.'.
+ * Ejemplos:
+ *   '10:00' -> '10:00 a.m.'
+ *   '12:00' -> '12:00 p.m.'
+ *   '14:30' -> '2:30 p.m.'
+ *   '00:00' -> '12:00 a.m.'
+ *
+ * @param {string} hhmm  Hora militar 'HH:mm'
+ * @returns {string}     Hora en formato 12h con 'a.m.' o 'p.m.'
+ */
+export function formatearHora12(hhmm) {
+  if (!hhmm) return "";
+  const partes = String(hhmm).split(":");
+  if (partes.length < 2) return String(hhmm);
+  const h = Number(partes[0]);
+  const m = Number(partes[1]);
+  if (isNaN(h) || isNaN(m)) return String(hhmm);
+  const ampm = h < 12 ? "a.m." : "p.m.";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
+}
+
+/**
+ * Formatea un rango de dos horas en formato de 12 horas.
+ * Ejemplo: ('14:00', '14:30') -> '2:00 p.m. - 2:30 p.m.'
+ */
+export function formatearRango12(inicio, fin) {
+  if (!inicio && !fin) return "";
+  if (!fin) return formatearHora12(inicio);
+  if (!inicio) return formatearHora12(fin);
+  return `${formatearHora12(inicio)} - ${formatearHora12(fin)}`;
+}

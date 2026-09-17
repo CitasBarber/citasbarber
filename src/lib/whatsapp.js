@@ -1,5 +1,6 @@
 import { METODOS_PAGO_LABEL, formatoCOP } from "./constants";
 import { EMOJI as E } from "./emojis";
+import { formatearHora12 } from "./disponibilidad";
 
 // Sitio del proyecto: se usa como firma promocional en los mensajes que llegan
 // al cliente final, para dar a conocer la plataforma.
@@ -57,7 +58,7 @@ export function mensajeNuevaCita(cita, barbero, { plano = false } = {}) {
     `${em("TIJERAS")}*Plan:* ${plan.nombre || cita.plan}\n` +
     `*Servicios:* ${servicios}\n` +
     `${em("CALENDARIO")}*Fecha:* ${fecha}\n` +
-    `${em("RELOJ")}*Hora:* ${cita.horaInicio} - ${cita.horaFin} (${plan.duracion} min)\n` +
+    `${em("RELOJ")}*Hora:* ${formatearHora12(cita.horaInicio)} - ${formatearHora12(cita.horaFin)} (${plan.duracion} min)\n` +
     `${em("BILLETE")}*Valor:* ${formatoCOP(plan.precio)}\n`;
 
   if (cita.metodoPago) {
@@ -88,7 +89,7 @@ export function mensajeConfirmacion(cita, barbero, { plano = false } = {}) {
     `${em("TIJERAS")}*Plan:* ${plan.nombre || cita.plan}\n` +
     `*Servicios:* ${servicios}\n` +
     `${em("CALENDARIO")}*Fecha:* ${fecha}\n` +
-    `${em("RELOJ")}*Hora:* ${cita.horaInicio} - ${cita.horaFin} (${plan.duracion} min)\n` +
+    `${em("RELOJ")}*Hora:* ${formatearHora12(cita.horaInicio)} - ${formatearHora12(cita.horaFin)} (${plan.duracion} min)\n` +
     `${em("BILLETE")}*Valor:* ${formatoCOP(plan.precio)}` +
     direccion +
     `\n\n_Ahi lo esperamos!_` +
@@ -100,7 +101,7 @@ export function mensajeRechazo(cita, barbero) {
   return (
     `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${barbero?.local || "la barberia"}*.\n\n` +
     `Lamentablemente no puedo atender tu solicitud de cita para el ` +
-    `${formatearFecha(cita.fecha)} a las ${cita.horaInicio}.\n\n` +
+    `${formatearFecha(cita.fecha)} a las ${formatearHora12(cita.horaInicio)}.\n\n` +
     `_Hablemos para reprogramar._`
   );
 }
@@ -110,7 +111,7 @@ export function mensajeCancelacion(cita, barbero, { motivo = "" } = {}) {
   return (
     `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${barbero?.local || "la barberia"}*.\n\n` +
     `Tuve que cancelar tu cita confirmada para el ` +
-    `${formatearFecha(cita.fecha)} a las ${cita.horaInicio}.` +
+    `${formatearFecha(cita.fecha)} a las ${formatearHora12(cita.horaInicio)}.` +
     detalleMotivo +
     `\n\n_Escríbeme para reprogramar cuando quieras._`
   );

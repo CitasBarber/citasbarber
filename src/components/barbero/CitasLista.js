@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import EstadoBadge from "@/components/EstadoBadge";
 import { WhatsAppIcon } from "@/components/Icons";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
-import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { fechaLocalHoy, formatearHora12 } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 import { useDialog } from "@/components/DialogProvider";
 
@@ -85,7 +85,7 @@ export default function CitasLista({ onCambio }) {
             <div key={c.id} className="card p-4">
               <div className="flex justify-between items-start gap-2">
                 <div>
-                  <p className="font-display text-lg">{c.horaInicio} - {c.horaFin} · {c.clienteNombre}</p>
+                  <p className="font-display text-lg">{formatearHora12(c.horaInicio)} - {formatearHora12(c.horaFin)} · {c.clienteNombre}</p>
                   <p className="text-sm text-barber-gray">
                     {c.planSnapshot?.nombre} · {formatoCOP(c.planSnapshot?.precio)}
                     {c.metodoPago ? ` · ${METODOS_PAGO_LABEL[c.metodoPago] || c.metodoPago}` : ""}

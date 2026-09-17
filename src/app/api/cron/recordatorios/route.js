@@ -5,7 +5,7 @@ import { ok, fail, handler } from "@/lib/api";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { enviarPush } from "@/lib/push";
 import { normalizarCelular } from "@/lib/whatsapp";
-import { fechaLocalHoy, hhmmAMin, minutosActualesColombia } from "@/lib/disponibilidad";
+import { fechaLocalHoy, hhmmAMin, minutosActualesColombia, formatearHora12 } from "@/lib/disponibilidad";
 
 // Minutos de antelación con que se avisa al barbero de una cita sin confirmar.
 const MIN_ANTELACION = 15;
@@ -53,7 +53,7 @@ export const GET = handler(async (req) => {
       { ownerRole: ROLES.BARBERO, ownerId: cita.barbero },
       {
         title: "Cita sin confirmar",
-        body: `${cita.clienteNombre} · ${plan} · hoy a las ${cita.horaInicio}. Empieza en unos ${MIN_ANTELACION} min y sigue sin confirmar.`,
+        body: `${cita.clienteNombre} · ${plan} · hoy a las ${formatearHora12(cita.horaInicio)}. Empieza en unos ${MIN_ANTELACION} min y sigue sin confirmar.`,
         url: "/barbero/panel",
         tag: `recordatorio-${cita._id}`,
       }
@@ -92,7 +92,7 @@ export const GET = handler(async (req) => {
         { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
         {
           title: "Recordatorio de tu cita ✂️",
-          body: `Hoy tenés cita a las ${cita.horaInicio} con ${barbero?.nombre || "tu barbero"} en ${local}.`,
+          body: `Hoy tenés cita a las ${formatearHora12(cita.horaInicio)} con ${barbero?.nombre || "tu barbero"} en ${local}.`,
           url: "/mis-citas",
           tag: `recordatorio-cliente-${cita._id}`,
         }

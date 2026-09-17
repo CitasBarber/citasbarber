@@ -4,7 +4,7 @@ import Cita from "@/models/Cita";
 import Cliente from "@/models/Cliente";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
-import { calcularSlots, minAHhmm, hhmmAMin, fechaLocalHoy } from "@/lib/disponibilidad";
+import { calcularSlots, minAHhmm, hhmmAMin, fechaLocalHoy, formatearHora12 } from "@/lib/disponibilidad";
 import { normalizarCelular, linkWhatsApp, mensajeNuevaCita } from "@/lib/whatsapp";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { serializarCita } from "@/lib/serializers";
@@ -115,7 +115,7 @@ export const POST = handler(async (req) => {
     { ownerRole: ROLES.BARBERO, ownerId: barbero._id },
     {
       title: "Nueva cita solicitada",
-      body: `${cita.clienteNombre} · ${plan.nombre} · ${cita.fecha} a las ${cita.horaInicio}`,
+      body: `${cita.clienteNombre} · ${plan.nombre} · ${cita.fecha} a las ${formatearHora12(cita.horaInicio)}`,
       url: "/barbero/panel",
       tag: `cita-${cita._id}`,
     }

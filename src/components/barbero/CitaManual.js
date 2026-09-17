@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { fechaLocalHoy, esFechaPasada } from "@/lib/disponibilidad";
+import { fechaLocalHoy, esFechaPasada, formatearHora12 } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 
 export default function CitaManual({ planes, onCreada, prefill }) {
@@ -49,7 +49,7 @@ export default function CitaManual({ planes, onCreada, prefill }) {
                 seleccionarHora(h);
                 setError("");
               } else {
-                setError(`La hora ${h} no alcanza para este plan; elegí otra de la lista.`);
+                setError(`La hora ${formatearHora12(h)} no alcanza para este plan; elegí otra de la lista.`);
               }
             }
           })
@@ -125,7 +125,7 @@ export default function CitaManual({ planes, onCreada, prefill }) {
             {slots.map((s) => (
               <button type="button" key={s} onClick={() => seleccionarHora(s)}
                 className={`rounded-lg border min-h-[44px] py-2 text-sm font-semibold transition active:scale-95 ${hora === s ? "bg-barber-blue text-white border-barber-blue" : "border-gray-300 hover:border-barber-blue"}`}>
-                {s}
+                {formatearHora12(s)}
               </button>
             ))}
           </div>
