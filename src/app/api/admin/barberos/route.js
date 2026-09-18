@@ -1,9 +1,10 @@
 import { dbConnect } from "@/lib/db";
 import Barbero from "@/models/Barbero";
+import Usuario from "@/models/Usuario";
 import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
-import { getSession } from "@/lib/auth";
-import { ROLES } from "@/lib/constants";
+import { getSession, hashPassword } from "@/lib/auth";
+import { ROLES, ESTADO_BARBERO, PLANES_DEFAULT } from "@/lib/constants";
 
 // GET /api/admin/barberos?estado=pendiente|activo|...  -> lista para el admin
 export const GET = handler(async (req) => {
@@ -43,4 +44,88 @@ export const GET = handler(async (req) => {
       createdAt: b.createdAt,
     })),
   });
+});
+
+// POST /api/admin/barberos  -> creación manual por parte del admin
+export const POST = handler(async (req) => {
+  await dbConnect();
+  const session = getSession();
+  if (!session || session.role !== ROLES.ADMIN) return fail("No autorizado", 403);
+
+  const body = await req.json();
+  const { nombre, local, celular, ciudad, direccion, email, password } = body;
+
+  if (!nombre?.trim() || !local?.trim() || !celular?.trim() || !ciudad?.trim() || !email?.trim()) {
+    return fail("Nombre, local, celular, ciudad y correo son obligatorios", 400);
+  }
+
+  // Normalizar email: si el admin ingresó solo el alias, concatenar @citasbarber.com
+  let emailNormalizado = email.trim().toLowerCase();
+  if (!emailNormalizado.includes("@")) {
+    emailNormalizado = `${emailNormalizado}@citasbarber.com`;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailNormalizado)) {
+    return fail("El formato del correo electrónico no es válido", 400);
+  }
+
+  const existe = await Usuario.findOne({ email: emailNormalizado });
+  if (existe) {
+    return fail("Ya existe un usuario registrado con ese correo electrónico", 409);
+  }
+
+  const pass = password?.trim() || "Barbero123*";
+  if (pass.length < 6) {
+    return fail("La contraseña debe tener al menos 6 caracteres", 400);
+  }
+
+  const barbero = await Barbero.create({
+    nombre: nombre.trim(),
+    local: local.trim(),
+    celular: celular.trim(),
+    ciudad: ciudad.trim(),
+    direccion: direccion?.trim() || "",
+    email: emailNormalizado,
+    estado: ESTADO_BARBERO.ACTIVO,
+    suscripcionActiva: true,
+    suscripcionVence: new Date(Date.now() + 30 * 864e5),
+    planes: PLANES_DEFAULT,
+  });
+
+  const passwordHash = await hashPassword(pass);
+  await Usuario.create({
+    role: ROLES.BARBERO,
+    nombre: nombre.trim(),
+    email: emailNormalizado,
+    passwordHash,
+    passwordTemporal: true,
+    barbero: barbero._id,
+  });
+
+  return ok(
+    {
+      ok: true,
+      barbero: {
+        id: barbero._id.toString(),
+        nombre: barbero.nombre,
+        local: barbero.local,
+        celular: barbero.celular,
+        ciudad: barbero.ciudad,
+        email: barbero.email,
+        estado: barbero.estado,
+        planes: barbero.planes,
+        datosPago: barbero.datosPago || {},
+        suscripcionActiva: barbero.suscripcionActiva,
+        suscripcionVence: barbero.suscripcionVence,
+        numCitas: 0,
+        createdAt: barbero.createdAt,
+      },
+      credenciales: {
+        email: emailNormalizado,
+        password: pass,
+      },
+    },
+    201
+  );
 });

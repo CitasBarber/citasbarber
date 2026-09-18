@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import EstadoBadge from "@/components/EstadoBadge";
 import EditorPlanes from "@/components/admin/EditorPlanes";
 import EditorInfoBarbero from "@/components/admin/EditorInfoBarbero";
+import CrearBarberoModal from "@/components/admin/CrearBarberoModal";
 import ActivarNotificaciones from "@/components/ActivarNotificaciones";
 import { useDialog } from "@/components/DialogProvider";
 
@@ -24,6 +25,7 @@ export default function AdminPanelPage() {
   const [sesion, setSesion] = useState(undefined);
   const [filtro, setFiltro] = useState("pendiente");
   const [barberos, setBarberos] = useState([]);
+  const [creandoBarbero, setCreandoBarbero] = useState(false); // CrearBarberoModal
   const [editando, setEditando]       = useState(null); // EditorPlanes
   const [editandoInfo, setEditandoInfo] = useState(null); // EditorInfoBarbero
   const [eliminando, setEliminando]   = useState(null); // barbero a eliminar (modal confirmación)
@@ -157,13 +159,23 @@ export default function AdminPanelPage() {
 
         {vista === "barberos" && (
         <>
-        <div className="mt-4 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {FILTROS.map((f) => (
-            <button key={f.key} onClick={() => setFiltro(f.key)}
-              className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold ${filtro === f.key ? "bg-barber-ink text-white" : "border"}`}>
-              {f.label}
-            </button>
-          ))}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {FILTROS.map((f) => (
+              <button key={f.key} onClick={() => setFiltro(f.key)}
+                className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold ${filtro === f.key ? "bg-barber-ink text-white" : "border"}`}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setCreandoBarbero(true)}
+            className="btn-primary py-1.5 px-3.5 text-sm whitespace-nowrap shadow-sm ml-auto flex items-center gap-1.5"
+          >
+            <span className="text-base leading-none font-bold">+</span>
+            <span>Nuevo barbero</span>
+          </button>
         </div>
 
         <div className="mt-6 space-y-3">
@@ -258,6 +270,19 @@ export default function AdminPanelPage() {
           </div>
         )}
       </main>
+
+      {creandoBarbero && (
+        <CrearBarberoModal
+          onClose={() => setCreandoBarbero(false)}
+          onCreado={(nuevoBarbero, abrirPlanes) => {
+            setCreandoBarbero(false);
+            cargar();
+            if (abrirPlanes && nuevoBarbero) {
+              setEditando(nuevoBarbero);
+            }
+          }}
+        />
+      )}
 
       {editandoInfo && (
         <EditorInfoBarbero
