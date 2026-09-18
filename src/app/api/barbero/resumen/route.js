@@ -22,7 +22,7 @@ export const GET = handler(async (req) => {
       estado: ESTADO_CITA.CONFIRMADA,
       $or: [
         { fecha: { $lt: hoy } },
-        { fecha: hoy, horaFin: { $lte: ahoraHhmm } },
+        { fecha: hoy, horaInicio: { $lte: ahoraHhmm } },
       ],
     },
     { $set: { estado: ESTADO_CITA.COMPLETADA } }

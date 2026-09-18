@@ -44,7 +44,11 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
       .then((d) => setCitas(d.citas || []));
   }
 
-  useEffect(() => { cargar(); }, []);
+  useEffect(() => {
+    cargar();
+    const timer = setInterval(cargar, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Al llegar desde otra pestaña ("Ver la cita"), posicionar el calendario en
   // la fecha indicada y expandir su semana/mes.
@@ -340,99 +344,97 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
     );
   }
 
-  const cabecera = (
-    <>
-      <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={COL_HORA}>{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
-          <span className="font-bold text-sm">{c.clienteNombre}</span>
-        </div>
-        <p className="text-xs text-barber-gray mt-0.5">
-          {c.planSnapshot?.nombre} · {formatDur(slot.duracion)}
-        </p>
-      </div>
-      <div className="shrink-0 self-center flex items-center gap-1.5">
-        <EstadoBadge estado={c.estado} />
-      </div>
-    </>
-  );
-
   return (
-    <div className={`rounded-lg border ${estilo.wrap} ${esSolicitada ? "ring-1 ring-amber-300" : ""}`}>
-      <div className="w-full flex items-stretch gap-3 px-3 py-2.5">
-        {cabecera}
-      </div>
+    <div className={`rounded-lg border px-3 py-2 ${estilo.wrap} ${esSolicitada ? "ring-1 ring-amber-300" : ""}`}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        {/* Lado izquierdo: barra, hora, cliente y plan */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className={`w-1 self-stretch rounded-full shrink-0 ${estilo.barra}`} />
+          <span className={COL_HORA}>{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
+          <div className="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-2">
+            <span className="font-bold text-sm text-barber-ink truncate">{c.clienteNombre}</span>
+            <span className="text-xs text-barber-gray whitespace-nowrap">· {c.planSnapshot?.nombre} ({formatDur(slot.duracion)})</span>
+          </div>
+          <div className="shrink-0 sm:hidden">
+            <EstadoBadge estado={c.estado} />
+          </div>
+        </div>
 
-      <div className="flex flex-wrap items-center gap-2 px-3 pb-3 pt-0">
-        {esSolicitada && (
-          <>
-            <button
-              type="button"
-              className="btn-blue text-xs sm:text-sm py-1.5 px-3"
-              onClick={() => onAccion(c.id, "confirmar")}
-            >
-              Aceptar
-            </button>
-            <button
-              type="button"
-              className="btn-outline text-xs sm:text-sm py-1.5 px-3"
-              onClick={() => onAccion(c.id, "rechazar")}
-            >
-              Rechazar
-            </button>
-          </>
-        )}
+        {/* Lado derecho: badge (desktop) y botones compactos */}
+        <div className="flex items-center gap-1.5 flex-wrap shrink-0 justify-start sm:justify-end">
+          <div className="hidden sm:block shrink-0 mr-1">
+            <EstadoBadge estado={c.estado} />
+          </div>
 
-        {c.estado === "confirmada" && (
-          <>
+          {esSolicitada && (
+            <>
+              <button
+                type="button"
+                className="btn-blue text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap font-medium"
+                onClick={() => onAccion(c.id, "confirmar")}
+              >
+                Aceptar
+              </button>
+              <button
+                type="button"
+                className="btn-outline text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap font-medium"
+                onClick={() => onAccion(c.id, "rechazar")}
+              >
+                Rechazar
+              </button>
+            </>
+          )}
+
+          {c.estado === "confirmada" && (
+            <>
+              <button
+                type="button"
+                className="btn-dark text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap font-medium"
+                onClick={() => onAccion(c.id, "completar")}
+              >
+                Completar
+              </button>
+              <button
+                type="button"
+                className="btn-outline text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap font-medium"
+                onClick={() => onAccion(c.id, "cancelar")}
+              >
+                Cancelar
+              </button>
+            </>
+          )}
+
+          {c.estado === "completada" && (
             <button
               type="button"
-              className="btn-dark text-xs sm:text-sm py-1.5 px-3"
+              className="btn-outline text-rose-700 border-rose-300 hover:bg-rose-50 text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap font-medium"
+              onClick={() => onAccion(c.id, "no-asistio")}
+            >
+              No asistió
+            </button>
+          )}
+
+          {c.estado === "no_asistio" && (
+            <button
+              type="button"
+              className="btn-outline text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap font-medium"
               onClick={() => onAccion(c.id, "completar")}
             >
-              Marcar Completada
+              Completar
             </button>
-            <button
-              type="button"
-              className="btn-outline text-xs sm:text-sm py-1.5 px-3"
-              onClick={() => onAccion(c.id, "cancelar")}
+          )}
+
+          {celular && (
+            <a
+              className="btn-wa text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap font-medium inline-flex items-center gap-1"
+              href={`https://wa.me/${celular}`}
+              target="_blank"
+              rel="noreferrer"
             >
-              Cancelar
-            </button>
-          </>
-        )}
-
-        {c.estado === "completada" && (
-          <button
-            type="button"
-            className="btn-outline text-rose-700 border-rose-300 hover:bg-rose-50 text-xs sm:text-sm py-1.5 px-3 font-medium"
-            onClick={() => onAccion(c.id, "no-asistio")}
-          >
-            No asistió
-          </button>
-        )}
-
-        {c.estado === "no_asistio" && (
-          <button
-            type="button"
-            className="btn-outline text-xs sm:text-sm py-1.5 px-3"
-            onClick={() => onAccion(c.id, "completar")}
-          >
-            Marcar completada
-          </button>
-        )}
-
-        {celular && (
-          <a
-            className="btn-wa text-xs sm:text-sm py-1.5 px-3"
-            href={`https://wa.me/${celular}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <WhatsAppIcon className="w-4 h-4" /> WhatsApp
-          </a>
-        )}
+              <WhatsAppIcon className="w-3.5 h-3.5" /> WhatsApp
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

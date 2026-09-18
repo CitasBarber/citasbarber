@@ -21,14 +21,14 @@ export const GET = handler(async (req) => {
   const hoy = fechaLocalHoy();
   const ahoraHhmm = minAHhmm(minutosActualesColombia());
 
-  // Auto-completar citas confirmadas cuya horaFin ya pasó
+  // Auto-completar citas confirmadas cuya hora de inicio ya pasó
   await Cita.updateMany(
     {
       barbero: session.barberoId,
       estado: ESTADO_CITA.CONFIRMADA,
       $or: [
         { fecha: { $lt: hoy } },
-        { fecha: hoy, horaFin: { $lte: ahoraHhmm } },
+        { fecha: hoy, horaInicio: { $lte: ahoraHhmm } },
       ],
     },
     { $set: { estado: ESTADO_CITA.COMPLETADA } }
