@@ -36,6 +36,7 @@ export const GET = handler(async (req) => {
       ciudad: b.ciudad,
       email: b.email,
       estado: b.estado,
+      horario: b.horario || {},
       planes: b.planes || [],
       datosPago: b.datosPago || {},
       suscripcionActiva: b.suscripcionActiva,

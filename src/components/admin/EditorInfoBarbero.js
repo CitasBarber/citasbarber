@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { OjoAbierto, OjoCerrado } from "@/components/Icons";
+import { DURACIONES_CORTE_OPCIONES } from "@/lib/constants";
 
 export default function EditorInfoBarbero({ barbero, onClose, onGuardado }) {
   const [form, setForm] = useState({
-    nombre:    barbero.nombre    || "",
-    local:     barbero.local     || "",
-    celular:   barbero.celular   || "",
-    ciudad:    barbero.ciudad    || "",
-    direccion: barbero.direccion || "",
-    email:     barbero.email     || "",
+    nombre:           barbero.nombre           || "",
+    local:            barbero.local            || "",
+    celular:          barbero.celular          || "",
+    ciudad:           barbero.ciudad           || "",
+    direccion:        barbero.direccion        || "",
+    email:            barbero.email            || "",
+    duracionTurnoMin: barbero.horario?.duracionTurnoMin || barbero.planes?.[0]?.duracion || 30,
   });
   const [guardando, setGuardando]     = useState(false);
   const [error, setError]             = useState("");
@@ -104,6 +106,32 @@ export default function EditorInfoBarbero({ barbero, onClose, onGuardado }) {
             <div>
               <label className="label">Correo electrónico</label>
               <input className="input" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="barbero@email.com" required />
+            </div>
+
+            {/* Tiempo por corte / duración por turno */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="label mb-0">⏱️ Tiempo por corte (intervalo)</label>
+                <span className="text-xs font-bold text-barber-blue bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                  {form.duracionTurnoMin} min por turno
+                </span>
+              </div>
+              <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5 mt-1.5">
+                {DURACIONES_CORTE_OPCIONES.map((min) => (
+                  <button
+                    key={min}
+                    type="button"
+                    onClick={() => set("duracionTurnoMin", min)}
+                    className={`rounded-lg py-1.5 text-xs font-bold border transition ${
+                      Number(form.duracionTurnoMin) === min
+                        ? "bg-barber-ink text-white border-barber-ink shadow-sm"
+                        : "border-gray-200 text-barber-gray hover:border-barber-ink hover:text-barber-ink bg-white"
+                    }`}
+                  >
+                    {min}m
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="flex gap-3 pt-1">

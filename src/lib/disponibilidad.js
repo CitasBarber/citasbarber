@@ -128,8 +128,9 @@ export function calcularSlots({ barbero, fecha, duracion, citas = [] }) {
   if (jornada.tipo !== "laboral") return [];
 
   const { inicioMin, finMin, ocupados, minPermitido } = jornada;
-  const paso = barbero?.horario?.duracionTurnoMin || PASO_MIN;
-  const dur = duracion || paso;
+  const dur = Number(duracion) || barbero?.horario?.duracionTurnoMin || barbero?.planes?.[0]?.duracion || PASO_MIN;
+  // El intervalo entre cupos debe avanzar según la duración de la cita (ej. cada 40 min si la cita es de 40 min)
+  const paso = dur;
 
   const slots = [];
   for (let t = inicioMin; t + dur <= finMin; t += paso) {

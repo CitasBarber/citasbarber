@@ -395,7 +395,7 @@ function buildTimeline(fecha, perfil, citasDia) {
   if (jornada.tipo !== "laboral") return { tipo: jornada.tipo };
 
   const { inicioMin, finMin, ocupados, minPermitido } = jornada;
-  const paso = perfil?.horario?.duracionTurnoMin || PASO_MIN;
+  const paso = perfil?.horario?.duracionTurnoMin || perfil?.planes?.[0]?.duracion || PASO_MIN;
 
   const slots = [];
   const vistos = new Set(); // citas/ausencias que abarcan varios slots

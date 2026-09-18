@@ -27,6 +27,10 @@ export const PUT = handler(async (req, { params }) => {
   if (body.celular?.trim())   b.celular   = body.celular.trim();
   if (body.ciudad?.trim())    b.ciudad    = body.ciudad.trim();
   if (typeof body.direccion === "string") b.direccion = body.direccion.trim();
+  if (body.duracionTurnoMin != null) {
+    if (!b.horario) b.horario = {};
+    b.horario.duracionTurnoMin = Number(body.duracionTurnoMin);
+  }
   const nuevoEmail = body.email?.trim().toLowerCase();
   if (nuevoEmail) b.email = nuevoEmail;
   await b.save();
