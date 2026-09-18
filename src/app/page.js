@@ -5,7 +5,6 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import { Bigote, PosteBarbero } from "@/components/Icons";
 import { Scissors, Knife, Armchair } from "@phosphor-icons/react";
-import { formatoCOP } from "@/lib/constants";
 import ContactoAdmin from "@/components/ContactoAdmin";
 import BotonInstalarApp from "@/components/BotonInstalarApp";
 
@@ -119,7 +118,7 @@ export default function HomePage() {
                   <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
                     {b.planes.map((p) => (
                       <span key={p.key} className="text-[10px] sm:text-xs font-semibold bg-white/15 text-white rounded-full px-2 py-0.5 backdrop-blur-sm">
-                        {p.nombre} · {formatoCOP(p.precio)}
+                        {p.nombre}
                       </span>
                     ))}
                   </div>
