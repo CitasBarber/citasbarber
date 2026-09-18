@@ -4,7 +4,7 @@ import Usuario from "@/models/Usuario";
 import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession, hashPassword } from "@/lib/auth";
-import { ROLES, ESTADO_BARBERO, PLANES_DEFAULT } from "@/lib/constants";
+import { ROLES, ESTADO_BARBERO, PLANES_DEFAULT, BARBERIA_SEDE_DEFAULT } from "@/lib/constants";
 
 // GET /api/admin/barberos?estado=pendiente|activo|...  -> lista para el admin
 export const GET = handler(async (req) => {
@@ -55,8 +55,12 @@ export const POST = handler(async (req) => {
   const body = await req.json();
   const { nombre, local, celular, ciudad, direccion, email, password } = body;
 
-  if (!nombre?.trim() || !local?.trim() || !celular?.trim() || !ciudad?.trim() || !email?.trim()) {
-    return fail("Nombre, local, celular, ciudad y correo son obligatorios", 400);
+  const localFinal = local?.trim() || BARBERIA_SEDE_DEFAULT.local;
+  const ciudadFinal = ciudad?.trim() || BARBERIA_SEDE_DEFAULT.ciudad;
+  const direccionFinal = (typeof direccion === "string" && direccion.trim()) ? direccion.trim() : BARBERIA_SEDE_DEFAULT.direccion;
+
+  if (!nombre?.trim() || !celular?.trim() || !email?.trim()) {
+    return fail("Nombre, celular y correo son obligatorios", 400);
   }
 
   // Normalizar email: si el admin ingresó solo el alias, concatenar @citasbarber.com
@@ -82,10 +86,10 @@ export const POST = handler(async (req) => {
 
   const barbero = await Barbero.create({
     nombre: nombre.trim(),
-    local: local.trim(),
+    local: localFinal,
     celular: celular.trim(),
-    ciudad: ciudad.trim(),
-    direccion: direccion?.trim() || "",
+    ciudad: ciudadFinal,
+    direccion: direccionFinal,
     email: emailNormalizado,
     estado: ESTADO_BARBERO.ACTIVO,
     suscripcionActiva: true,

@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import { OjoAbierto, OjoCerrado, WhatsAppIcon } from "@/components/Icons";
+import { BARBERIA_SEDE_DEFAULT } from "@/lib/constants";
 
-export default function CrearBarberoModal({ onClose, onCreado }) {
+export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }) {
+  const sede = defaultBarberia || BARBERIA_SEDE_DEFAULT;
   const [form, setForm] = useState({
     nombre: "",
-    local: "",
+    local: sede.local || BARBERIA_SEDE_DEFAULT.local,
     celular: "",
-    ciudad: "",
-    direccion: "",
+    ciudad: sede.ciudad || BARBERIA_SEDE_DEFAULT.ciudad,
+    direccion: sede.direccion || BARBERIA_SEDE_DEFAULT.direccion,
     emailAlias: "",
   });
 
@@ -45,8 +47,8 @@ export default function CrearBarberoModal({ onClose, onCreado }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.nombre.trim() || !form.local.trim() || !form.celular.trim() || !form.ciudad.trim() || !form.emailAlias.trim()) {
-      setError("Nombre, local, celular, ciudad y correo son obligatorios.");
+    if (!form.nombre.trim() || !form.celular.trim() || !form.emailAlias.trim()) {
+      setError("Nombre, celular y correo son obligatorios.");
       return;
     }
 
@@ -230,19 +232,6 @@ export default function CrearBarberoModal({ onClose, onCreado }) {
                   />
                 </div>
                 <div>
-                  <label className="label">Nombre del local *</label>
-                  <input
-                    className="input"
-                    value={form.local}
-                    onChange={(e) => set("local", e.target.value)}
-                    placeholder="Ej. Barbería Clásica"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
                   <label className="label">Celular / WhatsApp *</label>
                   <input
                     className="input"
@@ -253,26 +242,51 @@ export default function CrearBarberoModal({ onClose, onCreado }) {
                     required
                   />
                 </div>
-                <div>
-                  <label className="label">Ciudad *</label>
-                  <input
-                    className="input"
-                    value={form.ciudad}
-                    onChange={(e) => set("ciudad", e.target.value)}
-                    placeholder="Ej. Medellín, Caldas..."
-                    required
-                  />
-                </div>
               </div>
 
-              <div>
-                <label className="label">Dirección (opcional)</label>
-                <input
-                  className="input"
-                  value={form.direccion}
-                  onChange={(e) => set("direccion", e.target.value)}
-                  placeholder="Ej. Carrera 50 # 128-20"
-                />
+              {/* Sede / Barbería precargada */}
+              <div className="rounded-xl bg-barber-cream/70 border border-black/10 p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-barber-gray flex items-center gap-1">
+                    💈 Sede / Barbería
+                  </span>
+                  <span className="text-[11px] text-barber-blue font-semibold">
+                    Datos del local actual
+                  </span>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="label text-xs">Nombre del local</label>
+                    <input
+                      className="input text-sm py-2 bg-white"
+                      value={form.local}
+                      onChange={(e) => set("local", e.target.value)}
+                      placeholder="770 Barbería"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="label text-xs">Ciudad</label>
+                    <input
+                      className="input text-sm py-2 bg-white"
+                      value={form.ciudad}
+                      onChange={(e) => set("ciudad", e.target.value)}
+                      placeholder="Caldas, Antioquia"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label text-xs">Dirección</label>
+                  <input
+                    className="input text-sm py-2 bg-white"
+                    value={form.direccion}
+                    onChange={(e) => set("direccion", e.target.value)}
+                    placeholder="Carrera 48 # 133 sur 50"
+                  />
+                </div>
               </div>
 
               {/* Correo con dominio @citasbarber.com por defecto */}

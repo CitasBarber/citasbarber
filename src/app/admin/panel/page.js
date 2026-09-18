@@ -273,6 +273,15 @@ export default function AdminPanelPage() {
 
       {creandoBarbero && (
         <CrearBarberoModal
+          defaultBarberia={
+            barberos.length > 0 && barberos[0].local
+              ? {
+                  local: barberos[0].local,
+                  ciudad: barberos[0].ciudad,
+                  direccion: barberos[0].direccion,
+                }
+              : undefined
+          }
           onClose={() => setCreandoBarbero(false)}
           onCreado={(nuevoBarbero, abrirPlanes) => {
             setCreandoBarbero(false);
