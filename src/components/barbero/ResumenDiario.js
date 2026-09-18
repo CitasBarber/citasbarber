@@ -182,6 +182,12 @@ export default function ResumenDiario() {
                   <strong className="text-barber-ink">{data.estados?.canceladas}</strong> cancelados
                 </span>
               )}
+              {data.estados?.noAsistidas > 0 && (
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-400" />
+                  <strong className="text-barber-ink">{data.estados?.noAsistidas}</strong> no asistieron
+                </span>
+              )}
             </div>
           </div>
 

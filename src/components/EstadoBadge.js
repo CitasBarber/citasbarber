@@ -4,6 +4,7 @@ const MAPA = {
   rechazada: { label: "Rechazada", clase: "bg-red-100 text-red-800" },
   completada: { label: "Completada", clase: "bg-blue-100 text-blue-800" },
   cancelada: { label: "Cancelada", clase: "bg-gray-200 text-gray-700" },
+  no_asistio: { label: "No asistió", clase: "bg-rose-100 text-rose-800" },
   // estados de barbero
   pendiente: { label: "Pendiente", clase: "bg-amber-100 text-amber-800" },
   activo: { label: "Activo", clase: "bg-green-100 text-green-800" },

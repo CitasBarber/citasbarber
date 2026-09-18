@@ -3,7 +3,7 @@ import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { ESTADO_CITA, ROLES, METODOS_PAGO_LABEL } from "@/lib/constants";
-import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { fechaLocalHoy, minutosActualesColombia, minAHhmm } from "@/lib/disponibilidad";
 
 // GET /api/barbero/resumen?fecha=YYYY-MM-DD  -> resumen diario del barbero (cuadre de caja y productividad)
 export const GET = handler(async (req) => {
@@ -12,8 +12,24 @@ export const GET = handler(async (req) => {
   if (!session || session.role !== ROLES.BARBERO)
     return fail("No autorizado", 403);
 
+  const hoy = fechaLocalHoy();
+  const ahoraHhmm = minAHhmm(minutosActualesColombia());
+
+  // Auto-completar citas pasadas antes de calcular métricas
+  await Cita.updateMany(
+    {
+      barbero: session.barberoId,
+      estado: ESTADO_CITA.CONFIRMADA,
+      $or: [
+        { fecha: { $lt: hoy } },
+        { fecha: hoy, horaFin: { $lte: ahoraHhmm } },
+      ],
+    },
+    { $set: { estado: ESTADO_CITA.COMPLETADA } }
+  );
+
   const { searchParams } = new URL(req.url);
-  const fecha = searchParams.get("fecha") || fechaLocalHoy();
+  const fecha = searchParams.get("fecha") || hoy;
 
   // Consultar todas las citas del día para obtener métricas completas de estados
   const todasLasCitas = await Cita.find({
@@ -27,6 +43,7 @@ export const GET = handler(async (req) => {
   const canceladas = todasLasCitas.filter(
     (c) => c.estado === ESTADO_CITA.CANCELADA || c.estado === ESTADO_CITA.RECHAZADA
   );
+  const noAsistidas = todasLasCitas.filter((c) => c.estado === ESTADO_CITA.NO_ASISTIO);
 
   // Citas que forman parte del turno activo (completadas + confirmadas)
   const citasActivas = [...completadas, ...confirmadas];
@@ -160,6 +177,7 @@ export const GET = handler(async (req) => {
       confirmadas: confirmadas.length,
       solicitadas: solicitadas.length,
       canceladas: canceladas.length,
+      noAsistidas: noAsistidas.length,
       totalRegistradas: todasLasCitas.length,
     },
     completadas: completadas.length,

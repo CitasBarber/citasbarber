@@ -50,9 +50,19 @@ export const PATCH = handler(async (req, { params }) => {
 
     case "completar": {
       if (!esBarberoDueno) return fail("No autorizado", 403);
-      if (cita.estado !== ESTADO_CITA.CONFIRMADA)
-        return fail("Solo se pueden completar citas confirmadas", 400);
+      if (![ESTADO_CITA.CONFIRMADA, ESTADO_CITA.NO_ASISTIO].includes(cita.estado))
+        return fail("Solo se pueden completar citas confirmadas o no asistidas", 400);
       cita.estado = ESTADO_CITA.COMPLETADA;
+      await cita.save();
+      return ok({ cita: serializarCita(cita.toObject()) });
+    }
+
+    case "no-asistio":
+    case "no_asistio": {
+      if (!esBarberoDueno) return fail("No autorizado", 403);
+      if (![ESTADO_CITA.CONFIRMADA, ESTADO_CITA.COMPLETADA].includes(cita.estado))
+        return fail("Solo se pueden marcar como no asistidas citas confirmadas o completadas", 400);
+      cita.estado = ESTADO_CITA.NO_ASISTIO;
       await cita.save();
       return ok({ cita: serializarCita(cita.toObject()) });
     }

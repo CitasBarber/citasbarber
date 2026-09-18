@@ -4,7 +4,7 @@ import Cita from "@/models/Cita";
 import Cliente from "@/models/Cliente";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
-import { calcularSlots, minAHhmm, hhmmAMin, fechaLocalHoy, formatearHora12 } from "@/lib/disponibilidad";
+import { calcularSlots, minAHhmm, hhmmAMin, fechaLocalHoy, formatearHora12, minutosActualesColombia } from "@/lib/disponibilidad";
 import { normalizarCelular, linkWhatsApp, mensajeNuevaCita } from "@/lib/whatsapp";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { serializarCita } from "@/lib/serializers";
@@ -17,6 +17,22 @@ export const GET = handler(async (req) => {
   const session = getSession();
   if (!session || session.role !== ROLES.BARBERO)
     return fail("No autorizado", 403);
+
+  const hoy = fechaLocalHoy();
+  const ahoraHhmm = minAHhmm(minutosActualesColombia());
+
+  // Auto-completar citas confirmadas cuya horaFin ya pasó
+  await Cita.updateMany(
+    {
+      barbero: session.barberoId,
+      estado: ESTADO_CITA.CONFIRMADA,
+      $or: [
+        { fecha: { $lt: hoy } },
+        { fecha: hoy, horaFin: { $lte: ahoraHhmm } },
+      ],
+    },
+    { $set: { estado: ESTADO_CITA.COMPLETADA } }
+  );
 
   const { searchParams } = new URL(req.url);
   const fecha = searchParams.get("fecha");

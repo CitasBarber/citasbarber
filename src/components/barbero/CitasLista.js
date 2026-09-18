@@ -49,6 +49,18 @@ export default function CitasLista({ onCambio }) {
       if (motivo === null) return;
       extra.motivo = motivo;
     }
+    if (accion === "no-asistio") {
+      const motivo = await pedirMotivo({
+        titulo: "Marcar como No asistió",
+        mensaje: "¿El cliente no se presentó a su cita? La cita cambiará de estado y no sumará a los cobros del resumen.",
+        placeholder: "Nota interna (opcional)",
+        confirmarLabel: "Sí, marcar No asistió",
+        cancelarLabel: "Volver",
+        peligro: true,
+      });
+      if (motivo === null) return;
+      extra.motivo = motivo;
+    }
     const res = await fetch(`/api/citas/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -114,6 +126,12 @@ export default function CitasLista({ onCambio }) {
                     <button className="btn-dark text-sm py-1.5" onClick={() => accion(c.id, "completar")}>Marcar completada</button>
                     <button className="btn-outline text-sm py-1.5" onClick={() => accion(c.id, "cancelar")}>Cancelar Cita</button>
                   </>
+                )}
+                {c.estado === "completada" && (
+                  <button className="btn-outline text-rose-700 border-rose-300 hover:bg-rose-50 text-sm py-1.5" onClick={() => accion(c.id, "no-asistio")}>No asistió</button>
+                )}
+                {c.estado === "no_asistio" && (
+                  <button className="btn-outline text-sm py-1.5" onClick={() => accion(c.id, "completar")}>Marcar completada</button>
                 )}
                 {c.pagoAnticipo?.requerido && c.pagoAnticipo?.comprobante && (
                   <button className="btn-outline text-sm py-1.5" onClick={() => verComprobante(c.id)}>Ver comprobante</button>

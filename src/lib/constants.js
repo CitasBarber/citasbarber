@@ -20,6 +20,7 @@ export const ESTADO_CITA = {
   RECHAZADA: "rechazada",
   COMPLETADA: "completada",
   CANCELADA: "cancelada",
+  NO_ASISTIO: "no_asistio",
 };
 
 export const METODOS_PAGO = {

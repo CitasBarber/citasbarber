@@ -14,12 +14,14 @@ const DOT_COLOR = {
   completada: "bg-blue-500",
   rechazada:  "bg-red-400",
   cancelada:  "bg-gray-300",
+  no_asistio: "bg-rose-400",
 };
 
 const CITA_ESTILO = {
   solicitada: { wrap: "border-amber-200 bg-amber-50",  barra: "bg-amber-400" },
   confirmada: { wrap: "border-green-200 bg-green-50",  barra: "bg-green-500" },
   completada: { wrap: "border-blue-200  bg-blue-50",   barra: "bg-blue-500"  },
+  no_asistio: { wrap: "border-rose-200  bg-rose-50",   barra: "bg-rose-400"  },
 };
 
 // Columna de la hora con ancho fijo: en fuente monoespaciada, 23ch equivale al
@@ -76,6 +78,18 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
       });
       if (motivo === null) return;
       extra.motivo = motivo;
+    }
+    if (accion === "no-asistio") {
+      const confirmar = await pedirMotivo({
+        titulo: "Marcar como No asistió",
+        mensaje: "¿El cliente no se presentó a su cita? La cita cambiará de estado y no sumará a los cobros del resumen.",
+        placeholder: "Nota o motivo (opcional)",
+        confirmarLabel: "Sí, marcar No asistió",
+        cancelarLabel: "Volver",
+        peligro: true,
+      });
+      if (confirmar === null) return;
+      extra.motivo = confirmar;
     }
     const res = await fetch(`/api/citas/${id}`, {
       method: "PATCH",
@@ -214,6 +228,8 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block" /> Libre</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> Solicitada</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-600 inline-block" /> Confirmada</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block" /> Completada</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-rose-400 inline-block" /> No asistió</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-gray-400 inline-block" /> Ausencia</span>
             </div>
 
@@ -324,14 +340,6 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
     );
   }
 
-  // La cita tiene acciones ocultas (bajo el desplegable) cuando NO es solicitada
-  // pero sí hay algo que hacer: completar (confirmada) o contactar por WhatsApp.
-  const tieneAccionesOcultas =
-    !esSolicitada && (c.estado === "confirmada" || !!celular);
-  const expandida = abierta === c.id;
-  // Las solicitadas muestran sus acciones siempre; el resto, al expandir.
-  const mostrarAcciones = esSolicitada || expandida;
-
   const cabecera = (
     <>
       <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
@@ -346,55 +354,86 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
       </div>
       <div className="shrink-0 self-center flex items-center gap-1.5">
         <EstadoBadge estado={c.estado} />
-        {tieneAccionesOcultas && (
-          <span className={`text-barber-gray transition-transform ${expandida ? "rotate-180" : ""}`}>⌄</span>
-        )}
       </div>
     </>
   );
 
   return (
     <div className={`rounded-lg border ${estilo.wrap} ${esSolicitada ? "ring-1 ring-amber-300" : ""}`}>
-      {tieneAccionesOcultas ? (
-        <button
-          type="button"
-          onClick={() => onToggle(c.id)}
-          className="w-full flex items-stretch gap-3 px-3 py-2.5 text-left"
-        >
-          {cabecera}
-        </button>
-      ) : (
-        <div className="w-full flex items-stretch gap-3 px-3 py-2.5">
-          {cabecera}
-        </div>
-      )}
+      <div className="w-full flex items-stretch gap-3 px-3 py-2.5">
+        {cabecera}
+      </div>
 
-      {mostrarAcciones && (
-        <div className="flex flex-wrap gap-2 px-3 pb-3 pt-0">
-          {esSolicitada && (
-            <>
-              <button className="btn-blue text-sm py-1.5" onClick={() => onAccion(c.id, "confirmar")}>Aceptar</button>
-              <button className="btn-outline text-sm py-1.5" onClick={() => onAccion(c.id, "rechazar")}>Rechazar</button>
-            </>
-          )}
-          {c.estado === "confirmada" && (
-            <>
-              <button className="btn-dark text-sm py-1.5" onClick={() => onAccion(c.id, "completar")}>Marcar completada</button>
-              <button className="btn-outline text-sm py-1.5" onClick={() => onAccion(c.id, "cancelar")}>Cancelar Cita</button>
-            </>
-          )}
-          {celular && (
-            <a
-              className="btn-wa text-sm py-1.5"
-              href={`https://wa.me/${celular}`}
-              target="_blank"
-              rel="noreferrer"
+      <div className="flex flex-wrap items-center gap-2 px-3 pb-3 pt-0">
+        {esSolicitada && (
+          <>
+            <button
+              type="button"
+              className="btn-blue text-xs sm:text-sm py-1.5 px-3"
+              onClick={() => onAccion(c.id, "confirmar")}
             >
-              <WhatsAppIcon className="w-4 h-4" /> WhatsApp
-            </a>
-          )}
-        </div>
-      )}
+              Aceptar
+            </button>
+            <button
+              type="button"
+              className="btn-outline text-xs sm:text-sm py-1.5 px-3"
+              onClick={() => onAccion(c.id, "rechazar")}
+            >
+              Rechazar
+            </button>
+          </>
+        )}
+
+        {c.estado === "confirmada" && (
+          <>
+            <button
+              type="button"
+              className="btn-dark text-xs sm:text-sm py-1.5 px-3"
+              onClick={() => onAccion(c.id, "completar")}
+            >
+              Marcar Completada
+            </button>
+            <button
+              type="button"
+              className="btn-outline text-xs sm:text-sm py-1.5 px-3"
+              onClick={() => onAccion(c.id, "cancelar")}
+            >
+              Cancelar
+            </button>
+          </>
+        )}
+
+        {c.estado === "completada" && (
+          <button
+            type="button"
+            className="btn-outline text-rose-700 border-rose-300 hover:bg-rose-50 text-xs sm:text-sm py-1.5 px-3 font-medium"
+            onClick={() => onAccion(c.id, "no-asistio")}
+          >
+            No asistió
+          </button>
+        )}
+
+        {c.estado === "no_asistio" && (
+          <button
+            type="button"
+            className="btn-outline text-xs sm:text-sm py-1.5 px-3"
+            onClick={() => onAccion(c.id, "completar")}
+          >
+            Marcar completada
+          </button>
+        )}
+
+        {celular && (
+          <a
+            className="btn-wa text-xs sm:text-sm py-1.5 px-3"
+            href={`https://wa.me/${celular}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <WhatsAppIcon className="w-4 h-4" /> WhatsApp
+          </a>
+        )}
+      </div>
     </div>
   );
 }
