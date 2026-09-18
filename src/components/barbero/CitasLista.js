@@ -112,7 +112,7 @@ export default function CitasLista({ onCambio }) {
                 {c.estado === "confirmada" && (
                   <>
                     <button className="btn-dark text-sm py-1.5" onClick={() => accion(c.id, "completar")}>Marcar completada</button>
-                    <button className="btn-outline text-sm py-1.5" onClick={() => accion(c.id, "cancelar")}>Cancelar</button>
+                    <button className="btn-outline text-sm py-1.5" onClick={() => accion(c.id, "cancelar")}>Cancelar Cita</button>
                   </>
                 )}
                 {c.pagoAnticipo?.requerido && c.pagoAnticipo?.comprobante && (

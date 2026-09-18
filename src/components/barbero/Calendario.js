@@ -65,6 +65,18 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
       if (motivo === null) return;
       extra.motivo = motivo;
     }
+    if (accion === "cancelar") {
+      const motivo = await pedirMotivo({
+        titulo: "Cancelar cita confirmada",
+        mensaje: "Se le avisará al cliente por WhatsApp. Contanos el motivo si querés.",
+        placeholder: "Motivo de la cancelación (opcional)",
+        confirmarLabel: "Sí, cancelar",
+        cancelarLabel: "No",
+        peligro: true,
+      });
+      if (motivo === null) return;
+      extra.motivo = motivo;
+    }
     const res = await fetch(`/api/citas/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -366,7 +378,10 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
             </>
           )}
           {c.estado === "confirmada" && (
-            <button className="btn-dark text-sm py-1.5" onClick={() => onAccion(c.id, "completar")}>Marcar completada</button>
+            <>
+              <button className="btn-dark text-sm py-1.5" onClick={() => onAccion(c.id, "completar")}>Marcar completada</button>
+              <button className="btn-outline text-sm py-1.5" onClick={() => onAccion(c.id, "cancelar")}>Cancelar Cita</button>
+            </>
           )}
           {celular && (
             <a
