@@ -135,7 +135,7 @@ export default function HomePage() {
       <footer className="bg-barber-black text-white/70 text-sm">
         <div className="h-1 sm:h-1.5 barber-pole" />
         <div className="mx-auto max-w-6xl px-4 py-5 sm:py-6 flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 text-center sm:text-left">
-          <span>© {new Date().getFullYear()} 770 Barbería · Caldas, Antioquia</span>
+          <span>770 Barbería - Caldas, Antioquia · © {new Date().getFullYear()}</span>
           <div className="flex justify-center sm:justify-end items-center gap-4">
             <BotonInstalarApp className="inline-flex items-center font-semibold text-white hover:text-barber-red" />
             <ContactoAdmin className="hover:text-white" />
