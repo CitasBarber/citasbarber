@@ -462,7 +462,7 @@ function Pasos({ paso }) {
 }
 
 function Resumen({ barbero, plan, fecha, hora }) {
-  const duracionReal = barbero.horario?.duracionTurnoMin || plan.duracion;
+  const duracionReal = Number(plan.duracion) || barbero.horario?.duracionTurnoMin || 30;
   return (
     <div className="rounded-lg border border-black/10 p-4 text-left text-sm space-y-1">
       <p><b>Barbero:</b> {barbero.nombre} — {barbero.local}</p>

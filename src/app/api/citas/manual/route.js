@@ -37,7 +37,7 @@ export const POST = handler(async (req) => {
     .select("horaInicio horaFin")
     .lean();
 
-  const duracionCita = barbero.horario?.duracionTurnoMin || plan.duracion || 30;
+  const duracionCita = Number(plan.duracion) || barbero.horario?.duracionTurnoMin || 30;
 
   const slots = calcularSlots({ barbero, fecha, duracion: duracionCita, citas: citasDia });
   if (!slots.includes(horaInicio))

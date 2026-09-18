@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { OjoAbierto, OjoCerrado, WhatsAppIcon } from "@/components/Icons";
-import { BARBERIA_SEDE_DEFAULT } from "@/lib/constants";
+import { BARBERIA_SEDE_DEFAULT, DURACIONES_CORTE_OPCIONES } from "@/lib/constants";
 
 export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }) {
   const sede = defaultBarberia || BARBERIA_SEDE_DEFAULT;
@@ -15,6 +15,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
     emailAlias: "",
   });
 
+  const [duracionTurnoMin, setDuracionTurnoMin] = useState(30);
   const [password, setPassword] = useState("Barbero123*");
   const [verPassword, setVerPassword] = useState(false);
   const [guardando, setGuardando] = useState(false);
@@ -72,6 +73,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
           direccion: form.direccion.trim(),
           email: emailFinal,
           password: password.trim(),
+          duracionTurnoMin: Number(duracionTurnoMin),
         }),
       });
 
@@ -308,6 +310,35 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                 <p className="text-xs text-barber-gray mt-1">
                   Dirección final: <span className="font-medium text-barber-ink">{emailFinal || "(escribe el usuario)"}</span>
                 </p>
+              </div>
+
+              {/* Tiempo por corte / intervalo de turnos */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="label mb-0">⏱️ Tiempo por corte (intervalo)</label>
+                  <span className="text-xs font-bold text-barber-blue bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    {duracionTurnoMin} min base
+                  </span>
+                </div>
+                <p className="text-xs text-barber-gray mb-1.5">
+                  Intervalo entre turnos. Cada plan aplicará su duración específica al agendar:
+                </p>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+                  {DURACIONES_CORTE_OPCIONES.map((min) => (
+                    <button
+                      key={min}
+                      type="button"
+                      onClick={() => setDuracionTurnoMin(min)}
+                      className={`rounded-lg py-1.5 text-xs font-bold border transition ${
+                        duracionTurnoMin === min
+                          ? "bg-barber-ink text-white border-barber-ink shadow-sm"
+                          : "border-gray-200 text-barber-gray hover:border-barber-ink hover:text-barber-ink bg-white"
+                      }`}
+                    >
+                      {min}m
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Contraseña temporal */}

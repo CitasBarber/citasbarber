@@ -84,6 +84,8 @@ export const POST = handler(async (req) => {
     return fail("La contraseña debe tener al menos 6 caracteres", 400);
   }
 
+  const duracionTurno = Number(body.duracionTurnoMin) || HORARIO_DEFAULT.duracionTurnoMin || 30;
+
   const barbero = await Barbero.create({
     nombre: nombre.trim(),
     local: localFinal,
@@ -94,6 +96,10 @@ export const POST = handler(async (req) => {
     estado: ESTADO_BARBERO.ACTIVO,
     suscripcionActiva: true,
     suscripcionVence: new Date(Date.now() + 30 * 864e5),
+    horario: {
+      ...HORARIO_DEFAULT,
+      duracionTurnoMin: duracionTurno,
+    },
     planes: PLANES_DEFAULT,
   });
 
