@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { DIAS_SEMANA } from "@/lib/constants";
-import { fechaLocalHoy, esFechaPasada, formatearHora12 } from "@/lib/disponibilidad";
+import { DIAS_SEMANA, DURACIONES_CORTE_OPCIONES } from "@/lib/constants";
+import { fechaLocalHoy, esFechaPasada, formatearHora12, hhmmAMin, minAHhmm } from "@/lib/disponibilidad";
 import { linkWhatsApp } from "@/lib/whatsapp";
 
 export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
   const [horaInicio, setHoraInicio] = useState(perfil.horario?.horaInicio || "10:00");
   const [horaFin, setHoraFin] = useState(perfil.horario?.horaFin || "19:00");
   const [dias, setDias] = useState(perfil.horario?.diasLaborales || [1, 2, 3, 4, 5, 6]);
+  const [duracionTurnoMin, setDuracionTurnoMin] = useState(perfil.horario?.duracionTurnoMin || 30);
   const [almuerzoActivo, setAlmuerzoActivo] = useState(perfil.horario?.almuerzo?.activo || false);
   const [almuerzoIni, setAlmuerzoIni] = useState(perfil.horario?.almuerzo?.horaInicio || "13:00");
   const [almuerzoFin, setAlmuerzoFin] = useState(perfil.horario?.almuerzo?.horaFin || "14:00");
@@ -128,6 +129,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
           horaInicio,
           horaFin,
           diasLaborales: dias,
+          duracionTurnoMin: Number(duracionTurnoMin),
           almuerzo: { activo: almuerzoActivo, horaInicio: almuerzoIni, horaFin: almuerzoFin },
         },
         ventanaCancelacionHoras: Number(ventana),
@@ -228,6 +230,41 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
             <label className="label">🔴 Cierre</label>
             <input type="time" className="input" value={horaFin} onChange={(e) => setHoraFin(e.target.value)} />
           </div>
+        </div>
+
+        {/* Tiempo por corte / turno */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="label mb-0">⏱️ Tiempo por corte</label>
+            <span className="text-xs font-bold text-barber-blue bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              {duracionTurnoMin} minutos por cliente
+            </span>
+          </div>
+          <p className="text-xs text-barber-gray mb-2">
+            Elige cuánto tardas en cada corte. Tu agenda se organizará en bloques exactos de este tiempo:
+          </p>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+            {DURACIONES_CORTE_OPCIONES.map((min) => (
+              <button
+                key={min}
+                type="button"
+                onClick={() => setDuracionTurnoMin(min)}
+                className={`rounded-lg py-2 text-xs font-bold border transition ${
+                  duracionTurnoMin === min
+                    ? "bg-barber-ink text-white border-barber-ink shadow-sm"
+                    : "border-gray-200 text-barber-gray hover:border-barber-ink hover:text-barber-ink bg-white"
+                }`}
+              >
+                {min}m
+              </button>
+            ))}
+          </div>
+          {horaInicio && (
+            <p className="text-xs text-barber-gray mt-2 bg-barber-cream/70 p-2.5 rounded-lg border border-black/5">
+              📌 Ejemplo: Turno 1: <b>{hora12simple(horaInicio)} – {hora12simple(minAHhmm(hhmmAMin(horaInicio) + duracionTurnoMin))}</b>
+              {" · "}Turno 2: <b>{hora12simple(minAHhmm(hhmmAMin(horaInicio) + duracionTurnoMin))} – {hora12simple(minAHhmm(hhmmAMin(horaInicio) + duracionTurnoMin * 2))}</b>
+            </p>
+          )}
         </div>
 
         {/* Días — grid fijo 7 columnas para que siempre quepan en una fila */}

@@ -128,11 +128,13 @@ export function calcularSlots({ barbero, fecha, duracion, citas = [] }) {
   if (jornada.tipo !== "laboral") return [];
 
   const { inicioMin, finMin, ocupados, minPermitido } = jornada;
+  const paso = barbero?.horario?.duracionTurnoMin || PASO_MIN;
+  const dur = duracion || paso;
 
   const slots = [];
-  for (let t = inicioMin; t + duracion <= finMin; t += PASO_MIN) {
+  for (let t = inicioMin; t + dur <= finMin; t += paso) {
     if (t < minPermitido) continue;
-    const fin = t + duracion;
+    const fin = t + dur;
     const chocaConOcupado = ocupados.some((o) => seSolapa(t, fin, o.ini, o.fin));
     if (!chocaConOcupado) {
       slots.push(minAHhmm(t));

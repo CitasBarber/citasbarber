@@ -59,6 +59,12 @@ const BarberoSchema = new mongoose.Schema(
       horaInicio: { type: String, default: HORARIO_DEFAULT.horaInicio },
       horaFin: { type: String, default: HORARIO_DEFAULT.horaFin },
       diasLaborales: { type: [Number], default: HORARIO_DEFAULT.diasLaborales },
+      duracionTurnoMin: {
+        type: Number,
+        default: HORARIO_DEFAULT.duracionTurnoMin || 30,
+        min: 15,
+        max: 120,
+      },
       // Hora de almuerzo: se aplica a todos los días laborales y no queda
       // disponible para agendar citas.
       almuerzo: {

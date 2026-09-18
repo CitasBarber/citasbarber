@@ -65,11 +65,13 @@ export const POST = handler(async (req) => {
     .select("horaInicio horaFin")
     .lean();
 
-  const slots = calcularSlots({ barbero, fecha, duracion: plan.duracion, citas: citasDia });
+  const duracionCita = barbero.horario?.duracionTurnoMin || plan.duracion || 30;
+
+  const slots = calcularSlots({ barbero, fecha, duracion: duracionCita, citas: citasDia });
   if (!slots.includes(horaInicio))
     return fail("Ese horario ya no está disponible. Elige otro.", 409);
 
-  const horaFin = minAHhmm(hhmmAMin(horaInicio) + plan.duracion);
+  const horaFin = minAHhmm(hhmmAMin(horaInicio) + duracionCita);
 
   // Registrar/actualizar cliente
   let cliente = await Cliente.findOne({ celular: clienteCelular });
@@ -89,7 +91,7 @@ export const POST = handler(async (req) => {
       nombre: plan.nombre,
       servicios: plan.servicios,
       precio: plan.precio,
-      duracion: plan.duracion,
+      duracion: duracionCita,
       anticipo: plan.anticipo,
     },
     fecha,

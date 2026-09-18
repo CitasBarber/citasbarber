@@ -104,6 +104,8 @@ export const HORARIO_DEFAULT = {
   horaFin: "19:00",
   // 1=lunes ... 6=sábado (0=domingo). Por defecto lunes a sábado.
   diasLaborales: [1, 2, 3, 4, 5, 6],
+  // Duración estándar por corte / turno en minutos
+  duracionTurnoMin: 30,
   // Hora de almuerzo (se aplica a los días laborales). Desactivada por defecto.
   almuerzo: {
     activo: false,
@@ -111,6 +113,8 @@ export const HORARIO_DEFAULT = {
     horaFin: "14:00",
   },
 };
+
+export const DURACIONES_CORTE_OPCIONES = [20, 25, 30, 35, 40, 45, 50, 60];
 
 export const VENTANA_CANCELACION_HORAS_DEFAULT = 24;
 

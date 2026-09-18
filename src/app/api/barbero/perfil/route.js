@@ -57,6 +57,10 @@ export const PUT = handler(async (req) => {
     b.horario.horaFin = body.horario.horaFin ?? b.horario.horaFin;
     if (Array.isArray(body.horario.diasLaborales))
       b.horario.diasLaborales = body.horario.diasLaborales;
+    if (body.horario.duracionTurnoMin != null) {
+      const dur = Number(body.horario.duracionTurnoMin);
+      if (dur >= 15 && dur <= 120) b.horario.duracionTurnoMin = dur;
+    }
     if (body.horario.almuerzo) {
       b.horario.almuerzo = {
         activo: !!body.horario.almuerzo.activo,

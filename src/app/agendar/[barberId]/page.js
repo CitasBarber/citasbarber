@@ -462,12 +462,13 @@ function Pasos({ paso }) {
 }
 
 function Resumen({ barbero, plan, fecha, hora }) {
+  const duracionReal = barbero.horario?.duracionTurnoMin || plan.duracion;
   return (
     <div className="rounded-lg border border-black/10 p-4 text-left text-sm space-y-1">
       <p><b>Barbero:</b> {barbero.nombre} — {barbero.local}</p>
       <p><b>Plan:</b> {plan.nombre} ({plan.servicios.join(", ")})</p>
       <p className="capitalize"><b>Fecha:</b> {etiquetaFecha(fecha)}</p>
-      <p><b>Hora:</b> {hora12(hora)} ({plan.duracion} min)</p>
+      <p><b>Hora:</b> {hora12(hora)} ({duracionReal} min)</p>
       <p><b>Valor:</b> {formatoCOP(plan.precio)}</p>
     </div>
   );
