@@ -144,11 +144,14 @@ export default function MisCitasPage() {
               )}
             </div>
             <input
+              type="tel"
               className="input"
               value={celular}
-              onChange={(e) => setCelular(e.target.value)}
+              onChange={(e) => setCelular(e.target.value.replace(/\D/g, "").slice(0, 10))}
               placeholder="Ej: 3001234567"
               inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={10}
             />
           </div>
           <button

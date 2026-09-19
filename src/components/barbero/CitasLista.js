@@ -2,11 +2,14 @@
 
 import { useEffect, useState, useCallback } from "react";
 import EstadoBadge from "@/components/EstadoBadge";
-import { WhatsAppIcon } from "@/components/Icons";
+import { WhatsAppIcon, CalendarioIcon } from "@/components/Icons";
+import ModalCitaConfirmada from "./ModalCitaConfirmada";
+import BotonCalendarioCita from "./BotonCalendarioCita";
 import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
 import { fechaLocalHoy, formatearHora12 } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 import { useDialog } from "@/components/DialogProvider";
+import { generarIcsDia, descargarIcs } from "@/lib/calendario";
 
 export default function CitasLista({ onCambio }) {
   const { pedirMotivo } = useDialog();
@@ -14,6 +17,7 @@ export default function CitasLista({ onCambio }) {
   const [citas, setCitas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [comprobante, setComprobante] = useState(null); // {url}
+  const [citaConfirmadaParaModal, setCitaConfirmadaParaModal] = useState(null);
 
   const cargar = useCallback(() => {
     setCargando(true);
@@ -69,6 +73,14 @@ export default function CitasLista({ onCambio }) {
     const d = await res.json();
     if (!res.ok) return alert(d.error);
     if (d.linkWhatsApp) window.open(d.linkWhatsApp, "_blank");
+
+    if (accion === "confirmar") {
+      const citaAceptada = citas.find((c) => (c.id || c._id) === id);
+      if (citaAceptada) {
+        setCitaConfirmadaParaModal({ ...citaAceptada, estado: "confirmada" });
+      }
+    }
+
     cargar();
     onCambio?.();
   }
@@ -80,11 +92,27 @@ export default function CitasLista({ onCambio }) {
     else alert("Esta cita no tiene comprobante.");
   }
 
+  const citasConfirmadas = citas.filter((c) => c.estado === "confirmada");
+
   return (
     <div>
-      <div className="flex items-center gap-2 mb-4">
-        <input type="date" className="input max-w-[180px]" value={fecha} onChange={(e) => setFecha(e.target.value)} />
-        <button className="btn-outline text-sm py-1.5" onClick={() => setFecha(fechaLocalHoy())}>Hoy</button>
+      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <input type="date" className="input max-w-[180px]" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+          <button className="btn-outline text-sm py-1.5" onClick={() => setFecha(fechaLocalHoy())}>Hoy</button>
+        </div>
+
+        {citasConfirmadas.length >= 2 && (
+          <button
+            type="button"
+            className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 border-dashed border-barber-gold text-barber-gold hover:bg-barber-gold/10 font-medium transition-colors"
+            onClick={() => descargarIcs(`citas_dia_${fecha}`, generarIcsDia(citasConfirmadas))}
+            title="Descargar todas las citas confirmadas de este día en un solo archivo (.ics)"
+          >
+            <CalendarioIcon className="w-3.5 h-3.5" />
+            <span>Guardar en calendario</span>
+          </button>
+        )}
       </div>
 
       {cargando ? (
@@ -125,6 +153,7 @@ export default function CitasLista({ onCambio }) {
                   <>
                     <button className="btn-dark text-sm py-1.5" onClick={() => accion(c.id, "completar")}>Marcar completada</button>
                     <button className="btn-outline text-sm py-1.5" onClick={() => accion(c.id, "cancelar")}>Cancelar Cita</button>
+                    <BotonCalendarioCita cita={c} />
                   </>
                 )}
                 {c.estado === "completada" && (
@@ -152,6 +181,16 @@ export default function CitasLista({ onCambio }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={comprobante} alt="Comprobante" className="max-h-[85vh] rounded-lg" />
         </div>
+      )}
+
+      {citaConfirmadaParaModal && (
+        <ModalCitaConfirmada
+          cita={citaConfirmadaParaModal}
+          citasConfirmadasDelDia={citas.filter(
+            (c) => c.estado === "confirmada" || c.id === citaConfirmadaParaModal.id
+          )}
+          onCerrar={() => setCitaConfirmadaParaModal(null)}
+        />
       )}
     </div>
   );

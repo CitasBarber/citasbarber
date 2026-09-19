@@ -204,7 +204,16 @@ export default function AgendarPage() {
           </div>
           <div>
             <label className="label">Celular</label>
-            <input className="input" value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="Ej: 3001234567" inputMode="numeric" />
+            <input
+              type="tel"
+              className="input"
+              value={celular}
+              onChange={(e) => setCelular(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              placeholder="Ej: 3001234567"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={10}
+            />
             <p className="text-xs text-barber-gray mt-1">Con tu celu después consultás cómo va tu cita.</p>
           </div>
           <button
@@ -386,10 +395,10 @@ export default function AgendarPage() {
       {/* PASO 5: resultado */}
       {paso === 5 && resultado && (
         <div className="card p-6 mt-4 space-y-4 text-center">
-          <div className="text-5xl">✅</div>
-          <h2 className="font-display text-2xl">¡Listo!</h2>
-          <p className="text-barber-gray">
-            Tu cita quedó <b>pendiente de que el barbero la acepte</b>. Apenas confirme, te avisamos por WhatsApp.
+          <div className="text-5xl">📲</div>
+          <h2 className="font-display text-2xl text-barber-ink">¡Falta un último paso!</h2>
+          <p className="text-sm text-barber-gray max-w-md mx-auto leading-relaxed">
+            Para apartar tu cupo, <strong>envíale el mensaje a tu barbero por WhatsApp</strong>. Así él sabrá de tu solicitud y te confirmará de inmediato.
           </p>
           <Resumen barbero={barbero} plan={plan} fecha={fecha} hora={hora} />
 
@@ -408,15 +417,28 @@ export default function AgendarPage() {
           )}
 
           {resultado.linkWhatsappBarbero && (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {metodoPago && metodoPago !== "efectivo" && (
                 <p className="text-sm font-semibold text-barber-ink text-left">
                   {requiereAnticipo ? "2. Envía el comprobante:" : "Luego avísale al barbero:"}
                 </p>
               )}
-              <a href={resultado.linkWhatsappBarbero} target="_blank" rel="noreferrer" className="btn-wa w-full py-3 text-base font-bold shadow-md shadow-emerald-500/20">
-                <WhatsAppIcon className="w-5 h-5" /> {requiereAnticipo ? "Enviar comprobante por WhatsApp al barbero" : "Avisarle al barbero por WhatsApp"}
+              <a
+                href={resultado.linkWhatsappBarbero}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-wa w-full py-3.5 text-base font-bold shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
+              >
+                <WhatsAppIcon className="w-5 h-5 shrink-0" />
+                <span>
+                  👉 {requiereAnticipo
+                    ? `Toca aquí para enviar comprobante a ${barbero.nombre?.split(" ")[0] || "tu barbero"}`
+                    : `Toca aquí para avisarle a ${barbero.nombre?.split(" ")[0] || "tu barbero"}`} por WhatsApp
+                </span>
               </a>
+              <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200/80 rounded-lg p-2.5 text-center font-medium">
+                ⚠️ <strong>Importante:</strong> Tu cita no quedará confirmada hasta que el barbero reciba tu mensaje.
+              </p>
             </div>
           )}
 

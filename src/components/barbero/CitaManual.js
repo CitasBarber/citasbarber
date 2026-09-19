@@ -225,14 +225,18 @@ export default function CitaManual({ planes, onCreada, prefill }) {
         <label className="label">Celular (opcional)</label>
         <div className="flex gap-2 items-center">
           <input
+            type="tel"
             className="input flex-1"
             value={clienteCelular}
             onChange={(e) => {
-              setCelular(e.target.value);
-              if (e.target.value.length >= 3) buscarSugerencias(e.target.value);
+              const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setCelular(val);
+              if (val.length >= 3) buscarSugerencias(val);
             }}
             placeholder="Ej: 3001234567"
             inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={10}
           />
           {soportaContactos && (
             <button

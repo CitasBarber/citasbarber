@@ -31,6 +31,15 @@ export const PUT = handler(async (req, { params }) => {
     if (!b.horario) b.horario = {};
     b.horario.duracionTurnoMin = Number(body.duracionTurnoMin);
   }
+  if (body.tarifaMensual != null) {
+    b.tarifaMensual = Number(body.tarifaMensual);
+  }
+  if (body.suscripcionVence) {
+    b.suscripcionVence = new Date(body.suscripcionVence);
+  }
+  if (body.fechaInicioSuscripcion) {
+    b.fechaInicioSuscripcion = new Date(body.fechaInicioSuscripcion);
+  }
   const nuevoEmail = body.email?.trim().toLowerCase();
   if (nuevoEmail) b.email = nuevoEmail;
   await b.save();
@@ -43,11 +52,12 @@ export const PUT = handler(async (req, { params }) => {
   return ok({ ok: true });
 });
 
-// PATCH /api/admin/barberos/:id  body: { accion: aprobar|rechazar|activar|desactivar }
+// PATCH /api/admin/barberos/:id  body: { accion: aprobar|rechazar|activar|desactivar|renovar|ajustar-suscripcion }
 export const PATCH = handler(async (req, { params }) => {
   await dbConnect();
   requireAdmin();
-  const { accion, meses } = await req.json();
+  const body = await req.json();
+  const { accion, meses, dias, tarifaMensual, fechaVencimiento } = body;
   const b = await Barbero.findById(params.id);
   if (!b) return fail("Barbero no encontrado", 404);
 
@@ -56,6 +66,7 @@ export const PATCH = handler(async (req, { params }) => {
       b.estado = ESTADO_BARBERO.ACTIVO;
       b.suscripcionActiva = true;
       b.suscripcionVence = new Date(Date.now() + (meses || 1) * 30 * 864e5);
+      if (!b.fechaInicioSuscripcion) b.fechaInicioSuscripcion = new Date();
       // Si no tiene planes, se cargan los de plantilla para que el admin los ajuste
       if (!b.planes || b.planes.length === 0) b.planes = PLANES_DEFAULT;
       break;
@@ -67,16 +78,33 @@ export const PATCH = handler(async (req, { params }) => {
       b.estado = ESTADO_BARBERO.ACTIVO;
       b.suscripcionActiva = true;
       b.suscripcionVence = new Date(Date.now() + (meses || 1) * 30 * 864e5);
+      if (!b.fechaInicioSuscripcion) b.fechaInicioSuscripcion = new Date();
       break;
     case "desactivar":
       b.estado = ESTADO_BARBERO.INACTIVO;
       b.suscripcionActiva = false;
       break;
+    case "renovar": {
+      const ahora = new Date();
+      const base = (b.suscripcionVence && new Date(b.suscripcionVence) > ahora)
+        ? new Date(b.suscripcionVence)
+        : ahora;
+      const cantDias = dias || (meses ? meses * 30 : 30);
+      b.suscripcionVence = new Date(base.getTime() + cantDias * 864e5);
+      b.suscripcionActiva = true;
+      b.estado = ESTADO_BARBERO.ACTIVO;
+      break;
+    }
+    case "ajustar-suscripcion": {
+      if (tarifaMensual != null) b.tarifaMensual = Number(tarifaMensual);
+      if (fechaVencimiento) b.suscripcionVence = new Date(fechaVencimiento);
+      break;
+    }
     default:
       return fail("Acción no válida", 400);
   }
   await b.save();
-  return ok({ ok: true, estado: b.estado });
+  return ok({ ok: true, estado: b.estado, suscripcionVence: b.suscripcionVence });
 });
 
 // DELETE /api/admin/barberos/:id

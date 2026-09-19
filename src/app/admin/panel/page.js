@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -8,6 +8,7 @@ import EstadoBadge from "@/components/EstadoBadge";
 import EditorPlanes from "@/components/admin/EditorPlanes";
 import EditorInfoBarbero from "@/components/admin/EditorInfoBarbero";
 import CrearBarberoModal from "@/components/admin/CrearBarberoModal";
+import ControlSuscripciones from "@/components/admin/ControlSuscripciones";
 import ActivarNotificaciones from "@/components/ActivarNotificaciones";
 import { useDialog } from "@/components/DialogProvider";
 
@@ -25,12 +26,13 @@ export default function AdminPanelPage() {
   const [sesion, setSesion] = useState(undefined);
   const [filtro, setFiltro] = useState("pendiente");
   const [barberos, setBarberos] = useState([]);
+  const [todosBarberos, setTodosBarberos] = useState([]);
   const [creandoBarbero, setCreandoBarbero] = useState(false); // CrearBarberoModal
   const [editando, setEditando]       = useState(null); // EditorPlanes
   const [editandoInfo, setEditandoInfo] = useState(null); // EditorInfoBarbero
   const [eliminando, setEliminando]   = useState(null); // barbero a eliminar (modal confirmación)
   const [borrando, setBorrando]       = useState(false);
-  const [vista, setVista]             = useState("barberos"); // "barberos" | "solicitudes"
+  const [vista, setVista]             = useState("barberos"); // "barberos" | "solicitudes" | "control"
   const [solicitudes, setSolicitudes] = useState([]);
   const [nuevasSolicitudes, setNuevasSolicitudes] = useState(0);
 
@@ -46,7 +48,20 @@ export default function AdminPanelPage() {
   const cargar = useCallback(() => {
     const q = filtro ? `?estado=${filtro}` : "";
     fetch(`/api/admin/barberos${q}`).then((r) => r.json()).then((d) => setBarberos(d.barberos || []));
+    fetch("/api/admin/barberos").then((r) => r.json()).then((d) => setTodosBarberos(d.barberos || []));
   }, [filtro]);
+
+  const porCobrarCount = useMemo(() => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    return todosBarberos.filter((b) => {
+      if (b.estado !== "activo" || !b.suscripcionVence) return false;
+      const vence = new Date(b.suscripcionVence);
+      vence.setHours(0, 0, 0, 0);
+      const diffDias = Math.round((vence.getTime() - hoy.getTime()) / 864e5);
+      return diffDias <= 5;
+    }).length;
+  }, [todosBarberos]);
 
   useEffect(() => { if (sesion) cargar(); }, [sesion, cargar]);
 
@@ -152,6 +167,15 @@ export default function AdminPanelPage() {
             {nuevasSolicitudes > 0 && (
               <span className="inline-grid place-items-center min-w-[20px] h-5 px-1.5 rounded-full bg-barber-red text-white text-xs font-bold">
                 {nuevasSolicitudes}
+              </span>
+            )}
+          </button>
+          <button onClick={() => setVista("control")}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2 ${vista === "control" ? "bg-barber-ink text-white" : "border"}`}>
+            Control
+            {porCobrarCount > 0 && (
+              <span className="inline-grid place-items-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-white text-xs font-bold">
+                {porCobrarCount}
               </span>
             )}
           </button>
@@ -268,6 +292,10 @@ export default function AdminPanelPage() {
               </div>
             ))}
           </div>
+        )}
+
+        {vista === "control" && (
+          <ControlSuscripciones barberos={todosBarberos} onActualizar={cargar} />
         )}
       </main>
 

@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import EstadoBadge from "@/components/EstadoBadge";
-import { WhatsAppIcon } from "@/components/Icons";
+import { WhatsAppIcon, CalendarioIcon } from "@/components/Icons";
 import { DIAS_SEMANA } from "@/lib/constants";
 import { fechaLocalHoy, minAHhmm, jornadaDelDia, PASO_MIN, formatearHora12 } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 import { useDialog } from "@/components/DialogProvider";
+import { generarIcsDia, descargarIcs } from "@/lib/calendario";
 
 const DOT_COLOR = {
   solicitada: "bg-amber-400",
@@ -124,6 +125,8 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
     a.horaInicio.localeCompare(b.horaInicio)
   );
 
+  const citasConfirmadasDia = citasDia.filter((c) => c.estado === "confirmada");
+
   const timeline = useMemo(
     () => (perfil?.horario ? buildTimeline(diaSel, perfil, citasDia) : null),
     [diaSel, perfil, citasDia]
@@ -188,7 +191,20 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
 
       {/* Timeline del día seleccionado */}
       <div className="mt-6">
-        <h3 className="font-display text-lg mb-1 capitalize">{formatDiaDetalle(diaSel)}</h3>
+        <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+          <h3 className="font-display text-lg capitalize">{formatDiaDetalle(diaSel)}</h3>
+          {citasConfirmadasDia.length > 0 && (
+            <button
+              type="button"
+              className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 border-dashed border-barber-gold text-barber-gold hover:bg-barber-gold/10 font-medium transition-colors"
+              onClick={() => descargarIcs(`citas_dia_${diaSel}`, generarIcsDia(citasConfirmadasDia, perfil))}
+              title="Guardar citas confirmadas del día en el calendario (.ics)"
+            >
+              <CalendarioIcon className="w-3.5 h-3.5" />
+              <span>Guardar en calendario</span>
+            </button>
+          )}
+        </div>
 
         {timeline === null && (
           <p className="text-barber-gray text-sm">Cargando horario…</p>
