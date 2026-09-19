@@ -69,7 +69,7 @@ export default function ControlSuscripciones({ barberos = [], onActualizar }) {
     let recaudoEstimado = 0;
 
     for (const b of activos) {
-      recaudoEstimado += Number(b.tarifaMensual ?? 50000);
+      recaudoEstimado += Number(b.tarifaMensual ?? 20000);
       const est = calcularEstadoSuscripcion(b.suscripcionVence);
       if (est.clave === "al_dia") alDia++;
       else if (est.clave === "por_vencer") porVencer++;
@@ -191,7 +191,7 @@ export default function ControlSuscripciones({ barberos = [], onActualizar }) {
       ? new Date(b.suscripcionVence).toLocaleDateString("es-CO", { day: "numeric", month: "long" })
       : "estos días";
     const primerNombre = (b.nombre || "").split(" ")[0];
-    const tarifa = formatoCOP(b.tarifaMensual ?? 50000);
+    const tarifa = formatoCOP(b.tarifaMensual ?? 20000);
 
     const msg = `Hola ${primerNombre}, te saludamos de Barbería 770 Caldas. 👋\n\nTe recordamos que tu mensualidad de la plataforma (${b.local}) vence el ${fechaVenceStr}.\n\n💰 Valor a renovar: ${tarifa}.\n\nPor favor envíanos el comprobante de transferencia para renovar tu mes y mantener tu agenda activa. ¡Muchas gracias! 💈`;
 
@@ -350,7 +350,7 @@ export default function ControlSuscripciones({ barberos = [], onActualizar }) {
                         ⏳ <strong>Vence:</strong> {fechaVenceStr}
                       </span>
                       <span>
-                        💵 <strong>Tarifa:</strong> {formatoCOP(b.tarifaMensual ?? 50000)}/mes
+                        💵 <strong>Tarifa:</strong> {formatoCOP(b.tarifaMensual ?? 20000)}/mes
                       </span>
                     </div>
                   </div>
@@ -390,7 +390,7 @@ export default function ControlSuscripciones({ barberos = [], onActualizar }) {
                           id: b.id,
                           nombre: b.nombre,
                           local: b.local,
-                          tarifaMensual: b.tarifaMensual ?? 50000,
+                          tarifaMensual: b.tarifaMensual ?? 20000,
                           suscripcionVence: b.suscripcionVence
                             ? new Date(b.suscripcionVence).toISOString().slice(0, 10)
                             : "",

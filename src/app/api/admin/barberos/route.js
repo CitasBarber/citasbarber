@@ -42,7 +42,7 @@ export const GET = handler(async (req) => {
       suscripcionActiva: b.suscripcionActiva,
       suscripcionVence: b.suscripcionVence,
       fechaInicioSuscripcion: b.fechaInicioSuscripcion || b.createdAt,
-      tarifaMensual: b.tarifaMensual ?? 50000,
+      tarifaMensual: b.tarifaMensual ?? 20000,
       numCitas: citasPorBarbero[b._id.toString()] || 0,
       createdAt: b.createdAt,
     })),

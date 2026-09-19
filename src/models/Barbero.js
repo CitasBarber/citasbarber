@@ -84,7 +84,7 @@ const BarberoSchema = new mongoose.Schema(
     suscripcionActiva: { type: Boolean, default: false },
     suscripcionVence: Date,
     fechaInicioSuscripcion: Date,
-    tarifaMensual: { type: Number, default: 50000 }, // COP
+    tarifaMensual: { type: Number, default: 20000 }, // COP
   },
   { timestamps: true }
 );
