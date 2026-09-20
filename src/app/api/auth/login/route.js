@@ -10,7 +10,13 @@ export const POST = handler(async (req) => {
   const { email, password } = await req.json();
   if (!email || !password) return fail("Email y contraseña son obligatorios");
 
-  const usuario = await Usuario.findOne({ email: email.toLowerCase().trim() });
+  const emailNorm = email.toLowerCase().trim();
+  let usuario = await Usuario.findOne({ email: emailNorm });
+  if (!usuario && (emailNorm === "admin@citasbarber" || emailNorm === "admin@citasbarber.com")) {
+    usuario = await Usuario.findOne({
+      email: emailNorm === "admin@citasbarber" ? "admin@citasbarber.com" : "admin@citasbarber",
+    });
+  }
   if (!usuario) return fail("Credenciales inválidas", 401);
 
   const valido = await verifyPassword(password, usuario.passwordHash);

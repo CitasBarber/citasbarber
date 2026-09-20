@@ -17,15 +17,15 @@ const oswald = Oswald({
 });
 
 export const metadata = {
-  title: "770 Barbería — Agendá tu motilada",
+  title: "CitasBarber — Agendá tu motilada",
   description:
-    "770 Barbería (Caldas, Antioquia). Agendá tu motilada en un momentico, sin llamadas ni filas.",
+    "CitasBarber. Agendá tu motilada en un momentico, sin llamadas ni filas.",
   // Permite que iOS trate la web como app (pantalla completa) al agregarla a
   // la pantalla de inicio.
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "770 Barbería",
+    title: "CitasBarber",
   },
   icons: {
     apple: "/apple-touch-icon.png",

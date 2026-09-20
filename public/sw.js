@@ -1,4 +1,4 @@
-// Service worker de 770 Barbería. Dos funciones:
+// Service worker de CitasBarber. Dos funciones:
 //  1) Habilitar la instalación de la PWA (Chrome exige un SW con manejador
 //     'fetch'). No cachea nada: siempre va a la red, así barbero y cliente
 //     ven datos frescos de las citas.
@@ -16,10 +16,10 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: "770 Barbería", body: event.data ? event.data.text() : "" };
+    data = { title: "CitasBarber", body: event.data ? event.data.text() : "" };
   }
 
-  const title = data.title || "770 Barbería";
+  const title = data.title || "CitasBarber";
   const options = {
     body: data.body || "",
     icon: "/icon-192.png",

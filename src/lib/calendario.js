@@ -64,7 +64,7 @@ export function generarGoogleCalendarUrl(cita, barbero = {}) {
   ].filter(Boolean);
 
   const ubicacion = [
-    barbero.local || "Barbería 770 Caldas",
+    barbero.local || "CitasBarber",
     barbero.direccion,
     barbero.ciudad,
   ].filter(Boolean).join(", ");
@@ -88,7 +88,7 @@ function generarVEvent(cita, barbero = {}) {
   const dtStart = fechaHoraAUfc(cita.fecha, cita.horaInicio);
   const dtEnd = fechaHoraAUfc(cita.fecha, cita.horaFin);
   const dtStamp = fechaHoraAUfc(new Date().toISOString().slice(0, 10), "12:00");
-  const uid = `cita-${cita.id || cita._id || Math.random().toString(36).slice(2)}@barberia770.com`;
+  const uid = `cita-${cita.id || cita._id || Math.random().toString(36).slice(2)}@citasbarber.com`;
 
   const titulo = `Cita: ${cita.clienteNombre || "Cliente"} - ${cita.planSnapshot?.nombre || cita.plan || "Corte"}`;
   const lineas = [
@@ -101,7 +101,7 @@ function generarVEvent(cita, barbero = {}) {
   ].filter(Boolean);
 
   const ubicacion = [
-    barbero.local || "Barbería 770 Caldas",
+    barbero.local || "CitasBarber",
     barbero.direccion,
     barbero.ciudad,
   ].filter(Boolean).join(", ");
@@ -128,7 +128,7 @@ export function generarIcsCita(cita, barbero = {}) {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Barberia 770 Caldas//Citas//ES",
+    "PRODID:-//CitasBarber//Citas//ES",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     vevent,
@@ -144,7 +144,7 @@ export function generarIcsDia(citas = [], barbero = {}) {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Barberia 770 Caldas//Citas//ES",
+    "PRODID:-//CitasBarber//Citas//ES",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     vevents,

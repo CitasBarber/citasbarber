@@ -32,7 +32,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-10 md:py-14 grid md:grid-cols-2 gap-8 items-center">
           <div>
             <p className="font-display text-lg sm:text-xl tracking-wide text-barber-red">
-              💈 770 Barbería · Caldas, Antioquia
+              💈 CitasBarber
             </p>
             <h1 className="font-display text-4xl md:text-5xl leading-tight mt-1">
               Tu motilada <span className="text-barber-red">sin filas</span> ni vueltas.
@@ -67,7 +67,7 @@ export default function HomePage() {
         <h2 className="font-display text-3xl flex items-center gap-2">
           <Bigote className="w-8 h-8 text-barber-ink" /> Escogé tu barbero
         </h2>
-        <p className="text-barber-gray mt-1">Estos son los barberos de 770. Escogé con quién te querés motilar.</p>
+        <p className="text-barber-gray mt-1">Estos son los barberos de CitasBarber. Escogé con quién te querés motilar.</p>
 
         {cargando ? (
           <p className="mt-8 text-barber-gray">Cargando barberos…</p>
@@ -114,7 +114,7 @@ export default function HomePage() {
                 {/* Contenido */}
                 <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
                   <h3 className="font-display text-white text-lg sm:text-xl leading-tight">{b.nombre}</h3>
-                  <p className="text-white/50 text-xs mb-2">Barbero en 770</p>
+                  <p className="text-white/50 text-xs mb-2">Barbero en CitasBarber</p>
                   <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
                     {b.planes.map((p) => (
                       <span key={p.key} className="text-[10px] sm:text-xs font-semibold bg-white/15 text-white rounded-full px-2 py-0.5 backdrop-blur-sm">
@@ -135,7 +135,7 @@ export default function HomePage() {
       <footer className="bg-barber-black text-white/70 text-sm">
         <div className="h-1 sm:h-1.5 barber-pole" />
         <div className="mx-auto max-w-6xl px-4 py-5 sm:py-6 flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 text-center sm:text-left">
-          <span>770 Barbería - Caldas, Antioquia · © {new Date().getFullYear()}</span>
+          <span>CitasBarber · © {new Date().getFullYear()}</span>
           <div className="flex justify-center sm:justify-end items-center gap-4">
             <BotonInstalarApp className="inline-flex items-center font-semibold text-white hover:text-barber-red" />
             <ContactoAdmin className="hover:text-white" />

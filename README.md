@@ -1,6 +1,6 @@
-# 💈 770 Barbería — Plataforma de Gestión y Agendamiento de Citas
+# 💈 CitasBarber — Plataforma de Gestión y Agendamiento de Citas
 
-Plataforma web **serverless y SaaS** orientada a la gestión integral de citas para **770 Barbería** (Caldas, Antioquia — Colombia) y barberos independientes. Permite a los clientes reservar en tiempo real sin formularios extensos ni contraseñas, automatiza las confirmaciones y cobros por **WhatsApp**, envía **notificaciones Web Push**, sincroniza citas con **Google Calendar y calendarios nativos (`.ics`)**, y ofrece un módulo administrativo de **Control de Suscripciones** mensual para el administrador.
+Plataforma web **serverless y SaaS** orientada a la gestión integral de citas para **CitasBarber** (Colombia) y barberos independientes. Permite a los clientes reservar en tiempo real sin formularios extensos ni contraseñas, automatiza las confirmaciones y cobros por **WhatsApp**, envía **notificaciones Web Push**, sincroniza citas con **Google Calendar y calendarios nativos (`.ics`)**, y ofrece un módulo administrativo de **Control de Suscripciones** mensual para el administrador.
 
 El stack es **100 % gratuito y eficiente**: Next.js 14 (App Router) + MongoDB Atlas + Web Push (VAPID) + WhatsApp (`wa.me`) + Vercel.
 

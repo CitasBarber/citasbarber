@@ -25,7 +25,7 @@ export default function Header({ children }) {
         <Link href="/" className="flex items-center gap-2 shrink-0 min-h-[44px]">
           <PosteBarbero className="w-5 h-9 sm:w-6 sm:h-12" />
           <span className="font-display text-xl sm:text-2xl tracking-wide">
-            <span className="text-barber-red">770</span> Barbería
+            <span className="text-barber-red">Citas</span>Barber
           </span>
         </Link>
         <nav className="flex items-center text-sm">{children}</nav>

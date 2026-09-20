@@ -1,12 +1,12 @@
 // Manifest de la PWA. Next lo sirve en /manifest.webmanifest y añade el
-// <link rel="manifest"> automáticamente. Permite instalar "770 Barbería"
+// <link rel="manifest"> automáticamente. Permite instalar "CitasBarber"
 // como app en la pantalla de inicio (Android en un toque; iOS manual).
 export default function manifest() {
   return {
-    name: "770 Barbería",
-    short_name: "770 Barbería",
+    name: "CitasBarber",
+    short_name: "CitasBarber",
     description:
-      "Agendá tu motilada en 770 Barbería sin llamadas ni filas.",
+      "Agendá tu motilada en CitasBarber sin llamadas ni filas.",
     start_url: "/",
     scope: "/",
     display: "standalone",

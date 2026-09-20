@@ -4,15 +4,15 @@ import { formatearHora12 } from "./disponibilidad";
 
 // Sitio del proyecto: se usa como firma promocional en los mensajes que llegan
 // al cliente final, para dar a conocer la plataforma.
-const SITIO_URL = "https://770barberia.vercel.app";
+const SITIO_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://citasbarber.vercel.app";
 
 // Pie promocional para mensajes dirigidos al cliente. Respeta el modo "plano"
 // (PC/WhatsApp Desktop) donde los emojis se corrompen.
 function firmaSitio({ plano = false } = {}) {
   if (plano) {
-    return `\n\nAgenda tus citas facil con 770 Barberia:\n${SITIO_URL}`;
+    return `\n\nAgenda tus citas facil con CitasBarber:\n${SITIO_URL}`;
   }
-  return `\n\n${E.CALENDARIO} _Agenda tus citas fácil con_ *770 Barbería*\n👉 ${SITIO_URL}`;
+  return `\n\n${E.CALENDARIO} _Agenda tus citas fácil con_ *CitasBarber*\n👉 ${SITIO_URL}`;
 }
 
 export function normalizarCelular(celular) {

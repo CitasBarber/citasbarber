@@ -1,10 +1,10 @@
-# Documentación del Proyecto — 770 Barbería
+# Documentación del Proyecto — CitasBarber
 
 ---
 
 ## 1. Objetivo
 
-Ofrecer una plataforma web **serverless y SaaS** orientada a la gestión integral de citas para **770 Barbería** (Caldas, Antioquia — Colombia) y barberos independientes. El sistema elimina la fricción de la reserva tradicional con un motor de disponibilidad en tiempo real adaptado a la zona horaria colombiana, planes de servicio diferenciados (Bronce, Plata, Oro), comunicación directa por **WhatsApp (`wa.me`)**, notificaciones **Web Push (VAPID)** en segundo plano, sincronización directa con **Google Calendar y calendarios nativos (`.ics`)**, módulo de **Control de Suscripciones** mensual para el administrador y herramientas avanzadas de agenda para el barbero (como la **Contact Picker API** para clientes presenciales). Todo ello sin pasarelas de pago de terceros ni costos recurrentes de mensajería.
+Ofrecer una plataforma web **serverless y SaaS** orientada a la gestión integral de citas para **CitasBarber** y barberos independientes. El sistema elimina la fricción de la reserva tradicional con un motor de disponibilidad en tiempo real adaptado a la zona horaria colombiana, planes de servicio diferenciados (Bronce, Plata, Oro), comunicación directa por **WhatsApp (`wa.me`)**, notificaciones **Web Push (VAPID)** en segundo plano, sincronización directa con **Google Calendar y calendarios nativos (`.ics`)**, módulo de **Control de Suscripciones** mensual para el administrador y herramientas avanzadas de agenda para el barbero (como la **Contact Picker API** para clientes presenciales). Todo ello sin pasarelas de pago de terceros ni costos recurrentes de mensajería.
 
 ---
 
@@ -12,7 +12,7 @@ Ofrecer una plataforma web **serverless y SaaS** orientada a la gestión integra
 
 | Campo | Valor |
 |---|---|
-| **Nombre del proyecto** | 770 Barbería (repositorio: `citasbarber`) |
+| **Nombre del proyecto** | CitasBarber (repositorio: `citasbarber`) |
 | **Versión actual** | 1.2.0 |
 | **Última actualización de este documento** | 2026‑09‑20 |
 | **Stack principal** | Next.js 14 (App Router) + React 18 + Tailwind CSS · API Routes (Node.js Serverless) · MongoDB Atlas + Mongoose 8 · JWT en cookie `httpOnly` · Web Push (`web-push` / VAPID) · Integración iCalendar/Google Calendar · WhatsApp (`wa.me`) · Despliegue en Vercel |
@@ -183,7 +183,7 @@ flowchart TD
 
 | Variable | Descripción | Entorno | Obligatoria |
 |---|---|---|---|
-| `NEXT_PUBLIC_BASE_URL` | URL base pública de la app (ej. `https://770barberia.com` o `http://localhost:3000`). | Todos | Sí |
+| `NEXT_PUBLIC_BASE_URL` | URL base pública de la app (ej. `https://citasbarber.com` o `http://localhost:3000`). | Todos | Sí |
 | `MONGODB_URI` | Cadena de conexión a MongoDB Atlas. Si está vacía en local, arranca MongoDB en memoria. | Producción | Sí en Prod |
 | `JWT_SECRET` | Clave secreta para firmar tokens de sesión. La app aborta si no existe en producción. | Producción | Sí en Prod |
 | `JWT_EXPIRES_IN` | Duración de la sesión en segundos (por defecto `172800` = 2 días). | Todos | No |

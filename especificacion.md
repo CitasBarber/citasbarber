@@ -2,7 +2,7 @@
 
 ## Visión del Producto
 
-La visión del producto es ofrecer una plataforma web SaaS orientada al mercado colombiano para la gestión integral de citas en barberías, con un modelo de suscripción mensual dirigido a barberos independientes o sedes de barbería (iniciando con **770 Barbería** en Caldas, Antioquia).
+La visión del producto es ofrecer una plataforma web SaaS orientada al mercado colombiano para la gestión integral de citas en barberías, con un modelo de suscripción mensual dirigido a barberos independientes o sedes de barbería (iniciando con **CitasBarber**).
 
 El **Administrador** es el eje central del modelo SaaS: valida qué barberos pueden usar la app (aprobando solicitudes o creándolos directamente), configura los planes de servicio (Bronce, Plata, Oro) con sus precios, duraciones y métodos de pago colombianos (Nequi, Daviplata, QR, cuenta bancaria, efectivo) de forma individual por barbero, y gestiona el **Control de Suscripciones** mensual mediante un tablero de semáforos, alertas por WhatsApp y KPIs de recaudo.
 

@@ -42,7 +42,19 @@ export default function LoginAdminPage() {
         <h1 className="font-display text-3xl text-center">Administración</h1>
         <form onSubmit={login} className="card p-6 mt-6 space-y-3">
           {error && <p className="text-red-600 text-sm">{error}</p>}
-          <div><label className="label">Email</label><input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+          <div>
+            <label className="label">Email</label>
+            <input
+              className="input"
+              type="text"
+              autoCapitalize="none"
+              autoCorrect="off"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@citasbarber"
+              required
+            />
+          </div>
           <div>
             <label className="label">Contraseña</label>
             <div className="relative">

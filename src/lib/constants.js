@@ -119,7 +119,7 @@ export const DURACIONES_CORTE_OPCIONES = [20, 25, 30, 35, 40, 45, 50, 60];
 
 // Datos por defecto de la sede/barbería principal
 export const BARBERIA_SEDE_DEFAULT = {
-  local: "770 Barbería",
+  local: "CitasBarber",
   ciudad: "Caldas, Antioquia",
   direccion: "Carrera 48 # 133 sur 50",
 };

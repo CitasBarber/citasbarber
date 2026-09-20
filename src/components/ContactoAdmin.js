@@ -86,7 +86,7 @@ export default function ContactoAdmin({ className = "hover:text-white", label = 
                   <h2 className="font-display text-2xl">¿Tienes una barbería?</h2>
                   <p className="text-barber-gray text-sm mt-1">
                     Habla con el administrador para tener esta app en tu barbería o para
-                    unirte a 770. Te contactamos por WhatsApp.
+                    unirte a CitasBarber. Te contactamos por WhatsApp.
                   </p>
                 </div>
                 {error && <p className="text-red-600 text-sm">{error}</p>}

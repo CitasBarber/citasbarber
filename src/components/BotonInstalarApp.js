@@ -97,8 +97,8 @@ export default function BotonInstalarApp({ className = "hover:text-white" }) {
 
             <div className="flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icon-192.png" alt="770 Barbería" className="w-12 h-12 rounded-xl shrink-0" />
-              <h2 className="font-display text-2xl">Instalá 770 Barbería</h2>
+              <img src="/icon-192.png" alt="CitasBarber" className="w-12 h-12 rounded-xl shrink-0" />
+              <h2 className="font-display text-2xl">Instalá CitasBarber</h2>
             </div>
 
             {modal === "ios" ? (

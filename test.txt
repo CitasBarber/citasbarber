@@ -1,4 +1,17 @@
-Barber770*
+=== CREDENCIALES DE PRUEBA ===
 
-barberia770caldas
+ADMINISTRADOR (/admin/login):
+Usuario: admin@citasbarber (o admin@citasbarber.com)
+Contraseña: Admin123*
 
+BARBERO 1 (/barbero/login):
+Nombre: Juan Sebastian
+Celular: 3162921261
+Email: juansebastian@citasbarber.com
+Contraseña: barbero123
+
+BARBERO 2 (/barbero/login):
+Nombre: Andres Felipe
+Celular: 3173780801
+Email: andresfelipe@citasbarber.com
+Contraseña: barbero123

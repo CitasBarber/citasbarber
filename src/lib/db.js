@@ -43,33 +43,29 @@ async function resolveUri() {
 }
 
 export async function dbConnect() {
-  if (cached.conn) return cached.conn;
+  if (!cached.conn) {
+    if (!cached.promise) {
+      cached.promise = (async () => {
+        const uri = await resolveUri();
+        return mongoose.connect(uri, {
+          bufferCommands: false,
+          dbName: "citasbarber",
+        });
+      })();
+    }
 
-  if (!cached.promise) {
-    cached.promise = (async () => {
-      const uri = await resolveUri();
-      return mongoose.connect(uri, {
-        bufferCommands: false,
-        dbName: "citasbarber",
-      });
-    })();
+    try {
+      cached.conn = await cached.promise;
+    } catch (e) {
+      cached.promise = null;
+      throw e;
+    }
   }
 
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
-
-  // Auto-seed: SOLO en desarrollo/pruebas y de forma explícita.
-  // Nunca en producción: evita crear cuentas de ejemplo con contraseñas conocidas
-  // (barbero123 / admin123) en la base real. En producción, el admin se crea con
-  // `node scripts/crear-admin.mjs` usando una contraseña fuerte.
+  // Auto-seed: SOLO en desarrollo/pruebas
   const seedPermitido =
     process.env.NODE_ENV !== "production" && process.env.ALLOW_SEED !== "false";
-  if (seedPermitido && !global._seedDone) {
-    global._seedDone = true;
+  if (seedPermitido) {
     try {
       const { seedIfEmpty } = await import("./seed");
       await seedIfEmpty();

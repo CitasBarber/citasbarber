@@ -264,7 +264,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                       className="input text-sm py-2 bg-white"
                       value={form.local}
                       onChange={(e) => set("local", e.target.value)}
-                      placeholder="770 Barbería"
+                      placeholder="CitasBarber"
                       required
                     />
                   </div>

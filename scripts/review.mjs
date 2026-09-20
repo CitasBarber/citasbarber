@@ -13,7 +13,7 @@ const viewports = {
 async function getBarberId() {
   const res = await fetch(`${BASE}/api/barberos`);
   const d = await res.json();
-  const b = d.barberos.find((x) => x.local.includes("770")) || d.barberos[0];
+  const b = d.barberos.find((x) => x.local.includes("CitasBarber")) || d.barberos[0];
   return b.id;
 }
 

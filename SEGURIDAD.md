@@ -1,4 +1,4 @@
-# Guía de Seguridad y Endurecimiento — 770 Barbería
+# Guía de Seguridad y Endurecimiento — CitasBarber
 
 Este documento detalla el modelo de seguridad implementado en el código fuente de la plataforma y los pasos que deben completarse **manualmente en las consolas** de MongoDB Atlas, Vercel, GitHub y proveedores de tareas programadas (Cron).
 

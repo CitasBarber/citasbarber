@@ -193,7 +193,7 @@ export default function ControlSuscripciones({ barberos = [], onActualizar }) {
     const primerNombre = (b.nombre || "").split(" ")[0];
     const tarifa = formatoCOP(b.tarifaMensual ?? 20000);
 
-    const msg = `Hola ${primerNombre}, te saludamos de Barbería 770 Caldas. 👋\n\nTe recordamos que tu mensualidad de la plataforma (${b.local}) vence el ${fechaVenceStr}.\n\n💰 Valor a renovar: ${tarifa}.\n\nPor favor envíanos el comprobante de transferencia para renovar tu mes y mantener tu agenda activa. ¡Muchas gracias! 💈`;
+    const msg = `Hola ${primerNombre}, te saludamos de CitasBarber. 👋\n\nTe recordamos que tu mensualidad de la plataforma (${b.local}) vence el ${fechaVenceStr}.\n\n💰 Valor a renovar: ${tarifa}.\n\nPor favor envíanos el comprobante de transferencia para renovar tu mes y mantener tu agenda activa. ¡Muchas gracias! 💈`;
 
     return `https://wa.me/${celLimpio}?text=${encodeURIComponent(msg)}`;
   }
