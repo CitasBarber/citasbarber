@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { dbConnect } from "@/lib/db";
 import Cita from "@/models/Cita";
 import Barbero from "@/models/Barbero";
@@ -26,7 +27,12 @@ export const GET = handler(async (req) => {
   if (!secreto) return fail("CRON_SECRET no configurado", 500);
 
   const auth = req.headers.get("authorization") || "";
-  if (auth !== `Bearer ${secreto}`) return fail("No autorizado", 401);
+  const esperado = `Bearer ${secreto}`;
+  const hashAuth = crypto.createHash("sha256").update(auth).digest();
+  const hashEsperado = crypto.createHash("sha256").update(esperado).digest();
+  if (!crypto.timingSafeEqual(hashAuth, hashEsperado)) {
+    return fail("No autorizado", 401);
+  }
 
   await dbConnect();
 

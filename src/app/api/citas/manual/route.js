@@ -16,10 +16,14 @@ export const POST = handler(async (req) => {
     return fail("No autorizado", 403);
 
   const body = await req.json();
-  const { plan: planKey, fecha, horaInicio, clienteNombre, plano } = body;
-  let { clienteCelular } = body;
+  const { plan: planKey, fecha, horaInicio, plano } = body;
+  let { clienteNombre, clienteCelular } = body;
   if (!planKey || !fecha || !horaInicio || !clienteNombre)
     return fail("Faltan datos de la cita");
+
+  clienteNombre = String(clienteNombre).trim().slice(0, 80);
+  if (!clienteNombre) return fail("El nombre del cliente no puede estar vacío");
+
   if (fecha < fechaLocalHoy())
     return fail("No puedes agendar en una fecha que ya pasó.", 400);
 

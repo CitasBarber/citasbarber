@@ -54,6 +54,10 @@ export const POST = handler(async (req) => {
     return fail("Faltan datos de la cita");
   if (!clienteNombre || !clienteCelular)
     return fail("Nombre y celular del cliente son obligatorios");
+
+  clienteNombre = String(clienteNombre).trim().slice(0, 80);
+  if (!clienteNombre) return fail("El nombre del cliente no puede estar vacío");
+
   if (fecha < fechaLocalHoy())
     return fail("No puedes agendar en una fecha que ya pasó.", 400);
 

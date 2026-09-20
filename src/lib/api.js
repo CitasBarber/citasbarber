@@ -15,7 +15,14 @@ export function handler(fn) {
       return await fn(req, ctx);
     } catch (e) {
       const status = e.status || 500;
-      if (status === 500) console.error(e);
+      if (status === 500) {
+        console.error(e);
+        const mensaje =
+          process.env.NODE_ENV === "production"
+            ? "Ha ocurrido un error inesperado. Intenta de nuevo más tarde."
+            : e.message || "Error interno";
+        return fail(mensaje, 500);
+      }
       return fail(e.message || "Error interno", status);
     }
   };

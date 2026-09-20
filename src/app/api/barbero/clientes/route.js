@@ -13,8 +13,9 @@ export const GET = handler(async (req) => {
     return fail("No autorizado", 403);
 
   const { searchParams } = new URL(req.url);
-  const q = (searchParams.get("q") || "").trim();
-  if (!q || q.length < 2) return ok({ clientes: [] });
+  const qRaw = (searchParams.get("q") || "").trim();
+  if (!qRaw || qRaw.length < 2) return ok({ clientes: [] });
+  const q = qRaw.slice(0, 25);
 
   const escaped = q.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
   const regex = new RegExp(escaped, "i");

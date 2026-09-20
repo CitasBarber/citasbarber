@@ -13,6 +13,8 @@ const LIMITES = [
   { patron: /^\/api\/auth\/registro-barbero/, max: 5, ventanaMs: 60_000 },
   { patron: /^\/api\/clientes\/identificar/, max: 15, ventanaMs: 60_000 },
   { patron: /^\/api\/solicitudes/, max: 5, ventanaMs: 60_000 },
+  { patron: /^\/api\/citas\/consulta/, max: 30, ventanaMs: 60_000 },
+  { patron: /^\/api\/push\/cliente\/subscribe/, max: 10, ventanaMs: 60_000 },
 ];
 
 // Map<clave, number[]>  -> timestamps de las peticiones recientes
@@ -62,5 +64,7 @@ export const config = {
     "/api/auth/registro-barbero",
     "/api/clientes/identificar",
     "/api/solicitudes",
+    "/api/citas/consulta",
+    "/api/push/cliente/subscribe",
   ],
 };

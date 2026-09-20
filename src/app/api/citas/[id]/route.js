@@ -117,11 +117,19 @@ export const PATCH = handler(async (req, { params }) => {
 // GET /api/citas/:id  -> detalle (con comprobante si es el barbero dueño)
 export const GET = handler(async (req, { params }) => {
   await dbConnect();
+  const session = getSession();
+  if (!session) return fail("No autenticado", 401);
+
   const cita = await Cita.findById(params.id).lean();
   if (!cita) return fail("Cita no encontrada", 404);
-  const session = getSession();
+
   const esBarberoDueno =
-    session?.role === ROLES.BARBERO && session.barberoId === cita.barbero.toString();
+    session.role === ROLES.BARBERO && session.barberoId === cita.barbero.toString();
+  const esAdmin = session.role === ROLES.ADMIN;
+
+  if (!esBarberoDueno && !esAdmin) {
+    return fail("No autorizado para consultar esta cita", 403);
+  }
 
   const data = serializarCita(cita);
   if (esBarberoDueno && cita.pagoAnticipo?.comprobante) {
