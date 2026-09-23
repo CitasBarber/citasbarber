@@ -11,6 +11,8 @@ import { serializarCita } from "@/lib/serializers";
 import { validarComprobante } from "@/lib/validaciones";
 import { enviarPush } from "@/lib/push";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/citas  -> lista de citas del barbero autenticado (opcional ?fecha=)
 export const GET = handler(async (req) => {
   await dbConnect();

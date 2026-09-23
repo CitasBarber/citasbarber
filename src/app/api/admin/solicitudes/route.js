@@ -4,6 +4,8 @@ import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { ROLES } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/solicitudes?estado=nueva|atendida  -> lista para el admin
 export const GET = handler(async (req) => {
   await dbConnect();

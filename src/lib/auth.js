@@ -2,14 +2,22 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 
-// El secret NUNCA debe tener un fallback en producción: si faltara, cualquiera
-// podría firmar tokens (incluido rol admin). En desarrollo se permite uno local.
-if (!process.env.JWT_SECRET && process.env.NODE_ENV === "production") {
-  throw new Error(
-    "JWT_SECRET es obligatorio en producción. Configúralo en las variables de entorno."
-  );
+// En producción, el secret es obligatorio para firmar o verificar tokens.
+// Se evalúa en tiempo de ejecución (no a nivel de módulo) para permitir que
+// el paso de build de Next.js compile las páginas sin fallar.
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "JWT_SECRET es obligatorio en producción. Configúralo en las variables de entorno."
+      );
+    }
+    return "dev-only-secret-no-usar-en-produccion";
+  }
+  return secret;
 }
-const JWT_SECRET = process.env.JWT_SECRET || "dev-only-secret-no-usar-en-produccion";
+
 // Sesión más corta por defecto (2 días) para limitar el daño de un token robado.
 const JWT_EXPIRES_IN = parseInt(process.env.JWT_EXPIRES_IN || "172800", 10);
 export const COOKIE_NAME = "cb_token";
@@ -23,12 +31,12 @@ export async function verifyPassword(password, hash) {
 }
 
 export function signToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: JWT_EXPIRES_IN });
 }
 
 export function verifyToken(token) {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, getJwtSecret());
   } catch {
     return null;
   }

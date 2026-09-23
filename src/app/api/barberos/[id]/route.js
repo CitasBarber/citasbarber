@@ -3,6 +3,8 @@ import Barbero from "@/models/Barbero";
 import { ok, fail, handler } from "@/lib/api";
 import { ESTADO_BARBERO } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 // Detalle público de un barbero activo (sin datos sensibles de credenciales)
 export const GET = handler(async (req, { params }) => {
   await dbConnect();

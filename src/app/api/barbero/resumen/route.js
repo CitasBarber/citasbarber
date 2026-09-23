@@ -5,6 +5,8 @@ import { getSession } from "@/lib/auth";
 import { ESTADO_CITA, ROLES, METODOS_PAGO_LABEL } from "@/lib/constants";
 import { fechaLocalHoy, minutosActualesColombia, minAHhmm } from "@/lib/disponibilidad";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/barbero/resumen?fecha=YYYY-MM-DD  -> resumen diario del barbero (cuadre de caja y productividad)
 export const GET = handler(async (req) => {
   await dbConnect();

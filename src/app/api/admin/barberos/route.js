@@ -6,6 +6,8 @@ import { ok, fail, handler } from "@/lib/api";
 import { getSession, hashPassword } from "@/lib/auth";
 import { ROLES, ESTADO_BARBERO, PLANES_DEFAULT, BARBERIA_SEDE_DEFAULT } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/barberos?estado=pendiente|activo|...  -> lista para el admin
 export const GET = handler(async (req) => {
   await dbConnect();

@@ -1,6 +1,8 @@
 import { ok, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export const GET = handler(async () => {
   const session = getSession();
   if (!session) return ok({ session: null });

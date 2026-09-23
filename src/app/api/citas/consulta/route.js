@@ -7,6 +7,8 @@ import { serializarCita } from "@/lib/serializers";
 import { ESTADO_CITA } from "@/lib/constants";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/citas/consulta?celular=...  -> el cliente consulta sus citas por celular
 export const GET = handler(async (req) => {
   await dbConnect();

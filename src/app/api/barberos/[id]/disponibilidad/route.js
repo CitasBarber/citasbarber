@@ -5,6 +5,8 @@ import { ok, fail, handler } from "@/lib/api";
 import { calcularSlots } from "@/lib/disponibilidad";
 import { ESTADO_CITA } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/barberos/:id/disponibilidad?fecha=YYYY-MM-DD&plan=bronce
 export const GET = handler(async (req, { params }) => {
   await dbConnect();

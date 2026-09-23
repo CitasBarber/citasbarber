@@ -13,6 +13,8 @@ import {
 } from "@/lib/whatsapp";
 import { serializarCita } from "@/lib/serializers";
 
+export const dynamic = "force-dynamic";
+
 // PATCH /api/citas/:id  body: { accion, motivo?, celular? }
 // acciones: confirmar | rechazar | completar (barbero) ; cancelar (barbero o cliente)
 export const PATCH = handler(async (req, { params }) => {
