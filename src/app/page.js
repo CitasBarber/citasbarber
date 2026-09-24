@@ -35,7 +35,7 @@ export default function HomePage() {
               💈 CitasBarber
             </p>
             <h1 className="font-display text-4xl md:text-5xl leading-tight mt-1">
-              Tu motilada <span className="text-barber-red">sin filas</span> ni vueltas.
+              Tu motiladá <span className="text-barber-red">sin filas</span> ni vueltas.
             </h1>
             <p className="mt-4 text-white/80 text-base sm:text-lg">
               Agendá con tu barbero de confianza en un momentico. Solo das tu
