@@ -1,9 +1,27 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { formatoCOP } from "@/lib/constants";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
 import { Silla, Tijeras } from "@/components/Icons";
+import GraficoECharts from "@/components/graficos/GraficoECharts";
+
+const COLOR_METODO = {
+  efectivo: "#10b981",
+  nequi: "#a855f7",
+  daviplata: "#f97316",
+  qr: "#0ea5e9",
+  cuenta: "#1e50a0",
+  sin_definir: "#9ca3af",
+};
+const PALETA_METODOS = ["#1e50a0", "#e11d2a", "#f59e0b", "#8b5cf6", "#14b8a6", "#64748b"];
+
+function colorMetodo(key) {
+  if (COLOR_METODO[key]) return COLOR_METODO[key];
+  let h = 0;
+  for (const ch of String(key || "")) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return PALETA_METODOS[h % PALETA_METODOS.length];
+}
 
 function sumarDias(fechaStr, dias) {
   const [y, m, d] = fechaStr.split("-").map(Number);
@@ -67,6 +85,42 @@ export default function ResumenDiario() {
   };
 
   const esHoy = fecha === hoy;
+
+  // Datos para el gráfico de dinero por método de pago (total facturado por método).
+  const metodosGrafico = useMemo(
+    () => (data?.desgloseMetodos || []).filter((m) => (m.total || 0) > 0),
+    [data]
+  );
+  const totalMetodos = useMemo(
+    () => metodosGrafico.reduce((s, m) => s + (m.total || 0), 0),
+    [metodosGrafico]
+  );
+  const pieOption = useMemo(() => {
+    if (!metodosGrafico.length) return null;
+    return {
+      tooltip: {
+        trigger: "item",
+        confine: true,
+        formatter: (p) => `${p.marker}${p.name}: <b>${formatoCOP(p.value)}</b> (${p.percent}%)`,
+      },
+      series: [
+        {
+          type: "pie",
+          radius: ["45%", "70%"],
+          center: ["50%", "50%"],
+          avoidLabelOverlap: true,
+          itemStyle: { borderRadius: 6, borderColor: "#fff", borderWidth: 2 },
+          label: { show: false },
+          labelLine: { show: false },
+          data: metodosGrafico.map((m) => ({
+            name: m.label,
+            value: m.total,
+            itemStyle: { color: colorMetodo(m.key) },
+          })),
+        },
+      ],
+    };
+  }, [metodosGrafico]);
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -191,11 +245,11 @@ export default function ResumenDiario() {
             </div>
           </div>
 
-          {/* TARJETAS KPI PRINCIPALES */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* 1. Ya en el bolsillo */}
-            <div className="card p-4 border-l-4 border-l-emerald-500 flex flex-col justify-between">
-              <div>
+          {/* Ya en el bolsillo — con gráfico de dinero por método de pago */}
+          <div className="card p-4 sm:p-5 border-l-4 border-l-emerald-500">
+            <div className="flex flex-col lg:flex-row gap-5">
+              {/* Montos cobrados */}
+              <div className="lg:w-60 shrink-0">
                 <p className="text-xs uppercase tracking-wider font-semibold text-barber-gray">
                   Ya en el bolsillo
                 </p>
@@ -203,12 +257,49 @@ export default function ResumenDiario() {
                   {formatoCOP(data.ingresosCobrados)}
                 </p>
               </div>
-              <div className="mt-3 pt-2 border-t border-black/5 text-[11px] text-barber-gray flex flex-col gap-0.5">
-                <span>💵 Efectivo: <strong className="text-barber-ink">{formatoCOP(data.efectivo?.cobrado || 0)}</strong></span>
-                <span>📱 Transferencias: <strong className="text-barber-ink">{formatoCOP(data.digital?.cobrado || 0)}</strong></span>
+
+              {/* Gráfico: dinero por método de pago */}
+              <div className="flex-1 min-w-0 border-t lg:border-t-0 lg:border-l border-black/5 pt-4 lg:pt-0 lg:pl-5">
+                <p className="text-xs uppercase tracking-wider font-semibold text-barber-gray mb-3">
+                  💰 Dinero por método de pago
+                </p>
+                {pieOption ? (
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="w-40 h-40 sm:w-36 sm:h-36 shrink-0">
+                      <GraficoECharts option={pieOption} className="w-full h-full" />
+                    </div>
+                    <div className="flex-1 w-full min-w-0 space-y-1.5">
+                      {metodosGrafico.map((m) => {
+                        const pct = totalMetodos > 0 ? Math.round((m.total / totalMetodos) * 100) : 0;
+                        return (
+                          <div key={m.key} className="flex items-center justify-between gap-2 text-xs">
+                            <span className="flex items-center gap-2 min-w-0">
+                              <span
+                                className="w-2.5 h-2.5 rounded-full shrink-0"
+                                style={{ background: colorMetodo(m.key) }}
+                              />
+                              <span className="truncate text-barber-ink">{m.label}</span>
+                            </span>
+                            <span className="shrink-0 font-semibold text-barber-ink">
+                              {formatoCOP(m.total)}{" "}
+                              <span className="text-barber-gray font-normal">({pct}%)</span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-barber-gray py-6 text-center">
+                    Aún no hay movimientos por método de pago.
+                  </p>
+                )}
               </div>
             </div>
+          </div>
 
+          {/* Demás tarjetas KPI */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* 2. Falta por entrar */}
             <div className="card p-4 border-l-4 border-l-amber-500 flex flex-col justify-between">
               <div>
