@@ -41,7 +41,7 @@ export const PATCH = handler(async (req, { params }) => {
 
       // Notificación push al cliente (si tiene suscripción activa).
       if (cita.clienteCelular) {
-        enviarPush(
+        await enviarPush(
           { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
           {
             title: "Cita confirmada ✅",
@@ -66,7 +66,7 @@ export const PATCH = handler(async (req, { params }) => {
 
       // Notificación push al cliente informando el rechazo.
       if (cita.clienteCelular) {
-        enviarPush(
+        await enviarPush(
           { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
           {
             title: "Cita no disponible",
@@ -139,7 +139,7 @@ export const PATCH = handler(async (req, { params }) => {
         );
 
         // Notificación push al cliente informando la cancelación.
-        enviarPush(
+        await enviarPush(
           { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
           {
             title: "Cita cancelada",

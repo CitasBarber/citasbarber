@@ -25,8 +25,9 @@ self.addEventListener("push", (event) => {
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     tag: data.tag || undefined,
+    renotify: Boolean(data.tag),
     data: { url: data.url || "/" },
-    vibrate: [80, 40, 80],
+    vibrate: [100, 50, 100],
   };
 
   event.waitUntil(self.registration.showNotification(title, options));

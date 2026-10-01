@@ -5,12 +5,12 @@ import PushSubscription from "@/models/PushSubscription";
 // desactivadas silenciosamente: la app sigue funcionando igual.
 let configurado = false;
 export function pushHabilitado() {
-  const pub = process.env.VAPID_PUBLIC_KEY;
-  const priv = process.env.VAPID_PRIVATE_KEY;
+  const pub = (process.env.VAPID_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "").trim();
+  const priv = (process.env.VAPID_PRIVATE_KEY || "").trim();
   if (!pub || !priv) return false;
   if (!configurado) {
     webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT || "mailto:admin@example.com",
+      (process.env.VAPID_SUBJECT || "mailto:admin@citasbarber.com").trim(),
       pub,
       priv
     );
@@ -24,14 +24,22 @@ export function pushHabilitado() {
 // Nunca lanza: los errores se registran pero no rompen el flujo que la invoca.
 export async function enviarPush({ ownerRole, ownerId, clienteCelular }, payload) {
   try {
-    if (!pushHabilitado()) return { enviadas: 0, motivo: "sin-config" };
+    if (!pushHabilitado()) {
+      console.warn("enviarPush: notificaciones no configuradas (faltan claves VAPID)");
+      return { enviadas: 0, motivo: "sin-config" };
+    }
 
     const filtro = { ownerRole };
-    if (ownerId) filtro.ownerId = ownerId;
+    if (ownerId) {
+      filtro.$or = [{ ownerId: ownerId }, { ownerId: String(ownerId) }];
+    }
     if (clienteCelular) filtro.clienteCelular = clienteCelular;
 
     const subs = await PushSubscription.find(filtro).lean();
-    if (subs.length === 0) return { enviadas: 0 };
+    if (subs.length === 0) {
+      console.log(`enviarPush: 0 suscriptores encontrados para filtro`, JSON.stringify(filtro));
+      return { enviadas: 0 };
+    }
 
     const cuerpo = JSON.stringify(payload);
     let enviadas = 0;
@@ -42,7 +50,8 @@ export async function enviarPush({ ownerRole, ownerId, clienteCelular }, payload
         try {
           await webpush.sendNotification(
             { endpoint: s.endpoint, keys: s.keys },
-            cuerpo
+            cuerpo,
+            { TTL: 86400, urgency: "high" }
           );
           enviadas++;
         } catch (err) {
@@ -60,6 +69,7 @@ export async function enviarPush({ ownerRole, ownerId, clienteCelular }, payload
       await PushSubscription.deleteMany({ endpoint: { $in: muertas } });
     }
 
+    console.log(`enviarPush: ${enviadas}/${subs.length} notificaciones enviadas exitosamente`);
     return { enviadas };
   } catch (e) {
     console.error("enviarPush falló:", e.message);
