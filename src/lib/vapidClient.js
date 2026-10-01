@@ -19,8 +19,9 @@ export async function obtenerVapidPublicKey() {
     const res = await fetch("/api/push/vapid-public-key");
     if (res.ok) {
       const json = await res.json();
-      if (json?.data?.publicKey) {
-        cachedKey = json.data.publicKey.trim();
+      const key = json?.publicKey || json?.data?.publicKey;
+      if (key) {
+        cachedKey = key.trim();
         return cachedKey;
       }
     }

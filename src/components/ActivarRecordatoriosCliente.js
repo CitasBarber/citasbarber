@@ -22,6 +22,7 @@ function esDispositivoIOS() {
 export default function ActivarRecordatoriosCliente({ celular }) {
   const [estado, setEstado] = useState("cargando"); // cargando|no-soportado|ios-necesita-instalar|activo|inactivo|denegado
   const [ocupado, setOcupado] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -60,6 +61,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
     const cel = (celular || "").replace(/\D/g, "");
     if (cel.length < 10) return;
     setOcupado(true);
+    setErrorMsg("");
     try {
       let permiso = Notification.permission;
       if (permiso === "default") {
@@ -72,7 +74,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
 
       const vapidKey = await obtenerVapidPublicKey();
       if (!vapidKey) {
-        throw new Error("Clave pública VAPID no disponible en el servidor");
+        throw new Error("No se pudo conectar con el servicio de notificaciones.");
       }
 
       if ("serviceWorker" in navigator) {
@@ -99,13 +101,13 @@ export default function ActivarRecordatoriosCliente({ celular }) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Error al registrar la suscripción");
+        throw new Error(data.error || "No se pudo registrar la suscripción");
       }
 
       setEstado("activo");
     } catch (e) {
       console.error("Error al activar recordatorios:", e);
-      alert(`No se pudieron activar los recordatorios: ${e.message}`);
+      setErrorMsg(e.message || "No se pudieron activar los recordatorios");
       setEstado((p) => (p === "activo" ? p : "inactivo"));
     } finally {
       setOcupado(false);
@@ -114,6 +116,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
 
   async function desactivar() {
     setOcupado(true);
+    setErrorMsg("");
     try {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
@@ -137,33 +140,39 @@ export default function ActivarRecordatoriosCliente({ celular }) {
   if ((celular || "").replace(/\D/g, "").length < 10) return null;
 
   return (
-    <div className="card p-4 flex items-start gap-3">
-      <span className="text-2xl leading-none" aria-hidden>🔔</span>
+    <div className="card p-4 flex items-start gap-3 bg-white/80 backdrop-blur-sm border border-black/5 shadow-sm rounded-xl">
+      <span className="text-2xl leading-none select-none" aria-hidden>🔔</span>
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-sm">Recordatorio de tu cita</h3>
+        <h3 className="font-semibold text-sm text-barber-ink">Recordatorio de tu cita</h3>
 
         {estado === "ios-necesita-instalar" && (
-          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mt-1">
-            📱 <strong>En iPhone:</strong> Para recibir recordatorios push, agrega la app a tu pantalla de inicio
+          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200/80 rounded-lg p-2 mt-1">
+            📱 <strong>En iPhone:</strong> Para recibir recordatorios, agrega la web a tu pantalla de inicio
             (tocá <strong>Compartir ⬆️</strong> → <strong>“Agregar a inicio”</strong>).
           </p>
         )}
 
         {estado === "denegado" && (
           <p className="text-xs text-barber-gray mt-0.5">
-            Están bloqueadas. Habilitalas desde los ajustes de tu navegador para este sitio.
+            Las notificaciones están bloqueadas en tu navegador. Puedes habilitarlas desde los ajustes del sitio.
           </p>
         )}
 
         {estado === "inactivo" && (
-          <p className="text-xs text-barber-gray mt-0.5">
-            Te avisamos el día de tu cita apenas abra la barbería, y cuando el barbero confirme tu cita.
+          <p className="text-xs text-barber-gray mt-0.5 leading-relaxed">
+            Te avisamos el día de tu cita apenas abra la barbería, y cuando el barbero confirme o modifique tu turno.
           </p>
         )}
 
         {estado === "activo" && (
-          <p className="text-xs text-green-700 font-medium mt-0.5">
-            Recordatorios activados en este dispositivo ✓
+          <p className="text-xs text-emerald-700 font-medium mt-0.5 flex items-center gap-1">
+            <span>✓</span> Recordatorios activados en este dispositivo
+          </p>
+        )}
+
+        {errorMsg && (
+          <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-1.5 mt-1.5">
+            {errorMsg}
           </p>
         )}
       </div>
@@ -172,7 +181,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
         <button
           onClick={activar}
           disabled={ocupado}
-          className="btn-primary text-sm py-1.5 px-4 shrink-0 shadow-sm"
+          className="btn-primary text-xs py-2 px-3.5 shrink-0 rounded-lg shadow-sm font-semibold"
         >
           {ocupado ? "Activando…" : "Activar"}
         </button>
@@ -182,7 +191,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
         <button
           onClick={desactivar}
           disabled={ocupado}
-          className="btn-outline text-xs py-1.5 px-3 shrink-0 text-barber-gray hover:text-red-600"
+          className="btn-outline text-xs py-1.5 px-3 shrink-0 rounded-lg text-barber-gray hover:text-red-600"
         >
           {ocupado ? "…" : "Desactivar"}
         </button>
