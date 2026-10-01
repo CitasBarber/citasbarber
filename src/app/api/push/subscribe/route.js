@@ -29,11 +29,14 @@ export const POST = handler(async (req) => {
   await PushSubscription.findOneAndUpdate(
     { endpoint: subscription.endpoint },
     {
-      ownerId: dueño.ownerId,
-      ownerRole: dueño.ownerRole,
-      endpoint: subscription.endpoint,
-      keys: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth },
-      userAgent: (userAgent || "").slice(0, 300),
+      $set: {
+        ownerId: dueño.ownerId,
+        ownerRole: dueño.ownerRole,
+        endpoint: subscription.endpoint,
+        keys: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth },
+        userAgent: (userAgent || "").slice(0, 300),
+      },
+      $unset: { clienteCelular: "" },
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
