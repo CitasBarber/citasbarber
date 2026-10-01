@@ -82,7 +82,7 @@ export default function PanelBarberoPage() {
             <button
               key={t.key}
               onClick={() => { setPrefillManual(null); setTab(t.key); }}
-              className={`px-3 sm:px-4 py-2.5 font-semibold whitespace-nowrap border-b-2 -mb-px flex-1 sm:flex-none min-w-0 ${tab === t.key ? "border-barber-red text-barber-red" : "border-transparent text-barber-gray hover:text-barber-ink"}`}
+              className={`shrink-0 px-3 sm:px-5 py-2.5 font-semibold whitespace-nowrap border-b-2 -mb-[2px] transition-colors ${tab === t.key ? "border-barber-red text-barber-red" : "border-transparent text-barber-gray hover:text-barber-ink"}`}
             >
               <span className="text-sm sm:text-base">{t.label}</span>
             </button>

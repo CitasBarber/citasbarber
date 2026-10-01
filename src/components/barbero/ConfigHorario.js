@@ -383,22 +383,22 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
 
         {/* Formulario según modo */}
         {modoBloqueo === "dia" ? (
-          <div className="flex gap-2">
-            <input type="date" className="input" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => elegirFechaBloqueo(e.target.value)} />
-            <button type="button" className="btn-outline text-sm whitespace-nowrap" onClick={agregarBloqueo}>+ Bloquear</button>
+          <div className="flex flex-wrap gap-2">
+            <input type="date" className="input flex-1 min-w-[150px]" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => elegirFechaBloqueo(e.target.value)} />
+            <button type="button" className="btn-outline text-sm whitespace-nowrap shrink-0" onClick={agregarBloqueo}>+ Bloquear</button>
           </div>
         ) : (
           <div className="space-y-2">
             <div className="grid grid-cols-3 gap-2">
-              <div>
+              <div className="min-w-0">
                 <label className="label text-xs">Fecha</label>
                 <input type="date" className="input" min={fechaLocalHoy()} value={nuevoBloqueo} onChange={(e) => elegirFechaBloqueo(e.target.value)} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <label className="label text-xs">Desde</label>
                 <input type="time" className="input" value={franjaIni} onChange={(e) => setFranjaIni(e.target.value)} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <label className="label text-xs">Hasta</label>
                 <input type="time" className="input" value={franjaFin} onChange={(e) => setFranjaFin(e.target.value)} />
               </div>
@@ -450,13 +450,13 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
 
       <section className="card p-6 space-y-3">
         <h2 className="font-display text-xl">Datos de pago (para tus clientes)</h2>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div><label className="label">Nequi</label><input className="input" value={datosPago.nequi || ""} onChange={(e) => setDatosPago({ ...datosPago, nequi: e.target.value })} placeholder="Número Nequi" /></div>
-          <div><label className="label">Daviplata</label><input className="input" value={datosPago.daviplata || ""} onChange={(e) => setDatosPago({ ...datosPago, daviplata: e.target.value })} placeholder="Número Daviplata" /></div>
-          <div className="sm:col-span-2"><label className="label">Cuenta bancaria</label><input className="input" value={datosPago.cuenta || ""} onChange={(e) => setDatosPago({ ...datosPago, cuenta: e.target.value })} placeholder="Banco y número de cuenta" /></div>
-          <div className="sm:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="min-w-0"><label className="label">Nequi</label><input className="input" value={datosPago.nequi || ""} onChange={(e) => setDatosPago({ ...datosPago, nequi: e.target.value })} placeholder="Número Nequi" /></div>
+          <div className="min-w-0"><label className="label">Daviplata</label><input className="input" value={datosPago.daviplata || ""} onChange={(e) => setDatosPago({ ...datosPago, daviplata: e.target.value })} placeholder="Número Daviplata" /></div>
+          <div className="min-w-0 sm:col-span-2"><label className="label">Cuenta bancaria</label><input className="input" value={datosPago.cuenta || ""} onChange={(e) => setDatosPago({ ...datosPago, cuenta: e.target.value })} placeholder="Banco y número de cuenta" /></div>
+          <div className="min-w-0 sm:col-span-2">
             <label className="label">Código QR (imagen)</label>
-            <input type="file" accept="image/*" onChange={onQR} className="text-sm" />
+            <input type="file" accept="image/*" onChange={onQR} className="block w-full max-w-full text-sm text-barber-gray" />
             {datosPago.qrImagen && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={datosPago.qrImagen} alt="QR" className="mt-2 w-32 h-32 object-contain border rounded" />

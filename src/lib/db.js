@@ -42,6 +42,10 @@ async function resolveUri() {
   return global._mongoMemory.getUri();
 }
 
+// Promesa única de seed por proceso: evita que requests concurrentes ejecuten
+// el seed varias veces al arrancar con la base vacía (generaba barberos duplicados).
+let seedPromise = null;
+
 export async function dbConnect() {
   if (!cached.conn) {
     if (!cached.promise) {
@@ -60,18 +64,22 @@ export async function dbConnect() {
       cached.promise = null;
       throw e;
     }
-  }
 
-  // Auto-seed: SOLO en desarrollo/pruebas
-  const seedPermitido =
-    process.env.NODE_ENV !== "production" && process.env.ALLOW_SEED !== "false";
-  if (seedPermitido) {
-    try {
-      const { seedIfEmpty } = await import("./seed");
-      await seedIfEmpty();
-    } catch (e) {
-      console.error("Error en el seed automático:", e.message);
+    // Auto-seed: SOLO al crear la conexión (una vez por proceso) y en
+    // desarrollo/pruebas. Antes se corría en cada dbConnect() y requests
+    // concurrentes sembraban barberos duplicados.
+    const seedPermitido =
+      process.env.NODE_ENV !== "production" && process.env.ALLOW_SEED !== "false";
+    if (seedPermitido && !seedPromise) {
+      seedPromise = (async () => {
+        const { seedIfEmpty } = await import("./seed");
+        return seedIfEmpty();
+      })().catch((e) => {
+        seedPromise = null; // permitir reintentar en la próxima conexión
+        console.error("Error en el seed automático:", e.message);
+      });
     }
+    if (seedPromise) await seedPromise;
   }
 
   return cached.conn;

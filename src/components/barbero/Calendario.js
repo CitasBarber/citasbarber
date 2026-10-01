@@ -25,10 +25,11 @@ const CITA_ESTILO = {
   no_asistio: { wrap: "border-rose-200  bg-rose-50",   barra: "bg-rose-400"  },
 };
 
-// Columna de la hora con ancho fijo: en fuente monoespaciada, 23ch equivale al
-// rango más largo posible ("12:30 p.m. – 12:30 p.m."), así todas las etiquetas
-// que van a la derecha (Libre / nombre / ausencia) quedan alineadas en columna.
-const COL_HORA = "font-mono text-xs text-barber-gray w-[23ch] shrink-0 whitespace-nowrap tabular-nums";
+// Columna de la hora con ancho fijo: en fuente monoespaciada, 11ch alcanza para
+// el rango compacto más largo ("10:00–21:00"), así todas las etiquetas que van
+// a la derecha (Libre / nombre / ausencia) quedan alineadas en columna sin
+// desperdiciar espacio horizontal en pantallas angostas.
+const COL_HORA = "font-mono text-xs text-barber-gray w-[11ch] shrink-0 whitespace-nowrap tabular-nums";
 
 export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
   const { pedirMotivo } = useDialog();
@@ -282,21 +283,24 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
 }
 
 function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual }) {
-  const rangoSlot = `${hora12(slot.inicio)} – ${hora12(slot.fin)}`;
+  // Formato compacto (24h) para que la columna de horas no consuma casi toda la
+  // línea en celulares largos y el texto de la derecha no quede debajo del botón.
+  const rangoSlot = `${horaCorta(slot.inicio)}–${horaCorta(slot.fin)}`;
 
   if (slot.tipo === "libre") {
     return (
-      <div className="flex items-center gap-3 px-3 py-2 rounded-lg border border-green-200 bg-green-50">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-green-200 bg-green-50">
         <div className="w-1 self-stretch rounded-full shrink-0 bg-green-400" />
         <span className={COL_HORA}>{rangoSlot}</span>
         <span className="text-sm font-semibold text-green-700 flex-1 min-w-0">Libre</span>
-        {onAgendarManual && (
+{onAgendarManual && (
           <button
             type="button"
             onClick={() => onAgendarManual(fecha, slot.inicio)}
-            className="btn-primary text-xs py-1.5 px-3 shrink-0 whitespace-nowrap"
+            className="btn-primary text-xs py-1.5 px-2.5 shrink-0 whitespace-nowrap"
           >
-            + Agendar manual
+            <span className="hidden sm:inline">+ Agendar manual</span>
+            <span className="sm:hidden">+ Agendar</span>
           </button>
         )}
       </div>
@@ -335,7 +339,7 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
       <div className="flex items-stretch gap-3 px-3 py-2 rounded-lg border border-gray-300 bg-gray-100">
         <div className="w-1 rounded-full shrink-0 bg-gray-400" />
         <div className="flex items-center gap-2 flex-wrap">
-          <span className={COL_HORA}>{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
+          <span className={COL_HORA}>{horaCorta(slot.inicioReal)}–{horaCorta(slot.finReal)}</span>
           <span className="text-sm font-semibold text-barber-gray">{etiqueta}</span>
         </div>
       </div>
@@ -366,7 +370,7 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
         {/* Lado izquierdo: barra, hora, cliente y plan */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className={`w-1 self-stretch rounded-full shrink-0 ${estilo.barra}`} />
-          <span className={COL_HORA}>{hora12(slot.inicioReal)} – {hora12(slot.finReal)}</span>
+          <span className={COL_HORA}>{horaCorta(slot.inicioReal)}–{horaCorta(slot.finReal)}</span>
           <div className="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-2">
             <span className="font-bold text-sm text-barber-ink truncate">{c.clienteNombre}</span>
             <span className="text-xs text-barber-gray whitespace-nowrap">· {c.planSnapshot?.nombre} ({formatDur(slot.duracion)})</span>
@@ -512,6 +516,12 @@ function buildTimeline(fecha, perfil, citasDia) {
 }
 
 const hora12 = formatearHora12;
+
+// Versión compacta para la columna de horas del timeline: devuelve solo 'HH:mm'
+// (24h), sin sufijo a.m./p.m., para ocupar el menor ancho posible.
+function horaCorta(hhmm) {
+  return hhmm ? String(hhmm).slice(0, 5) : "";
+}
 
 function formatDur(min) {
   if (min < 60) return `${min} min`;

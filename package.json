@@ -13,6 +13,7 @@
     "@phosphor-icons/react": "^2.1.10",
     "bcryptjs": "^2.4.3",
     "date-fns": "^3.6.0",
+    "echarts": "^6.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.0",
     "next": "14.2",
