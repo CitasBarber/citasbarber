@@ -23,6 +23,8 @@ export default function ActivarRecordatoriosCliente({ celular }) {
   const [estado, setEstado] = useState("cargando"); // cargando|no-soportado|ios-necesita-instalar|activo|inactivo|denegado
   const [ocupado, setOcupado] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [mensajePrueba, setMensajePrueba] = useState("");
+  const [probando, setProbando] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -52,16 +54,35 @@ export default function ActivarRecordatoriosCliente({ celular }) {
       .finally(() => {
         navigator.serviceWorker.ready
           .then((reg) => reg.pushManager.getSubscription())
-          .then((sub) => setEstado(sub ? "activo" : "inactivo"))
+          .then((sub) => {
+            setEstado(sub ? "activo" : "inactivo");
+            // Re-sincronización silenciosa: si el navegador rotó el endpoint de
+            // la suscripción (Google lo hace periódicamente), el registro del
+            // servidor quedaría apuntando a una URL muerta. Volvemos a enviar la
+            // suscripción actual (upsert por endpoint) para que los avisos no
+            // se pierdan. Nunca bloquea ni cambia la UI.
+            if (sub) {
+              fetch("/api/push/cliente/subscribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  subscription: sub.toJSON(),
+                  celular,
+                  userAgent: navigator.userAgent,
+                }),
+              }).catch(() => {});
+            }
+          })
           .catch(() => setEstado("inactivo"));
       });
-  }, []);
+  }, [celular]);
 
   const activar = useCallback(async () => {
     const cel = (celular || "").replace(/\D/g, "");
     if (cel.length < 10) return;
     setOcupado(true);
     setErrorMsg("");
+    setMensajePrueba("");
     try {
       let permiso = Notification.permission;
       if (permiso === "default") {
@@ -117,6 +138,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
   async function desactivar() {
     setOcupado(true);
     setErrorMsg("");
+    setMensajePrueba("");
     try {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
@@ -133,6 +155,29 @@ export default function ActivarRecordatoriosCliente({ celular }) {
       // si falla, dejamos el estado
     } finally {
       setOcupado(false);
+    }
+  }
+
+  async function enviarPrueba() {
+    setProbando(true);
+    setErrorMsg("");
+    setMensajePrueba("");
+    try {
+      const res = await fetch("/api/push/cliente/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ celular }),
+      });
+      const data = await res.json();
+      if (res.ok && (data?.ok || data?.data?.ok)) {
+        setMensajePrueba("✅ ¡Notificación enviada! Revisa tu celular (incluso con la pantalla bloqueada).");
+      } else {
+        setErrorMsg(data.error || "No se pudo enviar la prueba");
+      }
+    } catch (err) {
+      setErrorMsg(`Error de conexión: ${err.message}`);
+    } finally {
+      setProbando(false);
     }
   }
 
@@ -170,6 +215,12 @@ export default function ActivarRecordatoriosCliente({ celular }) {
           </p>
         )}
 
+        {mensajePrueba && (
+          <p className="text-xs mt-1.5 font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-1.5">
+            {mensajePrueba}
+          </p>
+        )}
+
         {errorMsg && (
           <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-1.5 mt-1.5">
             {errorMsg}
@@ -188,13 +239,23 @@ export default function ActivarRecordatoriosCliente({ celular }) {
       )}
 
       {estado === "activo" && (
-        <button
-          onClick={desactivar}
-          disabled={ocupado}
-          className="btn-outline text-xs py-1.5 px-3 shrink-0 rounded-lg text-barber-gray hover:text-red-600"
-        >
-          {ocupado ? "…" : "Desactivar"}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={enviarPrueba}
+            disabled={probando || ocupado}
+            className="btn-primary text-xs py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg"
+            title="Envía una notificación push de prueba ahora mismo"
+          >
+            {probando ? "Enviando…" : "🔔 Probar"}
+          </button>
+          <button
+            onClick={desactivar}
+            disabled={ocupado || probando}
+            className="btn-outline text-xs py-1.5 px-2.5 shrink-0 rounded-lg text-barber-gray hover:text-red-600"
+          >
+            {ocupado ? "…" : "Desactivar"}
+          </button>
+        </div>
       )}
     </div>
   );

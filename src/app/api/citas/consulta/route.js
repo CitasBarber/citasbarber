@@ -6,6 +6,7 @@ import { normalizarCelular } from "@/lib/whatsapp";
 import { serializarCita } from "@/lib/serializers";
 import { ESTADO_CITA } from "@/lib/constants";
 import { fechaLocalHoy } from "@/lib/disponibilidad";
+import { recordarClientesDelDia } from "@/lib/recordatorios";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,11 @@ export const GET = handler(async (req) => {
   if (!celularRaw) return fail("El celular es obligatorio");
 
   const celular = normalizarCelular(celularRaw);
+
+  // Recordatorio oportuno: si hoy tiene cita confirmada y el cron externo no
+  // corrió aún, aprovechamos la consulta del cliente para enviar el aviso
+  // (flag en BD evita repetirlo). No bloquea la respuesta si falla.
+  await recordarClientesDelDia({ celular });
   
   // Excluimos pagoAnticipo.comprobante para ahorrar consumo de RAM y ancho de banda
   const citas = await Cita.find({ clienteCelular: celular })

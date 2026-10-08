@@ -1,6 +1,8 @@
 import Cita from "@/models/Cita";
+import Barbero from "@/models/Barbero";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { enviarPush } from "@/lib/push";
+import { normalizarCelular } from "@/lib/whatsapp";
 import {
   fechaLocalHoy,
   hhmmAMin,
@@ -59,5 +61,63 @@ export async function recordarCitasSinConfirmar({ barberoId = null } = {}) {
   } catch (e) {
     console.error("recordarCitasSinConfirmar falló:", e.message);
     return { revisadas: 0, notificadas: 0 };
+  }
+}
+
+// Recordatorio al CLIENTE el día de su cita. Citas confirmadas de hoy, con
+// celular, aún no recordadas. Se le avisa una sola vez, a partir de la hora en
+// que abre el barbero ese día. Igual que arriba: flag siempre puesto para no
+// repetir, y nunca lanza.
+//
+// Se usa desde el cron y de forma oportunista desde GET /api/citas/consulta
+// (cuando el cliente abre Mis Citas el día de su cita, si el cron no corrió).
+export async function recordarClientesDelDia({ barberoId = null, celular = null } = {}) {
+  try {
+    const hoy = fechaLocalHoy();
+    const ahoraMin = minutosActualesColombia();
+
+    const filtro = {
+      estado: ESTADO_CITA.CONFIRMADA,
+      fecha: hoy,
+      clienteCelular: { $nin: [null, ""] },
+      recordatorioClienteEnviado: { $ne: true },
+    };
+    if (barberoId) filtro.barbero = barberoId;
+    if (celular) filtro.clienteCelular = normalizarCelular(celular);
+
+    const citasHoy = await Cita.find(filtro).lean();
+    if (citasHoy.length === 0) return { revisadas: 0, recordadas: 0 };
+
+    const barberoIds = [...new Set(citasHoy.map((c) => String(c.barbero)))];
+    const barberos = await Barbero.find({ _id: { $in: barberoIds } })
+      .select("nombre local horario")
+      .lean();
+    const mapaBarbero = new Map(barberos.map((b) => [String(b._id), b]));
+
+    let recordadas = 0;
+    for (const cita of citasHoy) {
+      const barbero = mapaBarbero.get(String(cita.barbero));
+      const apertura = barbero?.horario?.horaInicio || "00:00";
+      // Aún no abre el local (hora de Colombia): esperamos a un próximo ciclo.
+      if (ahoraMin < hhmmAMin(apertura)) continue;
+
+      const local = barbero?.local || "la barbería";
+      await enviarPush(
+        { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
+        {
+          title: "Recordatorio de tu cita ✂️",
+          body: `Hoy tenés cita a las ${formatearHora12(cita.horaInicio)} con ${barbero?.nombre || "tu barbero"} en ${local}.`,
+          url: "/mis-citas",
+          tag: `recordatorio-cliente-${cita._id}`,
+        }
+      );
+      await Cita.updateOne({ _id: cita._id }, { $set: { recordatorioClienteEnviado: true } });
+      recordadas++;
+    }
+
+    return { revisadas: citasHoy.length, recordadas };
+  } catch (e) {
+    console.error("recordarClientesDelDia falló:", e.message);
+    return { revisadas: 0, recordadas: 0 };
   }
 }

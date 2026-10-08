@@ -427,8 +427,10 @@ classDiagram
 
 * **Alojamiento**: Repositorio en GitHub con despliegue continuo en **Vercel** ante pushes a la rama `main`.
 * **Base de Datos**: Clúster de **MongoDB Atlas** configurado mediante `MONGODB_URI`.
-* **Automatización de Recordatorios (Cron)**:
-  - Puede ejecutarse mediante **Vercel Cron** configurando `vercel.json` o a través de un servicio externo gratuito (ej. [cron-job.org](https://cron-job.org)) llamando periódicamente (ej. cada 5-10 minutos) a:
+* **Automatización de Recordatorios (Cron)** — se disparan por tres vías complementarias:
+  1. **Invocación oportunista** (sin cron): al abrir el panel del barbero (`GET /api/citas`) y al consultar *Mis Citas* (`GET /api/citas/consulta`), la lógica de `src/lib/recordatorios.js` envía los avisos pendientes. Los flags `recordatorioEnviado` / `recordatorioClienteEnviado` en la BD garantizan que cada aviso se envíe una sola vez.
+  2. **Vercel Cron**: `vercel.json` define una ejecución diaria de respaldo de `/api/cron/recordatorios`. Vercel envía automáticamente la cabecera `Authorization: Bearer <CRON_SECRET>`.
+  3. **Cron externo (opcional, recomendado para precisión fina)**: servicio gratuito como [cron-job.org](https://cron-job.org) llamando cada 5-10 minutos (necesario para que el aviso de "cita sin confirmar" ~15 min antes se emita aunque nadie tenga un panel abierto; el plan Hobby de Vercel solo permite una ejecución diaria):
     ```http
     GET https://tudominio.com/api/cron/recordatorios
     Authorization: Bearer <CRON_SECRET>

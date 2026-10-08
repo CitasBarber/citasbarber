@@ -130,6 +130,20 @@ export const PATCH = handler(async (req, { params }) => {
       cita.estado = ESTADO_CITA.CANCELADA;
       await cita.save();
 
+      // Si el CLIENTE cancela, avisamos al barbero por push para que libere el
+      // cupo (no hay sesión de barbero en ese flujo, así que va por ownerId).
+      if (esCliente && !esBarberoDueno) {
+        await enviarPush(
+          { ownerRole: ROLES.BARBERO, ownerId: cita.barbero },
+          {
+            title: "Cita cancelada por el cliente",
+            body: `${cita.clienteNombre} canceló su cita del ${cita.fecha} a las ${formatearHora12(cita.horaInicio)}. El cupo quedó libre.`,
+            url: "/barbero/panel",
+            tag: `cancelada-${cita._id}`,
+          }
+        );
+      }
+
       // Si el barbero cancela una cita ya confirmada, avisar al cliente por WhatsApp.
       let link;
       if (esBarberoDueno && eraConfirmada && cita.clienteCelular) {
