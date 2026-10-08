@@ -4,7 +4,7 @@ import Usuario from "@/models/Usuario";
 import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession, hashPassword } from "@/lib/auth";
-import { ROLES, ESTADO_BARBERO, PLANES_DEFAULT, BARBERIA_SEDE_DEFAULT } from "@/lib/constants";
+import { ROLES, ESTADO_BARBERO, PLANES_DEFAULT, BARBERIA_SEDE_DEFAULT, HORARIO_DEFAULT } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
