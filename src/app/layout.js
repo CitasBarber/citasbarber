@@ -27,7 +27,14 @@ export const metadata = {
     statusBarStyle: "black-translucent",
     title: "CitasBarber",
   },
+  // Al declarar `icons` en la config, Next.js deja de inyectar automáticamente
+  // el `icon.svg` del directorio app, así que hay que listarlo explícitamente
+  // o el navegador se queda sin favicon.
   icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
     apple: "/apple-touch-icon.png",
   },
 };

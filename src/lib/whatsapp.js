@@ -4,7 +4,22 @@ import { formatearHora12 } from "./disponibilidad";
 
 // Sitio del proyecto: se usa como firma promocional en los mensajes que llegan
 // al cliente final, para dar a conocer la plataforma.
-const SITIO_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://citasbarber.vercel.app";
+const SITIO_URL_DEFAULT = "https://citasbarber.vercel.app";
+
+// Resuelve la URL del sitio validando que sea realmente una URL http(s). Si la
+// variable de entorno viene vacía o mal configurada (p. ej. en Vercel quedó
+// pegado un token/clave en vez de la dirección), se descarta para no mostrar
+// texto basura en el mensaje del cliente. Se quita el "/" final para una firma
+// limpia.
+function resolverSitioUrl() {
+  const raw = (process.env.NEXT_PUBLIC_BASE_URL || "").trim();
+  if (/^https?:\/\/\S+$/i.test(raw)) {
+    return raw.replace(/\/+$/, "");
+  }
+  return SITIO_URL_DEFAULT;
+}
+
+const SITIO_URL = resolverSitioUrl();
 
 // Pie promocional para mensajes dirigidos al cliente. Respeta el modo "plano"
 // (PC/WhatsApp Desktop) donde los emojis se corrompen.
