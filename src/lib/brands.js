@@ -21,7 +21,7 @@ const EMOJI = {
 export const BRANDS = {
   barber: {
     id: "barber",
-    slug: "citasbarber", // segmento de URL en /page/[slug]
+    slug: "citasbarber", // segmento de URL en /[slug]
     nombre: "CitasBarber",
     nicho: "Barber", // palabra que acompaña a "Citas" en el logo
     icono: "poste", // ícono del header: poste | huella | esmalte
@@ -123,7 +123,7 @@ export function esMarcaValida(id) {
   return typeof id === "string" && Object.prototype.hasOwnProperty.call(BRANDS, id);
 }
 
-// Devuelve la marca por su slug de URL (/page/citasbarber → barber config).
+// Devuelve la marca por su slug de URL (/citasbarber → barber config).
 export function marcaPorSlug(slug) {
   return LISTA_MARCAS.find((m) => m.slug === slug) || null;
 }
@@ -191,13 +191,13 @@ export function manifestDeMarca(id) {
 }
 
 // Script mínimo que corre en <head> antes de pintar: aplica la marca guardada.
-// Orden de prioridad: ruta /page/[slug] → ?marca= → localStorage → defecto.
+// Orden de prioridad: ruta /[slug] → ?marca= → localStorage → defecto.
 export function scriptMarcaInicial() {
   const ids = JSON.stringify(LISTA_MARCAS.map((m) => m.id));
   const slugMap = JSON.stringify(Object.fromEntries(LISTA_MARCAS.map((m) => [m.slug, m.id])));
   return `(function(){try{` +
     `var v=${ids},slugs=${slugMap};` +
-    `var sm=location.pathname.match(/^\\/page\\/(citasbarber|citaspet|citasspa)/);` +
+    `var sm=location.pathname.match(/^\\/(citasbarber|citaspet|citasspa)(?:\\/|$)/);` +
     `var m=sm?slugs[sm[1]]:null;` +
     `if(!m){m=new URLSearchParams(location.search).get(${JSON.stringify(PARAM_URL)});}` +
     `if(v.indexOf(m)<0){m=localStorage.getItem(${JSON.stringify(STORAGE_KEY)})}` +

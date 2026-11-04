@@ -172,7 +172,7 @@ export default function CitasAppLanding() {
             {MARCAS.map((m) => (
               <Link
                 key={m.slug}
-                href={`/page/${m.slug}`}
+                href={`/${m.slug}`}
                 className="group flex flex-col rounded-2xl overflow-hidden border border-linea bg-hueso hover:shadow-card hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-cobre-profundo"
                 style={{ "--acento": `var(--${m.slug}-acento)` }}
               >
