@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { obtenerVapidPublicKey, urlBase64ToUint8Array } from "@/lib/vapidClient";
+import { useBrand } from "./BrandProvider";
 
 function esAppInstalada() {
   if (typeof window === "undefined") return false;
@@ -20,6 +21,7 @@ function esDispositivoIOS() {
 // hora en que abre el barbero. Requiere que el cliente ya tenga su celular
 // identificado (se pasa por prop).
 export default function ActivarRecordatoriosCliente({ celular }) {
+  const { id: marcaId, t } = useBrand();
   const [estado, setEstado] = useState("cargando"); // cargando|no-soportado|ios-necesita-instalar|activo|inactivo|denegado
   const [ocupado, setOcupado] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -166,7 +168,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
       const res = await fetch("/api/push/cliente/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ celular }),
+        body: JSON.stringify({ celular, marca: marcaId }),
       });
       const data = await res.json();
       if (res.ok && (data?.ok || data?.data?.ok)) {
@@ -188,7 +190,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
     <div className="card p-4 flex items-start gap-3 bg-white/80 backdrop-blur-sm border border-black/5 shadow-sm rounded-xl">
       <span className="text-2xl leading-none select-none" aria-hidden>🔔</span>
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-sm text-barber-ink">Recordatorio de tu cita</h3>
+        <h3 className="font-semibold text-sm text-tinta">Recordatorio de tu cita</h3>
 
         {estado === "ios-necesita-instalar" && (
           <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200/80 rounded-lg p-2 mt-1">
@@ -198,14 +200,14 @@ export default function ActivarRecordatoriosCliente({ celular }) {
         )}
 
         {estado === "denegado" && (
-          <p className="text-xs text-barber-gray mt-0.5">
+          <p className="text-xs text-pizarra mt-0.5">
             Las notificaciones están bloqueadas en tu navegador. Puedes habilitarlas desde los ajustes del sitio.
           </p>
         )}
 
         {estado === "inactivo" && (
-          <p className="text-xs text-barber-gray mt-0.5 leading-relaxed">
-            Te avisamos el día de tu cita apenas abra la barbería, y cuando el barbero confirme o modifique tu turno.
+          <p className="text-xs text-pizarra mt-0.5 leading-relaxed">
+            Te avisamos el día de tu cita apenas abra la {t.negocio}, y cuando el {t.profesional} confirme o modifique tu turno.
           </p>
         )}
 
@@ -251,7 +253,7 @@ export default function ActivarRecordatoriosCliente({ celular }) {
           <button
             onClick={desactivar}
             disabled={ocupado || probando}
-            className="btn-outline text-xs py-1.5 px-2.5 shrink-0 rounded-lg text-barber-gray hover:text-red-600"
+            className="btn-outline text-xs py-1.5 px-2.5 shrink-0 rounded-lg text-pizarra hover:text-red-600"
           >
             {ocupado ? "…" : "Desactivar"}
           </button>

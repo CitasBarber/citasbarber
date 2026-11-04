@@ -44,7 +44,7 @@ export default function BotonCalendarioCita({ cita }) {
         onClick={() => setAbierto(!abierto)}
         title="Agregar al calendario"
       >
-        <CalendarioIcon className="w-3.5 h-3.5 text-barber-gray" />
+        <CalendarioIcon className="w-3.5 h-3.5 text-pizarra" />
         <span>Calendario</span>
       </button>
 

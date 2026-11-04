@@ -10,6 +10,8 @@ import CitaManual from "@/components/barbero/CitaManual";
 import ConfigHorario from "@/components/barbero/ConfigHorario";
 import ResumenDiario from "@/components/barbero/ResumenDiario";
 import ActivarNotificaciones from "@/components/ActivarNotificaciones";
+import { useMarcaDelNegocio } from "@/components/BrandProvider";
+import { useBasePath } from "@/lib/useBasePath";
 
 const TABS = [
   { key: "calendario", label: "Calendario" },
@@ -21,6 +23,7 @@ const TABS = [
 
 export default function PanelBarberoPage() {
   const router = useRouter();
+  const basePath = useBasePath();
   const [sesion, setSesion] = useState(undefined);
   const [perfil, setPerfil] = useState(null);
   const [tab, setTab] = useState("calendario");
@@ -28,16 +31,18 @@ export default function PanelBarberoPage() {
   const [irACitaFecha, setIrACitaFecha] = useState(null);
   // Fecha y hora que el barbero elige desde el Calendario para agendar manual.
   const [prefillManual, setPrefillManual] = useState(null);
+  // El panel se ve con la marca del negocio del profesional
+  useMarcaDelNegocio(perfil?.marca);
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
         if (!d.session || d.session.role !== "barbero") {
-          router.replace("/barbero/login");
+          router.replace(`${basePath}/barbero/login`);
           setSesion(null);
         } else if (d.session.passwordTemporal) {
-          router.replace("/barbero/cambiar-password");
+          router.replace(`${basePath}/barbero/cambiar-password`);
         } else {
           setSesion(d.session);
         }
@@ -53,10 +58,10 @@ export default function PanelBarberoPage() {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/");
+    router.replace(basePath || "/");
   }
 
-  if (sesion === undefined) return <div className="p-10 text-center text-barber-gray">Cargando…</div>;
+  if (sesion === undefined) return <div className="p-10 text-center text-pizarra">Cargando…</div>;
   if (!sesion) return null;
 
   const recargar = () => setRefresh((r) => r + 1);
@@ -82,7 +87,7 @@ export default function PanelBarberoPage() {
             <button
               key={t.key}
               onClick={() => { setPrefillManual(null); setTab(t.key); }}
-              className={`shrink-0 px-3 sm:px-5 py-2.5 font-semibold whitespace-nowrap border-b-2 -mb-[2px] transition-colors ${tab === t.key ? "border-barber-red text-barber-red" : "border-transparent text-barber-gray hover:text-barber-ink"}`}
+              className={`shrink-0 px-3 sm:px-5 py-2.5 font-semibold whitespace-nowrap border-b-2 -mb-[2px] transition-colors ${tab === t.key ? "border-brand text-brand-deep" : "border-transparent text-pizarra hover:text-tinta"}`}
             >
               <span className="text-sm sm:text-base">{t.label}</span>
             </button>
@@ -115,8 +120,8 @@ export default function PanelBarberoPage() {
           )}
         </div>
 
-        <p className="mt-8 text-center text-xs text-barber-gray">
-          <Link href="/" className="underline">Ver sitio público</Link>
+        <p className="mt-8 text-center text-xs text-pizarra">
+          <Link href={basePath || "/"} className="underline">Ver sitio público</Link>
         </p>
       </main>
     </div>

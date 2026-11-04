@@ -29,7 +29,7 @@ const CITA_ESTILO = {
 // el rango compacto más largo ("10:00–21:00"), así todas las etiquetas que van
 // a la derecha (Libre / nombre / ausencia) quedan alineadas en columna sin
 // desperdiciar espacio horizontal en pantallas angostas.
-const COL_HORA = "font-mono text-xs text-barber-gray w-[11ch] shrink-0 whitespace-nowrap tabular-nums";
+const COL_HORA = "font-mono text-xs text-pizarra w-[11ch] shrink-0 whitespace-nowrap tabular-nums";
 
 export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
   const { pedirMotivo } = useDialog();
@@ -152,18 +152,18 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
         </div>
         <div className="flex gap-1 shrink-0">
           <button
-            className={`text-sm py-1.5 px-2.5 sm:px-3 rounded-lg min-h-[36px] font-semibold ${vista === "semana" ? "bg-barber-ink text-white" : "border"}`}
+            className={`text-sm py-1.5 px-2.5 sm:px-3 rounded-lg min-h-[36px] font-semibold ${vista === "semana" ? "bg-tinta text-white" : "border"}`}
             onClick={() => setVista("semana")}
           >Sem.</button>
           <button
-            className={`text-sm py-1.5 px-2.5 sm:px-3 rounded-lg min-h-[36px] font-semibold ${vista === "mes" ? "bg-barber-ink text-white" : "border"}`}
+            className={`text-sm py-1.5 px-2.5 sm:px-3 rounded-lg min-h-[36px] font-semibold ${vista === "mes" ? "bg-tinta text-white" : "border"}`}
             onClick={() => setVista("mes")}
           >Mes</button>
         </div>
       </div>
 
       {/* Grid días */}
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-barber-gray mb-1">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-pizarra mb-1">
         {DIAS_SEMANA.map((d) => <div key={d}>{d.slice(0, 3)}</div>)}
       </div>
       <div className="grid grid-cols-7 gap-1">
@@ -177,7 +177,7 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
             <button
               key={i}
               onClick={() => setDiaSel(f)}
-              className={`min-h-[64px] rounded-lg border p-1 text-left transition ${sel ? "ring-2 ring-barber-red" : ""} ${esHoy ? "bg-barber-cream" : "bg-white"}`}
+              className={`min-h-[64px] rounded-lg border p-1 text-left transition ${sel ? "ring-2 ring-brand" : ""} ${esHoy ? "bg-crema" : "bg-white"}`}
             >
               <div className="text-xs font-semibold">{d.getDate()}</div>
               <div className="flex flex-wrap gap-0.5 mt-1">
@@ -197,7 +197,7 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
           {citasConfirmadasDia.length > 0 && (
             <button
               type="button"
-              className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 border-dashed border-barber-gold text-barber-gold hover:bg-barber-gold/10 font-medium transition-colors"
+              className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 border-dashed border-brand-deep text-brand-deep hover:bg-brand-deep/10 font-medium transition-colors"
               onClick={() => descargarIcs(`citas_dia_${diaSel}`, generarIcsDia(citasConfirmadasDia, perfil))}
               title="Guardar citas confirmadas del día en el calendario (.ics)"
             >
@@ -208,11 +208,11 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
         </div>
 
         {timeline === null && (
-          <p className="text-barber-gray text-sm">Cargando horario…</p>
+          <p className="text-pizarra text-sm">Cargando horario…</p>
         )}
 
         {timeline?.tipo === "noLaboral" && (
-          <div className="card p-5 text-center text-barber-gray">
+          <div className="card p-5 text-center text-pizarra">
             <p className="text-2xl mb-1">😴</p>
             <p className="text-sm font-semibold">Día de descanso</p>
             <p className="text-xs mt-0.5">No configuraste trabajo este día.</p>
@@ -220,7 +220,7 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
         )}
 
         {timeline?.tipo === "bloqueado" && (
-          <div className="card p-5 text-center text-barber-gray">
+          <div className="card p-5 text-center text-pizarra">
             <p className="text-2xl mb-1">🚫</p>
             <p className="text-sm font-semibold">Día bloqueado</p>
             <p className="text-xs mt-0.5">Marcaste este día como libre / vacaciones.</p>
@@ -229,11 +229,11 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
 
         {timeline?.tipo === "laboral" && (
           <div>
-            <p className="text-xs text-barber-gray mb-2">
+            <p className="text-xs text-pizarra mb-2">
               Jornada{" "}
-              <span className="font-semibold text-barber-ink">{hora12(timeline.inicio)}</span>
+              <span className="font-semibold text-tinta">{hora12(timeline.inicio)}</span>
               {" "}–{" "}
-              <span className="font-semibold text-barber-ink">{hora12(timeline.fin)}</span>
+              <span className="font-semibold text-tinta">{hora12(timeline.fin)}</span>
               {" · "}
               <span className="text-green-700 font-semibold">
                 {timeline.totalLibres} libre{timeline.totalLibres !== 1 ? "s" : ""}
@@ -245,7 +245,7 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
             </p>
 
             {/* Leyenda de estados */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-barber-gray mb-3">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-pizarra mb-3">
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block" /> Libre</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> Solicitada</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-600 inline-block" /> Confirmada</span>
@@ -255,7 +255,7 @@ export default function Calendario({ perfil, diaInicial, onAgendarManual }) {
             </div>
 
             {timeline.slots.length === 0 ? (
-              <div className="card p-5 text-center text-barber-gray">
+              <div className="card p-5 text-center text-pizarra">
                 <p className="text-2xl mb-1">⚠️</p>
                 <p className="text-sm font-semibold">Horario sin franjas</p>
                 <p className="text-xs mt-0.5">Revisá que la hora de cierre sea posterior a la de apertura.</p>
@@ -313,7 +313,7 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
         <div className="w-1 rounded-full shrink-0 bg-gray-200" />
         <div className="flex items-center gap-2 flex-wrap">
           <span className={COL_HORA}>{rangoSlot}</span>
-          <span className="text-sm text-barber-gray">Ya pasó</span>
+          <span className="text-sm text-pizarra">Ya pasó</span>
         </div>
       </div>
     );
@@ -330,7 +330,7 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
           <div className="w-1 rounded-full shrink-0 bg-gray-300" />
           <div className="flex items-center gap-2 flex-wrap">
             <span className={COL_HORA}>{rangoSlot}</span>
-            <span className="text-xs text-barber-gray">⤷ sigue {slot.esAlmuerzo ? "almuerzo" : "ausencia"}</span>
+            <span className="text-xs text-pizarra">⤷ sigue {slot.esAlmuerzo ? "almuerzo" : "ausencia"}</span>
           </div>
         </div>
       );
@@ -340,7 +340,7 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
         <div className="w-1 rounded-full shrink-0 bg-gray-400" />
         <div className="flex items-center gap-2 flex-wrap">
           <span className={COL_HORA}>{horaCorta(slot.inicioReal)}–{horaCorta(slot.finReal)}</span>
-          <span className="text-sm font-semibold text-barber-gray">{etiqueta}</span>
+          <span className="text-sm font-semibold text-pizarra">{etiqueta}</span>
         </div>
       </div>
     );
@@ -358,7 +358,7 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
         <div className={`w-1 rounded-full shrink-0 ${estilo.barra}`} />
         <div className="flex items-center gap-2 flex-wrap">
           <span className={COL_HORA}>{rangoSlot}</span>
-          <span className="text-xs text-barber-gray">⤷ sigue: {c.clienteNombre}</span>
+          <span className="text-xs text-pizarra">⤷ sigue: {c.clienteNombre}</span>
         </div>
       </div>
     );
@@ -372,8 +372,8 @@ function SlotFila({ slot, fecha, abierta, onToggle, onAccion, onAgendarManual })
           <div className={`w-1 self-stretch rounded-full shrink-0 ${estilo.barra}`} />
           <span className={COL_HORA}>{horaCorta(slot.inicioReal)}–{horaCorta(slot.finReal)}</span>
           <div className="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-2">
-            <span className="font-bold text-sm text-barber-ink truncate">{c.clienteNombre}</span>
-            <span className="text-xs text-barber-gray whitespace-nowrap">· {c.planSnapshot?.nombre} ({formatDur(slot.duracion)})</span>
+            <span className="font-bold text-sm text-tinta truncate">{c.clienteNombre}</span>
+            <span className="text-xs text-pizarra whitespace-nowrap">· {c.planSnapshot?.nombre} ({formatDur(slot.duracion)})</span>
           </div>
           <div className="shrink-0 sm:hidden">
             <EstadoBadge estado={c.estado} />

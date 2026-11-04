@@ -3,6 +3,8 @@ import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { ROLES } from "@/lib/constants";
 import { enviarPush } from "@/lib/push";
+import { obtenerMarca } from "@/lib/brands";
+import Barbero from "@/models/Barbero";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +15,11 @@ export const POST = handler(async () => {
   if (!session) return fail("No autenticado", 401);
 
   let target;
+  let marca = obtenerMarca(null);
   if (session.role === ROLES.BARBERO && session.barberoId) {
     target = { ownerRole: ROLES.BARBERO, ownerId: session.barberoId };
+    const b = await Barbero.findById(session.barberoId).select("marca").lean();
+    marca = obtenerMarca(b?.marca);
   } else if (session.role === ROLES.ADMIN) {
     target = { ownerRole: ROLES.ADMIN, ownerId: session.id };
   } else {
@@ -22,7 +27,7 @@ export const POST = handler(async () => {
   }
 
   const res = await enviarPush(target, {
-    title: "CitasBarber 💈",
+    title: `${marca.nombre} ${marca.textos.emoji}`,
     body: "¡Prueba exitosa! Las notificaciones están activas en este dispositivo.",
     url: session.role === ROLES.BARBERO ? "/barbero/panel" : "/admin/panel",
     tag: `test-${Date.now()}`,

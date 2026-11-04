@@ -182,7 +182,7 @@ export default function ActivarNotificaciones({ descripcion }) {
       <div className="flex items-start gap-3">
         <span className="text-2xl leading-none select-none" aria-hidden>🔔</span>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm text-barber-ink">Notificaciones Push</h3>
+          <h3 className="font-semibold text-sm text-tinta">Notificaciones Push</h3>
 
           {estado === "ios-necesita-instalar" && (
             <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200/80 rounded-lg p-2 mt-1">
@@ -192,7 +192,7 @@ export default function ActivarNotificaciones({ descripcion }) {
           )}
 
           {estado === "no-soportado" && (
-            <p className="text-xs text-barber-gray mt-0.5">
+            <p className="text-xs text-pizarra mt-0.5">
               Este navegador no admite notificaciones push.
             </p>
           )}
@@ -204,7 +204,7 @@ export default function ActivarNotificaciones({ descripcion }) {
           )}
 
           {estado === "inactivo" && (
-            <p className="text-xs text-barber-gray mt-0.5 leading-relaxed">{texto}</p>
+            <p className="text-xs text-pizarra mt-0.5 leading-relaxed">{texto}</p>
           )}
 
           {estado === "activo" && (
@@ -250,7 +250,7 @@ export default function ActivarNotificaciones({ descripcion }) {
             <button
               onClick={desactivar}
               disabled={ocupado || probando}
-              className="btn-outline text-xs py-1.5 px-2.5 rounded-lg text-barber-gray hover:text-red-600"
+              className="btn-outline text-xs py-1.5 px-2.5 rounded-lg text-pizarra hover:text-red-600"
             >
               {ocupado ? "…" : "Desactivar"}
             </button>

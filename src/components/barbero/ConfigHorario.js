@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DIAS_SEMANA, DURACIONES_CORTE_OPCIONES } from "@/lib/constants";
 import { fechaLocalHoy, esFechaPasada, formatearHora12, hhmmAMin, minAHhmm } from "@/lib/disponibilidad";
 import { linkWhatsApp } from "@/lib/whatsapp";
+import { obtenerMarca } from "@/lib/brands";
 
 export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
   const [horaInicio, setHoraInicio] = useState(perfil.horario?.horaInicio || "10:00");
@@ -166,7 +167,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={foto} alt="Tu foto" className="w-20 h-20 rounded-full object-cover border border-black/10" />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-barber-black text-white grid place-items-center font-display text-3xl">
+            <div className="w-20 h-20 rounded-full bg-tinta text-white grid place-items-center font-display text-3xl">
               {perfil.nombre?.[0]?.toUpperCase()}
             </div>
           )}
@@ -178,7 +179,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
             {foto && (
               <button type="button" onClick={() => setFoto("")} className="ml-2 text-sm text-red-600 font-semibold">Quitar</button>
             )}
-            <p className="text-xs text-barber-gray mt-1">Esta es la foto que ven tus clientes.</p>
+            <p className="text-xs text-pizarra mt-1">Esta es la foto que ven tus clientes.</p>
           </div>
         </div>
         <div className="grid sm:grid-cols-3 gap-3">
@@ -201,18 +202,18 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
         <h2 className="font-display text-xl">Horario laboral</h2>
 
         {/* Resumen visual */}
-        <div className="rounded-xl bg-barber-cream border border-black/10 px-4 py-3 flex items-center gap-3">
+        <div className="rounded-xl bg-crema border border-black/10 px-4 py-3 flex items-center gap-3">
           <span className="text-2xl">🕐</span>
           <div className="text-sm leading-snug">
             <p>
               Atendés de{" "}
-              <span className="font-bold text-barber-blue">{hora12simple(horaInicio)}</span>
+              <span className="font-bold text-brand-deep">{hora12simple(horaInicio)}</span>
               {" "}a{" "}
-              <span className="font-bold text-barber-blue">{hora12simple(horaFin)}</span>
+              <span className="font-bold text-brand-deep">{hora12simple(horaFin)}</span>
               {" "}·{" "}
               <span className="font-semibold">{duracionJornada(horaInicio, horaFin)} horas al día</span>
             </p>
-            <p className="text-barber-gray mt-0.5">
+            <p className="text-pizarra mt-0.5">
               {dias.length === 0
                 ? "⚠️ Ningún día seleccionado"
                 : `${dias.length} día${dias.length !== 1 ? "s" : ""} a la semana`}
@@ -232,16 +233,16 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
           </div>
         </div>
 
-        {/* Tiempo por corte / turno */}
+        {/* Tiempo por turno */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="label mb-0">⏱️ Tiempo por corte</label>
-            <span className="text-xs font-bold text-barber-blue bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+            <label className="label mb-0">⏱️ Tiempo por turno</label>
+            <span className="text-xs font-bold text-brand-deep bg-brand-soft px-2 py-0.5 rounded border border-brand/20">
               {duracionTurnoMin} minutos por cliente
             </span>
           </div>
-          <p className="text-xs text-barber-gray mb-2">
-            Elige cuánto tardas en cada corte. Tu agenda se organizará en bloques exactos de este tiempo:
+          <p className="text-xs text-pizarra mb-2">
+            Elige cuánto tardas en cada servicio. Tu agenda se organizará en bloques exactos de este tiempo:
           </p>
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
             {DURACIONES_CORTE_OPCIONES.map((min) => (
@@ -251,8 +252,8 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
                 onClick={() => setDuracionTurnoMin(min)}
                 className={`rounded-lg py-2 text-xs font-bold border transition ${
                   duracionTurnoMin === min
-                    ? "bg-barber-ink text-white border-barber-ink shadow-sm"
-                    : "border-gray-200 text-barber-gray hover:border-barber-ink hover:text-barber-ink bg-white"
+                    ? "bg-tinta text-white border-tinta shadow-sm"
+                    : "border-gray-200 text-pizarra hover:border-tinta hover:text-tinta bg-white"
                 }`}
               >
                 {min}m
@@ -260,7 +261,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
             ))}
           </div>
           {horaInicio && (
-            <p className="text-xs text-barber-gray mt-2 bg-barber-cream/70 p-2.5 rounded-lg border border-black/5">
+            <p className="text-xs text-pizarra mt-2 bg-crema/70 p-2.5 rounded-lg border border-black/5">
               📌 Ejemplo: Turno 1: <b>{hora12simple(horaInicio)} – {hora12simple(minAHhmm(hhmmAMin(horaInicio) + duracionTurnoMin))}</b>
               {" · "}Turno 2: <b>{hora12simple(minAHhmm(hhmmAMin(horaInicio) + duracionTurnoMin))} – {hora12simple(minAHhmm(hhmmAMin(horaInicio) + duracionTurnoMin * 2))}</b>
             </p>
@@ -278,16 +279,16 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
                 onClick={() => toggleDia(i)}
                 className={`rounded-lg py-3 text-xs font-bold text-center border transition active:scale-95 ${
                   dias.includes(i)
-                    ? "bg-barber-blue text-white border-barber-blue"
-                    : "border-gray-200 text-barber-gray hover:border-barber-blue hover:text-barber-blue"
+                    ? "bg-brand-deep text-white border-brand-deep"
+                    : "border-linea text-pizarra hover:border-brand-deep hover:text-brand-deep"
                 }`}
               >
                 {d.slice(0, 2)}
               </button>
             ))}
           </div>
-          <div className="flex gap-3 mt-2 text-xs text-barber-gray">
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-barber-blue inline-block" /> Trabajás</span>
+          <div className="flex gap-3 mt-2 text-xs text-pizarra">
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-brand-deep inline-block" /> Trabajás</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm border border-gray-300 inline-block" /> Descanso</span>
           </div>
         </div>
@@ -297,7 +298,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              className="w-4 h-4 accent-barber-blue"
+              className="w-4 h-4 accent-brand-deep"
               checked={almuerzoActivo}
               onChange={(e) => setAlmuerzoActivo(e.target.checked)}
             />
@@ -318,7 +319,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
               {almuerzoIni >= almuerzoFin ? (
                 <p className="text-xs text-red-600">⚠️ La hora de fin debe ser mayor que la de inicio.</p>
               ) : (
-                <p className="text-xs text-barber-gray">
+                <p className="text-xs text-pizarra">
                   De <b>{hora12simple(almuerzoIni)}</b> a <b>{hora12simple(almuerzoFin)}</b> no podrán agendarte citas.
                   Aplica a los {dias.length} día{dias.length !== 1 ? "s" : ""} que trabajás.
                 </p>
@@ -338,12 +339,12 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
               onChange={(e) => setVentana(e.target.value)}
               min={0}
             />
-            <span className="text-sm text-barber-gray">horas antes de la cita</span>
+            <span className="text-sm text-pizarra">horas antes de la cita</span>
           </div>
           {Number(ventana) === 0 ? (
             <p className="text-xs text-amber-600 mt-1.5">⚠️ Con 0 horas, los clientes pueden cancelar en cualquier momento, incluso el mismo día.</p>
           ) : (
-            <p className="text-xs text-barber-gray mt-1.5">
+            <p className="text-xs text-pizarra mt-1.5">
               Ej: si tiene cita a las 3:00 p.m., puede cancelar hasta las{" "}
               <b>{cancelacionEjemplo(ventana)}</b>.
             </p>
@@ -354,7 +355,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
       <section className="card p-6 space-y-4">
         <div>
           <h2 className="font-display text-xl">Ausencias</h2>
-          <p className="text-sm text-barber-gray mt-0.5">Bloqueá días completos o franjas de horas en las que no vas a atender. Se guardan al instante y los clientes no podrán agendar en ese tiempo.</p>
+          <p className="text-sm text-pizarra mt-0.5">Bloqueá días completos o franjas de horas en las que no vas a atender. Se guardan al instante y los clientes no podrán agendar en ese tiempo.</p>
           {ausenciaMsg && (
             <p className={`text-sm font-semibold mt-2 ${ausenciaMsg.startsWith("⚠️") || ausenciaMsg.startsWith("No ") || ausenciaMsg.startsWith("La ") ? "text-red-600" : "text-green-700"}`}>
               {ausenciaMsg}
@@ -373,7 +374,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
               type="button"
               onClick={() => setModoBloqueo(op.key)}
               className={`rounded-lg py-2 text-sm font-bold transition ${
-                modoBloqueo === op.key ? "bg-white text-barber-ink shadow-sm" : "text-barber-gray"
+                modoBloqueo === op.key ? "bg-white text-tinta shadow-sm" : "text-pizarra"
               }`}
             >
               {op.label}
@@ -419,7 +420,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
           <p className="label text-xs mb-1.5">Días completos bloqueados</p>
           <div className="flex flex-wrap gap-2">
             {diasBloqueados.length === 0
-              ? <span className="text-sm text-barber-gray">Ninguno.</span>
+              ? <span className="text-sm text-pizarra">Ninguno.</span>
               : diasBloqueados.map((f) => (
                   <span key={f} className="inline-flex items-center gap-1.5 bg-gray-100 border border-gray-200 rounded-full px-3 py-1 text-sm font-medium">
                     📅 {formatFechaBloq(f)}
@@ -435,11 +436,11 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
           <p className="label text-xs mb-1.5">Horas bloqueadas</p>
           <div className="flex flex-wrap gap-2">
             {franjas.length === 0
-              ? <span className="text-sm text-barber-gray">Ninguna.</span>
+              ? <span className="text-sm text-pizarra">Ninguna.</span>
               : franjas.map((f, i) => (
                   <span key={`${f.fecha}-${f.horaInicio}-${i}`} className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-sm font-medium">
                     🕐 {formatFechaBloq(f.fecha)} · {hora12simple(f.horaInicio)}–{hora12simple(f.horaFin)}
-                    {f.motivo ? <span className="text-barber-gray font-normal">({f.motivo})</span> : null}
+                    {f.motivo ? <span className="text-pizarra font-normal">({f.motivo})</span> : null}
                     <button onClick={() => quitarFranja(i)} className="text-red-500 hover:text-red-700 font-bold leading-none" aria-label="Quitar">×</button>
                   </span>
                 ))
@@ -456,7 +457,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
           <div className="min-w-0 sm:col-span-2"><label className="label">Cuenta bancaria</label><input className="input" value={datosPago.cuenta || ""} onChange={(e) => setDatosPago({ ...datosPago, cuenta: e.target.value })} placeholder="Banco y número de cuenta" /></div>
           <div className="min-w-0 sm:col-span-2">
             <label className="label">Código QR (imagen)</label>
-            <input type="file" accept="image/*" onChange={onQR} className="block w-full max-w-full text-sm text-barber-gray" />
+            <input type="file" accept="image/*" onChange={onQR} className="block w-full max-w-full text-sm text-pizarra" />
             {datosPago.qrImagen && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={datosPago.qrImagen} alt="QR" className="mt-2 w-32 h-32 object-contain border rounded" />
@@ -476,7 +477,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
             <span className="text-2xl">🚫</span>
             <div>
               <h2 className="font-display text-xl">No se pudo bloquear: tenés {conflictos.length} cita{conflictos.length !== 1 ? "s" : ""} agendada{conflictos.length !== 1 ? "s" : ""} en ese tiempo</h2>
-              <p className="text-sm text-barber-gray mt-0.5">
+              <p className="text-sm text-pizarra mt-0.5">
                 No se puede marcar ausencia sobre una cita ya agendada. Primero <b>comunicate con el cliente</b> para reagendar y cancelá la cita desde el calendario; luego vas a poder bloquear ese tiempo.
               </p>
             </div>
@@ -486,7 +487,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
               <div key={c.id} className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-white px-3 py-2">
                 <div className="min-w-0">
                   <p className="font-semibold text-sm truncate">{c.clienteNombre}</p>
-                  <p className="text-xs text-barber-gray">
+                  <p className="text-xs text-pizarra">
                     📅 {formatFechaBloq(c.fecha)} · {hora12simple(c.horaInicio)}–{hora12simple(c.horaFin)}
                     {c.planSnapshot?.nombre ? ` · ${c.planSnapshot.nombre}` : ""} · {c.estado}
                   </p>
@@ -513,7 +514,7 @@ export default function ConfigHorario({ perfil, onGuardado, onIrACita }) {
               </div>
             ))}
           </div>
-          <p className="text-xs text-barber-gray">
+          <p className="text-xs text-pizarra">
             Para reagendar, escribile al cliente por WhatsApp y luego cancelá la cita en la pestaña <b>Calendario</b>.
           </p>
         </section>
@@ -557,7 +558,7 @@ function formatFechaBloq(fechaISO) {
 
 // Mensaje de WhatsApp para pedirle al cliente reagendar la cita que impide la ausencia.
 function mensajeReagendar(cita, perfil) {
-  const local = perfil?.local || "la barbería";
+  const local = perfil?.local || `la ${obtenerMarca(perfil?.marca).textos.negocio}`;
   const fecha = formatFechaBloq(cita.fecha);
   const hora = hora12simple(cita.horaInicio);
   return (

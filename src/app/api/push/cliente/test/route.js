@@ -2,6 +2,7 @@ import { dbConnect } from "@/lib/db";
 import { ok, fail, handler } from "@/lib/api";
 import { normalizarCelular } from "@/lib/whatsapp";
 import { enviarPush } from "@/lib/push";
+import { obtenerMarca } from "@/lib/brands";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,9 @@ export const dynamic = "force-dynamic";
 // los recordatorios le llegan (útil para probar con la pantalla bloqueada).
 export const POST = handler(async (req) => {
   await dbConnect();
-  const { celular } = await req.json().catch(() => ({}));
+  // `marca` es la submarca que el cliente tiene abierta (CitasPet, CitasSpa...)
+  const { celular, marca: marcaId } = await req.json().catch(() => ({}));
+  const marca = obtenerMarca(marcaId);
 
   const cel = normalizarCelular(celular || "");
   if (!cel || cel.replace(/\D/g, "").length < 10)
@@ -20,7 +23,7 @@ export const POST = handler(async (req) => {
   const res = await enviarPush(
     { ownerRole: "cliente", clienteCelular: cel },
     {
-      title: "CitasBarber 💈",
+      title: `${marca.nombre} ${marca.textos.emoji}`,
       body: "¡Prueba exitosa! Vas a recibir tus citas como notificaciones, incluso con la pantalla bloqueada.",
       url: "/mis-citas",
       tag: `test-${Date.now()}`,

@@ -1,6 +1,7 @@
 import { METODOS_PAGO_LABEL, formatoCOP } from "./constants";
 import { EMOJI as E } from "./emojis";
 import { formatearHora12 } from "./disponibilidad";
+import { obtenerMarca, capitalizar } from "./brands";
 
 // Sitio del proyecto: se usa como firma promocional en los mensajes que llegan
 // al cliente final, para dar a conocer la plataforma.
@@ -21,13 +22,28 @@ function resolverSitioUrl() {
 
 const SITIO_URL = resolverSitioUrl();
 
-// Pie promocional para mensajes dirigidos al cliente. Respeta el modo "plano"
-// (PC/WhatsApp Desktop) donde los emojis se corrompen.
-function firmaSitio({ plano = false } = {}) {
+// Pie promocional para mensajes dirigidos al cliente, con la submarca del
+// negocio (CitasBarber, CitasPet...). El enlace abre el sitio en esa marca.
+// Respeta el modo "plano" (PC/WhatsApp Desktop) donde los emojis se corrompen.
+function firmaSitio(marca, { plano = false } = {}) {
+  const url = `${SITIO_URL}/?marca=${marca.id}`;
   if (plano) {
-    return `\n\nAgenda tus citas facil con CitasBarber:\n${SITIO_URL}`;
+    return `\n\nAgenda tus citas facil con ${marca.nombre}:\n${url}`;
   }
-  return `\n\n${E.CALENDARIO} _Agenda tus citas fácil con_ *CitasBarber*\n👉 ${SITIO_URL}`;
+  return `\n\n${E.CALENDARIO} _Agenda tus citas fácil con_ *${marca.nombre}*\n👉 ${url}`;
+}
+
+// Nombre del negocio para los mensajes, con respaldo según el nicho
+// ("la barbería", "la peluquería canina", "el spa").
+function nombreNegocio(barbero, marca) {
+  if (barbero?.local) return barbero.local;
+  const articulo = marca.textos.negocio === "spa" ? "el" : "la";
+  return `${articulo} ${marca.textos.negocio}`;
+}
+
+// Emoji por clave; NAVAJA es el emoji del nicho (poste, huella, esmalte).
+function emojiDe(k, marca) {
+  return k === "NAVAJA" ? marca.textos.emoji : E[k];
 }
 
 export function normalizarCelular(celular) {
@@ -60,7 +76,8 @@ function limpiarEmojis(s) {
 // plano=false -> mensaje con emojis (para móvil, donde se ven bien).
 export function mensajeNuevaCita(cita, barbero, { plano = false } = {}) {
   const plan = cita.planSnapshot || {};
-  const em = (k) => (plano ? "" : `${E[k]} `);
+  const marca = obtenerMarca(barbero?.marca);
+  const em = (k) => (plano ? "" : `${emojiDe(k, marca)} `);
   const servicios = (plan.servicios || [])
     .map((s) => (plano ? limpiarEmojis(s) : s))
     .join(", ");
@@ -89,18 +106,19 @@ export function mensajeNuevaCita(cita, barbero, { plano = false } = {}) {
 
 export function mensajeConfirmacion(cita, barbero, { plano = false } = {}) {
   const plan = cita.planSnapshot || {};
-  const em = (k) => (plano ? "" : `${E[k]} `);
+  const marca = obtenerMarca(barbero?.marca);
+  const em = (k) => (plano ? "" : `${emojiDe(k, marca)} `);
   const servicios = (plan.servicios || [])
     .map((s) => (plano ? limpiarEmojis(s) : s))
     .join(", ");
   const fecha = formatearFecha(cita.fecha);
-  const cierreTitulo = plano ? "" : ` ${E.NAVAJA}`;
+  const cierreTitulo = plano ? "" : ` ${marca.textos.emoji}`;
   const direccion = barbero?.direccion
     ? `\n${em("UBICACION")}*Dirección:* ${barbero.direccion}`
     : "";
   return (
-    `${em("NAVAJA")}*Tu cita quedo confirmada en ${barbero?.local || "la barberia"}!*${cierreTitulo}\n\n` +
-    `${em("PERSONA")}*Barbero:* ${barbero?.nombre || ""}\n` +
+    `${em("NAVAJA")}*Tu cita quedo confirmada en ${nombreNegocio(barbero, marca)}!*${cierreTitulo}\n\n` +
+    `${em("PERSONA")}*${capitalizar(marca.textos.profesional)}:* ${barbero?.nombre || ""}\n` +
     `${em("TIJERAS")}*Plan:* ${plan.nombre || cita.plan}\n` +
     `*Servicios:* ${servicios}\n` +
     `${em("CALENDARIO")}*Fecha:* ${fecha}\n` +
@@ -108,13 +126,14 @@ export function mensajeConfirmacion(cita, barbero, { plano = false } = {}) {
     `${em("BILLETE")}*Valor:* ${formatoCOP(plan.precio)}` +
     direccion +
     `\n\n_Ahi lo esperamos!_` +
-    firmaSitio({ plano })
+    firmaSitio(marca, { plano })
   );
 }
 
 export function mensajeRechazo(cita, barbero) {
+  const marca = obtenerMarca(barbero?.marca);
   return (
-    `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${barbero?.local || "la barberia"}*.\n\n` +
+    `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${nombreNegocio(barbero, marca)}*.\n\n` +
     `Lamentablemente no puedo atender tu solicitud de cita para el ` +
     `${formatearFecha(cita.fecha)} a las ${formatearHora12(cita.horaInicio)}.\n\n` +
     `_Hablemos para reprogramar._`
@@ -123,8 +142,9 @@ export function mensajeRechazo(cita, barbero) {
 
 export function mensajeCancelacion(cita, barbero, { motivo = "" } = {}) {
   const detalleMotivo = motivo ? `\n\n*Motivo:* ${motivo}` : "";
+  const marca = obtenerMarca(barbero?.marca);
   return (
-    `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${barbero?.local || "la barberia"}*.\n\n` +
+    `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${nombreNegocio(barbero, marca)}*.\n\n` +
     `Tuve que cancelar tu cita confirmada para el ` +
     `${formatearFecha(cita.fecha)} a las ${formatearHora12(cita.horaInicio)}.` +
     detalleMotivo +

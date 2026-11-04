@@ -3,12 +3,20 @@
 import { useState } from "react";
 import { OjoAbierto, OjoCerrado, WhatsAppIcon } from "@/components/Icons";
 import { BARBERIA_SEDE_DEFAULT, DURACIONES_CORTE_OPCIONES } from "@/lib/constants";
+import { obtenerMarca, capitalizar } from "@/lib/brands";
+import { useBrand } from "@/components/BrandProvider";
+import SelectorMarcaNegocio from "./SelectorMarcaNegocio";
 
 export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }) {
   const sede = defaultBarberia || BARBERIA_SEDE_DEFAULT;
+  // Por defecto, la marca que el admin tiene abierta en el selector
+  const { id: marcaActiva } = useBrand();
+  const [marcaId, setMarcaId] = useState(marcaActiva);
+  const marca = obtenerMarca(marcaId);
+  const t = marca.textos;
   const [form, setForm] = useState({
     nombre: "",
-    local: sede.local || BARBERIA_SEDE_DEFAULT.local,
+    local: defaultBarberia?.local || "", // sin sede de la misma marca: se escribe
     celular: "",
     ciudad: sede.ciudad || BARBERIA_SEDE_DEFAULT.ciudad,
     direccion: sede.direccion || BARBERIA_SEDE_DEFAULT.direccion,
@@ -74,6 +82,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
           email: emailFinal,
           password: password.trim(),
           duracionTurnoMin: Number(duracionTurnoMin),
+          marca: marcaId,
         }),
       });
 
@@ -81,7 +90,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
       setGuardando(false);
 
       if (!res.ok) {
-        setError(data.error || "Ocurrió un error al crear el barbero.");
+        setError(data.error || `Ocurrió un error al crear el ${t.profesional}.`);
         return;
       }
 
@@ -94,7 +103,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
 
   async function copiarCredenciales() {
     if (!resultado) return;
-    const texto = `💈 *Bienvenido a CitasBarber*\n\nTus datos de acceso como barbero:\n📧 *Correo:* ${resultado.credenciales.email}\n🔑 *Contraseña temporal:* ${resultado.credenciales.password}\n🌐 *Acceso:* ${window.location.origin}/barbero/panel\n\n_Al ingresar por primera vez, el sistema te solicitará cambiar tu contraseña._`;
+    const texto = `${t.emoji} *Bienvenido a ${marca.nombre}*\n\nTus datos de acceso como ${t.profesional}:\n📧 *Correo:* ${resultado.credenciales.email}\n🔑 *Contraseña temporal:* ${resultado.credenciales.password}\n🌐 *Acceso:* ${window.location.origin}/barbero/panel\n\n_Al ingresar por primera vez, el sistema te solicitará cambiar tu contraseña._`;
     try {
       await navigator.clipboard.writeText(texto);
       setCopiado(true);
@@ -109,7 +118,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
     const celular = resultado.barbero.celular.replace(/\D/g, "");
     const numero = celular.startsWith("57") ? celular : `57${celular}`;
     const mensaje = encodeURIComponent(
-      `💈 ¡Hola ${resultado.barbero.nombre}! Ya hemos configurado tu cuenta en CitasBarber.\n\n` +
+      `${t.emoji} ¡Hola ${resultado.barbero.nombre}! Ya hemos configurado tu cuenta en ${marca.nombre}.\n\n` +
       `Tus datos de acceso son:\n` +
       `📧 Correo: ${resultado.credenciales.email}\n` +
       `🔑 Contraseña temporal: ${resultado.credenciales.password}\n` +
@@ -130,29 +139,29 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
               <div className="w-12 h-12 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
                 ✓
               </div>
-              <h2 className="font-display text-2xl">¡Barbero creado exitosamente!</h2>
-              <p className="text-sm text-barber-gray">
+              <h2 className="font-display text-2xl">¡{capitalizar(t.profesional)} creado exitosamente!</h2>
+              <p className="text-sm text-pizarra">
                 La cuenta para <b>{resultado.barbero.nombre}</b> ({resultado.barbero.local}) quedó <b>activa</b> y lista para usarse.
               </p>
             </div>
 
             {/* Tarjeta de credenciales */}
-            <div className="rounded-xl bg-barber-cream border border-black/10 p-4 space-y-2">
-              <div className="text-xs font-semibold uppercase text-barber-gray tracking-wider">
+            <div className="rounded-xl bg-crema border border-black/10 p-4 space-y-2">
+              <div className="text-xs font-semibold uppercase text-pizarra tracking-wider">
                 Credenciales de acceso
               </div>
               <div className="space-y-1 text-sm">
                 <p>
-                  <span className="text-barber-gray">Usuario / Correo:</span>{" "}
-                  <b className="font-mono text-barber-ink select-all">{resultado.credenciales.email}</b>
+                  <span className="text-pizarra">Usuario / Correo:</span>{" "}
+                  <b className="font-mono text-tinta select-all">{resultado.credenciales.email}</b>
                 </p>
                 <p>
-                  <span className="text-barber-gray">Contraseña temporal:</span>{" "}
-                  <b className="font-mono text-barber-ink select-all">{resultado.credenciales.password}</b>
+                  <span className="text-pizarra">Contraseña temporal:</span>{" "}
+                  <b className="font-mono text-tinta select-all">{resultado.credenciales.password}</b>
                 </p>
               </div>
               <p className="text-xs text-amber-800 bg-amber-50 p-2 rounded border border-amber-200 mt-2">
-                🔒 El barbero deberá cambiar esta contraseña obligatoriamente en su primer inicio de sesión.
+                🔒 El {t.profesional} deberá cambiar esta contraseña obligatoriamente en su primer inicio de sesión.
               </p>
             </div>
 
@@ -183,7 +192,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                 }}
                 className="btn-dark w-full py-2.5 text-sm"
               >
-                Configurar o validar planes de este barbero →
+                Configurar o validar planes de este {t.profesional} →
               </button>
 
               <button
@@ -191,9 +200,9 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                 onClick={() => {
                   onCreado?.(resultado.barbero, false);
                 }}
-                className="btn-outline border-transparent text-barber-gray hover:bg-black/5 hover:text-black w-full py-2 text-sm"
+                className="btn-outline border-transparent text-pizarra hover:bg-black/5 hover:text-black w-full py-2 text-sm"
               >
-                Volver a la lista de barberos
+                Volver a la lista de negocios
               </button>
             </div>
           </div>
@@ -202,13 +211,13 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
           <div>
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="font-display text-2xl">Crear nuevo barbero</h2>
-                <p className="text-xs text-barber-gray">Registro manual directo desde el panel de administración.</p>
+                <h2 className="font-display text-2xl">Crear nuevo {t.profesional}</h2>
+                <p className="text-xs text-pizarra">Registro manual directo desde el panel de administración.</p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-2xl leading-none text-barber-gray hover:text-barber-black"
+                className="text-2xl leading-none text-pizarra hover:text-tinta"
                 disabled={guardando}
               >
                 ×
@@ -222,9 +231,11 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              <SelectorMarcaNegocio value={marcaId} onChange={setMarcaId} />
+
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Nombre del barbero *</label>
+                  <label className="label">Nombre del {t.profesional} *</label>
                   <input
                     className="input"
                     value={form.nombre}
@@ -246,13 +257,13 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                 </div>
               </div>
 
-              {/* Sede / Barbería precargada */}
-              <div className="rounded-xl bg-barber-cream/70 border border-black/10 p-3.5 space-y-2.5">
+              {/* Sede / negocio precargado */}
+              <div className="rounded-xl bg-crema/70 border border-linea p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-barber-gray flex items-center gap-1">
-                    💈 Sede / Barbería
+                  <span className="text-xs font-bold uppercase tracking-wider text-pizarra flex items-center gap-1">
+                    {t.emoji} Sede / {capitalizar(t.negocio)}
                   </span>
-                  <span className="text-[11px] text-barber-blue font-semibold">
+                  <span className="text-[11px] text-brand-deep font-semibold">
                     Datos del local actual
                   </span>
                 </div>
@@ -264,7 +275,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                       className="input text-sm py-2 bg-white"
                       value={form.local}
                       onChange={(e) => set("local", e.target.value)}
-                      placeholder="CitasBarber"
+                      placeholder={marca.nombre}
                       required
                     />
                   </div>
@@ -294,7 +305,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
               {/* Correo con dominio @citasbarber.com por defecto */}
               <div>
                 <label className="label">Correo electrónico institucional *</label>
-                <div className="flex rounded-lg border border-gray-300 focus-within:border-barber-blue focus-within:ring-1 focus-within:ring-barber-blue overflow-hidden bg-white">
+                <div className="flex rounded-lg border border-linea focus-within:border-brand-deep focus-within:ring-1 focus-within:ring-brand-deep overflow-hidden bg-white">
                   <input
                     className="flex-1 px-3 py-2.5 outline-none text-base text-right sm:text-left"
                     type="text"
@@ -303,24 +314,24 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                     placeholder="nombre.barbero"
                     required
                   />
-                  <span className="inline-flex items-center px-3 bg-gray-100 text-barber-gray font-medium text-sm select-none border-l border-gray-200">
+                  <span className="inline-flex items-center px-3 bg-gray-100 text-pizarra font-medium text-sm select-none border-l border-gray-200">
                     {form.emailAlias.includes("@") ? "" : "@citasbarber.com"}
                   </span>
                 </div>
-                <p className="text-xs text-barber-gray mt-1">
-                  Dirección final: <span className="font-medium text-barber-ink">{emailFinal || "(escribe el usuario)"}</span>
+                <p className="text-xs text-pizarra mt-1">
+                  Dirección final: <span className="font-medium text-tinta">{emailFinal || "(escribe el usuario)"}</span>
                 </p>
               </div>
 
               {/* Tiempo por corte / intervalo de turnos */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="label mb-0">⏱️ Tiempo por corte (intervalo)</label>
-                  <span className="text-xs font-bold text-barber-blue bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                  <label className="label mb-0">⏱️ Tiempo por turno (intervalo)</label>
+                  <span className="text-xs font-bold text-brand-deep bg-brand-soft px-2 py-0.5 rounded border border-brand/20">
                     {duracionTurnoMin} min base
                   </span>
                 </div>
-                <p className="text-xs text-barber-gray mb-1.5">
+                <p className="text-xs text-pizarra mb-1.5">
                   Intervalo entre turnos. Cada plan aplicará su duración específica al agendar:
                 </p>
                 <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
@@ -331,8 +342,8 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                       onClick={() => setDuracionTurnoMin(min)}
                       className={`rounded-lg py-1.5 text-xs font-bold border transition ${
                         duracionTurnoMin === min
-                          ? "bg-barber-ink text-white border-barber-ink shadow-sm"
-                          : "border-gray-200 text-barber-gray hover:border-barber-ink hover:text-barber-ink bg-white"
+                          ? "bg-tinta text-white border-tinta shadow-sm"
+                          : "border-gray-200 text-pizarra hover:border-tinta hover:text-tinta bg-white"
                       }`}
                     >
                       {min}m
@@ -348,7 +359,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                   <button
                     type="button"
                     onClick={generarPasswordAleatoria}
-                    className="text-xs text-barber-blue hover:underline font-semibold"
+                    className="text-xs text-brand-deep hover:underline font-semibold"
                   >
                     Generar aleatoria
                   </button>
@@ -365,15 +376,15 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                   <button
                     type="button"
                     onClick={() => setVerPassword(!verPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-barber-gray hover:text-barber-dark"
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-pizarra hover:text-tinta"
                     tabIndex={-1}
                     aria-label={verPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   >
                     {verPassword ? <OjoCerrado className="w-5 h-5" /> : <OjoAbierto className="w-5 h-5" />}
                   </button>
                 </div>
-                <p className="text-xs text-barber-gray mt-1">
-                  El barbero deberá cambiar esta clave obligatoriamente en su primer ingreso.
+                <p className="text-xs text-pizarra mt-1">
+                  El {t.profesional} deberá cambiar esta clave obligatoriamente en su primer ingreso.
                 </p>
               </div>
 
@@ -395,7 +406,7 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                   className="btn-primary flex-1"
                   disabled={guardando}
                 >
-                  {guardando ? "Creando…" : "Crear barbero"}
+                  {guardando ? "Creando…" : `Crear ${t.profesional}`}
                 </button>
               </div>
             </form>

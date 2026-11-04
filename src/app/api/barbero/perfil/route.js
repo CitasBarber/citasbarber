@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth";
 import { ROLES, ESTADO_CITA } from "@/lib/constants";
 import { citasEnConflicto } from "@/lib/disponibilidad";
 import { serializarCita } from "@/lib/serializers";
+import { MARCA_DEFAULT } from "@/lib/brands";
 
 function requireBarbero() {
   const session = getSession();
@@ -33,6 +34,7 @@ export const GET = handler(async () => {
       ciudad: b.ciudad,
       direccion: b.direccion || "",
       foto: b.foto || "",
+      marca: b.marca || MARCA_DEFAULT,
       redes: b.redes || {},
       email: b.email,
       estado: b.estado,

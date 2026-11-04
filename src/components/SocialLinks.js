@@ -95,7 +95,7 @@ export default function SocialLinks({ redes = {}, className = "", conTitulo = tr
   return (
     <div className={`flex flex-col items-center gap-2 ${className}`}>
       {conTitulo && (
-        <span className="text-[11px] uppercase tracking-wider font-bold text-barber-gray/90 flex items-center gap-1.5">
+        <span className="text-[11px] uppercase tracking-wider font-bold text-pizarra/90 flex items-center gap-1.5">
           <span>📸</span> Mirá mis redes sociales
         </span>
       )}

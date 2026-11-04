@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { fechaLocalHoy, esFechaPasada, formatearHora12 } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
+import { useBrand } from "@/components/BrandProvider";
 
 export default function CitaManual({ planes, onCreada, prefill }) {
+  const { t } = useBrand();
   const activos = (planes || []).filter((p) => p.activo);
   const [clienteNombre, setNombre] = useState("");
   const [clienteCelular, setCelular] = useState("");
@@ -150,12 +152,12 @@ export default function CitaManual({ planes, onCreada, prefill }) {
   }
 
   if (activos.length === 0)
-    return <p className="text-barber-gray">Aún no tienes planes configurados por el administrador.</p>;
+    return <p className="text-pizarra">Aún no tienes planes configurados por el administrador.</p>;
 
   return (
     <form onSubmit={crear} className="card p-6 max-w-lg space-y-3">
       <h2 className="font-display text-xl">Agendar cliente presencial</h2>
-      <p className="text-sm text-barber-gray">Para clientes sin celular o que llegan al local. La cita queda confirmada.</p>
+      <p className="text-sm text-pizarra">Para clientes sin celular o que llegan al local. La cita queda confirmada.</p>
       {error && <p className="text-red-600 text-sm">{error}</p>}
       {msg && <p className="text-green-700 text-sm">{msg}</p>}
 
@@ -166,7 +168,7 @@ export default function CitaManual({ planes, onCreada, prefill }) {
             <button
               type="button"
               onClick={elegirDeContactos}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-barber-red hover:underline py-0.5 px-1 rounded active:bg-red-50"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-brand-deep hover:underline py-0.5 px-1 rounded active:bg-brand-soft"
             >
               <span>📇 + Contactos del celular</span>
             </button>
@@ -189,8 +191,8 @@ export default function CitaManual({ planes, onCreada, prefill }) {
         {/* Menú de sugerencias de clientes anteriores */}
         {sugerencias.length > 0 && (
           <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-30 overflow-hidden divide-y divide-gray-100 animate-fade-down">
-            <div className="px-3 py-1.5 bg-gray-50 text-[11px] font-semibold text-barber-gray flex justify-between items-center">
-              <span>Clientes anteriores de la barbería</span>
+            <div className="px-3 py-1.5 bg-gray-50 text-[11px] font-semibold text-pizarra flex justify-between items-center">
+              <span>Clientes anteriores de la {t.negocio}</span>
               <button
                 type="button"
                 onClick={() => setSugerencias([])}
@@ -207,13 +209,13 @@ export default function CitaManual({ planes, onCreada, prefill }) {
                 className="w-full px-3 py-2 text-left hover:bg-red-50/70 flex items-center justify-between text-sm transition"
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-barber-ink/5 text-barber-ink grid place-items-center font-bold text-xs">
+                  <span className="w-6 h-6 rounded-full bg-tinta/5 text-tinta grid place-items-center font-bold text-xs">
                     {item.nombre?.[0]?.toUpperCase() || "C"}
                   </span>
-                  <span className="font-semibold text-barber-ink">{item.nombre}</span>
+                  <span className="font-semibold text-tinta">{item.nombre}</span>
                 </div>
                 {item.celular && (
-                  <span className="text-xs text-barber-gray font-mono">{item.celular}</span>
+                  <span className="text-xs text-pizarra font-mono">{item.celular}</span>
                 )}
               </button>
             ))}
@@ -243,7 +245,7 @@ export default function CitaManual({ planes, onCreada, prefill }) {
               type="button"
               onClick={elegirDeContactos}
               title="Cargar de los contactos de tu celular"
-              className="btn-outline shrink-0 text-xs py-2 px-3 flex items-center gap-1 font-semibold hover:border-barber-red hover:text-barber-red"
+              className="btn-outline shrink-0 text-xs py-2 px-3 flex items-center gap-1 font-semibold hover:border-brand hover:text-brand-deep"
             >
               <span>📇 + Contacto</span>
             </button>
@@ -267,12 +269,12 @@ export default function CitaManual({ planes, onCreada, prefill }) {
       <div>
         <label className="label">Hora</label>
         {slots.length === 0 ? (
-          <p className="text-sm text-barber-gray">No hay horarios libres ese día.</p>
+          <p className="text-sm text-pizarra">No hay horarios libres ese día.</p>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {slots.map((s) => (
               <button type="button" key={s} onClick={() => seleccionarHora(s)}
-                className={`rounded-lg border min-h-[44px] py-2 text-sm font-semibold transition active:scale-95 ${hora === s ? "bg-barber-blue text-white border-barber-blue" : "border-gray-300 hover:border-barber-blue"}`}>
+                className={`rounded-lg border min-h-[44px] py-2 text-sm font-semibold transition active:scale-95 ${hora === s ? "bg-brand-deep text-white border-brand-deep" : "border-gray-300 hover:border-brand-deep"}`}>
                 {formatearHora12(s)}
               </button>
             ))}

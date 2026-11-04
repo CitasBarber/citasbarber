@@ -4,6 +4,7 @@ import {
   HORARIO_DEFAULT,
   VENTANA_CANCELACION_HORAS_DEFAULT,
 } from "@/lib/constants";
+import { BRANDS, MARCA_DEFAULT } from "@/lib/brands";
 
 const PlanSchema = new mongoose.Schema(
   {
@@ -43,6 +44,13 @@ const BarberoSchema = new mongoose.Schema(
       tiktok: { type: String, default: "" },
     },
     email: { type: String, required: true, lowercase: true },
+    // Submarca del negocio (barber | pet | spa). Define colores, textos y la
+    // firma de los mensajes. Los negocios antiguos sin el campo son "barber".
+    marca: {
+      type: String,
+      enum: Object.keys(BRANDS),
+      default: MARCA_DEFAULT,
+    },
     estado: {
       type: String,
       enum: Object.values(ESTADO_BARBERO),

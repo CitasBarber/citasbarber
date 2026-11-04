@@ -105,7 +105,7 @@ export default function CitasLista({ onCambio }) {
         {citasConfirmadas.length >= 2 && (
           <button
             type="button"
-            className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 border-dashed border-barber-gold text-barber-gold hover:bg-barber-gold/10 font-medium transition-colors"
+            className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 border-dashed border-brand-deep text-brand-deep hover:bg-brand-deep/10 font-medium transition-colors"
             onClick={() => descargarIcs(`citas_dia_${fecha}`, generarIcsDia(citasConfirmadas))}
             title="Descargar todas las citas confirmadas de este día en un solo archivo (.ics)"
           >
@@ -116,9 +116,9 @@ export default function CitasLista({ onCambio }) {
       </div>
 
       {cargando ? (
-        <p className="text-barber-gray">Cargando…</p>
+        <p className="text-pizarra">Cargando…</p>
       ) : citas.length === 0 ? (
-        <div className="card p-8 text-center text-barber-gray">No hay citas para este día.</div>
+        <div className="card p-8 text-center text-pizarra">No hay citas para este día.</div>
       ) : (
         <div className="space-y-3">
           {citas.map((c) => (
@@ -126,7 +126,7 @@ export default function CitasLista({ onCambio }) {
               <div className="flex justify-between items-start gap-2">
                 <div>
                   <p className="font-display text-lg">{formatearHora12(c.horaInicio)} - {formatearHora12(c.horaFin)} · {c.clienteNombre}</p>
-                  <p className="text-sm text-barber-gray">
+                  <p className="text-sm text-pizarra">
                     {c.planSnapshot?.nombre} · {formatoCOP(c.planSnapshot?.precio)}
                     {c.metodoPago ? ` · ${METODOS_PAGO_LABEL[c.metodoPago] || c.metodoPago}` : ""}
                     {c.esManual ? " · Manual" : ""}

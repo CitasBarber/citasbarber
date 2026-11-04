@@ -90,17 +90,17 @@ export default function EditorPlanes({ barbero, onClose, onGuardado }) {
             <div key={p.key} className="border rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-barber-gray font-semibold w-5">{i + 1}.</span>
+                  <span className="text-sm text-pizarra font-semibold w-5">{i + 1}.</span>
                   <h3 className="font-display text-lg capitalize">{p.nombre || p.key}</h3>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col leading-none">
                     <button type="button" onClick={() => moverPlan(i, -1)} disabled={i === 0}
                       title="Subir" aria-label="Subir plan"
-                      className="text-lg px-2 disabled:opacity-30 hover:text-barber-red">▲</button>
+                      className="text-lg px-2 disabled:opacity-30 hover:text-brand">▲</button>
                     <button type="button" onClick={() => moverPlan(i, 1)} disabled={i === planes.length - 1}
                       title="Bajar" aria-label="Bajar plan"
-                      className="text-lg px-2 disabled:opacity-30 hover:text-barber-red">▼</button>
+                      className="text-lg px-2 disabled:opacity-30 hover:text-brand">▼</button>
                   </div>
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={p.activo !== false} onChange={(e) => setPlan(i, "activo", e.target.checked)} />
@@ -118,22 +118,22 @@ export default function EditorPlanes({ barbero, onClose, onGuardado }) {
                 <label className="label">Servicios incluidos</label>
                 <ul className="space-y-2 mb-2">
                   {p.servicios.length === 0 && (
-                    <li className="text-sm text-barber-gray italic">Sin servicios todavía.</li>
+                    <li className="text-sm text-pizarra italic">Sin servicios todavía.</li>
                   )}
                   {p.servicios.map((s, j) => (
                     <li key={j} className="flex items-center gap-2 bg-gray-50 border rounded-lg px-3 py-1.5">
                       <div className="flex flex-col leading-none">
                         <button type="button" onClick={() => moverServicio(i, j, -1)} disabled={j === 0}
                           title="Subir" aria-label="Subir servicio"
-                          className="text-xs disabled:opacity-30 hover:text-barber-red">▲</button>
+                          className="text-xs disabled:opacity-30 hover:text-brand">▲</button>
                         <button type="button" onClick={() => moverServicio(i, j, 1)} disabled={j === p.servicios.length - 1}
                           title="Bajar" aria-label="Bajar servicio"
-                          className="text-xs disabled:opacity-30 hover:text-barber-red">▼</button>
+                          className="text-xs disabled:opacity-30 hover:text-brand">▼</button>
                       </div>
                       <span className="flex-1 text-sm">{s}</span>
                       <button type="button" onClick={() => removeServicio(i, j)}
                         title="Quitar" aria-label="Quitar servicio"
-                        className="text-lg leading-none text-barber-gray hover:text-barber-red">×</button>
+                        className="text-lg leading-none text-pizarra hover:text-brand">×</button>
                     </li>
                   ))}
                 </ul>
@@ -150,7 +150,7 @@ export default function EditorPlanes({ barbero, onClose, onGuardado }) {
                 <div className="flex flex-wrap gap-2">
                   {METODOS.map((m) => (
                     <button key={m} type="button" onClick={() => toggleMetodo(i, m)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${(p.metodosPago || []).includes(m) ? "bg-barber-red text-white border-barber-red" : "border-gray-300"}`}>
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${(p.metodosPago || []).includes(m) ? "bg-brand text-white border-brand" : "border-gray-300"}`}>
                       {METODOS_PAGO_LABEL[m]}
                     </button>
                   ))}
@@ -160,7 +160,7 @@ export default function EditorPlanes({ barbero, onClose, onGuardado }) {
           ))}
 
           <div className="border rounded-xl p-4">
-            <h3 className="font-display text-lg mb-3">Datos de pago del barbero</h3>
+            <h3 className="font-display text-lg mb-3">Datos de pago del negocio</h3>
             <div className="grid sm:grid-cols-2 gap-3">
               <div><label className="label">Nequi</label><input className="input" value={datosPago.nequi || ""} onChange={(e) => setDatosPago({ ...datosPago, nequi: e.target.value })} /></div>
               <div><label className="label">Daviplata</label><input className="input" value={datosPago.daviplata || ""} onChange={(e) => setDatosPago({ ...datosPago, daviplata: e.target.value })} /></div>

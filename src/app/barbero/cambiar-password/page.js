@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/Header";
-import { PosteBarbero } from "@/components/Icons";
+import Header, { IconoMarca } from "@/components/Header";
+import { useBasePath } from "@/lib/useBasePath";
 
 export default function CambiarPasswordPage() {
   const router = useRouter();
+  const basePath = useBasePath();
   const [lista, setLista]           = useState(undefined); // undefined=cargando
   const [nueva, setNueva]           = useState("");
   const [confirmar, setConfirmar]   = useState("");
@@ -19,7 +20,7 @@ export default function CambiarPasswordPage() {
       .then((r) => r.json())
       .then((d) => {
         if (!d.session || d.session.role !== "barbero") {
-          router.replace("/barbero/login");
+          router.replace(`${basePath}/barbero/login`);
           return;
         }
         setEsTemp(d.session.passwordTemporal === true);
@@ -42,7 +43,7 @@ export default function CambiarPasswordPage() {
     setEnviando(false);
 
     if (res.ok) {
-      router.replace("/barbero/panel");
+      router.replace(`${basePath}/barbero/panel`);
     } else {
       const d = await res.json();
       setError(d.error || "Error al cambiar la contraseña");
@@ -50,14 +51,14 @@ export default function CambiarPasswordPage() {
   }
 
   if (lista === undefined)
-    return <div className="p-10 text-center text-barber-gray">Cargando…</div>;
+    return <div className="p-10 text-center text-pizarra">Cargando…</div>;
 
   return (
     <div className="min-h-screen">
       <Header />
       <main className="mx-auto max-w-sm px-4 py-12">
         <div className="flex justify-center mb-4">
-          <PosteBarbero className="w-10 h-24" />
+          <IconoMarca className="w-16 h-16" />
         </div>
         <h1 className="font-display text-3xl text-center">Cambiar contraseña</h1>
 

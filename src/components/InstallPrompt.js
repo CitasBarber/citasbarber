@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useBrand } from "./BrandProvider";
 
 const DISMISS_KEY = "pwa-install-dismissed";
 
@@ -23,6 +24,7 @@ function esRutaPublica(pathname) {
 }
 
 export default function InstallPrompt() {
+  const { marca } = useBrand();
   const pathname = usePathname();
   const [mostrar, setMostrar] = useState(false);
   const [modo, setModo] = useState(null); // "android" | "ios"
@@ -94,14 +96,14 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-      <div className="mx-auto max-w-2xl bg-barber-black text-white rounded-2xl shadow-2xl border border-white/10 px-4 py-3 flex items-center gap-3">
+      <div className="mx-auto max-w-2xl bg-tinta text-white rounded-2xl shadow-2xl border border-white/10 px-4 py-3 flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icon-192.png" alt="CitasBarber" className="w-11 h-11 rounded-xl shrink-0" />
+        <img src={marca.iconoApp} alt={marca.nombre} className="w-11 h-11 rounded-xl shrink-0" />
 
         <div className="flex-1 min-w-0">
           {modo === "ios" ? (
             <>
-              <p className="font-semibold text-sm leading-tight">Instalá CitasBarber</p>
+              <p className="font-semibold text-sm leading-tight">Instalá {marca.nombre}</p>
               <p className="text-white/70 text-xs mt-0.5 leading-snug">
                 Tocá Compartir <IconoCompartir /> y luego{" "}
                 <span className="font-semibold">“Agregar a inicio”</span>.
@@ -109,7 +111,7 @@ export default function InstallPrompt() {
             </>
           ) : (
             <>
-              <p className="font-semibold text-sm leading-tight">Instalá la app de CitasBarber</p>
+              <p className="font-semibold text-sm leading-tight">Instalá la app de {marca.nombre}</p>
               <p className="text-white/70 text-xs mt-0.5 leading-snug">
                 Agregala a tu celular y agendá más rápido, como una app.
               </p>

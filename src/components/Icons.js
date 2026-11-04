@@ -1,28 +1,5 @@
-// Íconos SVG inspirados en la ilustración de barbería (negro/rojo/azul).
-
-export function PosteBarbero({ className = "w-8 h-8" }) {
-  return (
-    <svg viewBox="0 0 32 96" className={className} aria-hidden="true">
-      <rect x="8" y="6" width="16" height="84" rx="8" fill="#fff" stroke="#111" strokeWidth="2" />
-      <clipPath id="pole">
-        <rect x="9" y="14" width="14" height="68" rx="6" />
-      </clipPath>
-      <g clipPath="url(#pole)">
-        <g>
-          <rect x="0" y="0" width="60" height="120" fill="#fff" />
-          <g transform="rotate(35 16 48)">
-            <rect x="-30" y="-40" width="10" height="200" fill="#e11d2a" />
-            <rect x="-10" y="-40" width="10" height="200" fill="#1e50a0" />
-            <rect x="10" y="-40" width="10" height="200" fill="#e11d2a" />
-            <rect x="30" y="-40" width="10" height="200" fill="#1e50a0" />
-          </g>
-        </g>
-      </g>
-      <rect x="6" y="2" width="20" height="8" rx="4" fill="#111" />
-      <rect x="6" y="86" width="20" height="8" rx="4" fill="#111" />
-    </svg>
-  );
-}
+// Íconos SVG de línea (usan currentColor). El ícono de cada marca está en
+// public/brand/ y se muestra con <IconoMarca> (components/Header.js).
 
 export function Tijeras({ className = "w-6 h-6" }) {
   return (

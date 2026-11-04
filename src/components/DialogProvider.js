@@ -63,7 +63,7 @@ export default function DialogProvider({ children }) {
           >
             <h2 className="font-display text-xl leading-tight">{estado.titulo}</h2>
             {estado.mensaje && (
-              <p className="text-sm text-barber-gray mt-2 leading-snug">{estado.mensaje}</p>
+              <p className="text-sm text-pizarra mt-2 leading-snug">{estado.mensaje}</p>
             )}
 
             {estado.conMotivo && (

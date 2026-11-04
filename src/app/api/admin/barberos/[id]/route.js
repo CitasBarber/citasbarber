@@ -5,6 +5,7 @@ import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { ESTADO_BARBERO, ROLES, PLANES_DEFAULT } from "@/lib/constants";
+import { esMarcaValida } from "@/lib/brands";
 
 function requireAdmin() {
   const session = getSession();
@@ -15,7 +16,7 @@ function requireAdmin() {
   }
 }
 
-// PUT /api/admin/barberos/:id  body: { nombre, local, celular, ciudad, direccion, email }
+// PUT /api/admin/barberos/:id  body: { nombre, local, celular, ciudad, direccion, email, marca }
 export const PUT = handler(async (req, { params }) => {
   await dbConnect();
   requireAdmin();
@@ -27,6 +28,7 @@ export const PUT = handler(async (req, { params }) => {
   if (body.celular?.trim())   b.celular   = body.celular.trim();
   if (body.ciudad?.trim())    b.ciudad    = body.ciudad.trim();
   if (typeof body.direccion === "string") b.direccion = body.direccion.trim();
+  if (esMarcaValida(body.marca)) b.marca = body.marca;
   if (body.duracionTurnoMin != null) {
     if (!b.horario) b.horario = {};
     b.horario.duracionTurnoMin = Number(body.duracionTurnoMin);

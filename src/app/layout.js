@@ -1,7 +1,9 @@
 import "./globals.css";
-import { Inter, Oswald } from "next/font/google";
+import { Inter, Oswald, Anton } from "next/font/google";
 import InstallPrompt from "@/components/InstallPrompt";
 import DialogProvider from "@/components/DialogProvider";
+import BrandProvider from "@/components/BrandProvider";
+import { BRANDS, MARCA_DEFAULT, cssDeMarcas, scriptMarcaInicial } from "@/lib/brands";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,42 +17,54 @@ const oswald = Oswald({
   variable: "--font-oswald",
   display: "swap",
 });
+const anton = Anton({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-anton",
+  display: "swap",
+});
+
+// Metadata del servidor con la marca por defecto (lo que ven buscadores y la
+// primera carga). En el navegador, BrandProvider cambia título, favicon,
+// theme-color y manifest según la marca activa.
+const MARCA_INICIAL = BRANDS[MARCA_DEFAULT];
 
 export const metadata = {
-  title: "CitasBarber — Agendá tu motilada",
-  description:
-    "CitasBarber. Agendá tu motilada en un momentico, sin llamadas ni filas.",
+  title: `${MARCA_INICIAL.nombre} — ${MARCA_INICIAL.textos.hero}`,
+  description: `${MARCA_INICIAL.nombre}. ${MARCA_INICIAL.textos.hero} Agendá en un momentico, sin llamadas.`,
   // Permite que iOS trate la web como app (pantalla completa) al agregarla a
   // la pantalla de inicio.
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "CitasBarber",
+    title: MARCA_INICIAL.nombre,
   },
-  // Al declarar `icons` en la config, Next.js deja de inyectar automáticamente
-  // el `icon.svg` del directorio app, así que hay que listarlo explícitamente
-  // o el navegador se queda sin favicon.
   icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-    ],
-    apple: "/apple-touch-icon.png",
+    icon: [{ url: MARCA_INICIAL.favicon, type: "image/svg+xml" }],
+    apple: MARCA_INICIAL.iconoApp,
   },
 };
 
 export const viewport = {
-  themeColor: "#111111",
+  themeColor: BRANDS[MARCA_DEFAULT].colores.brand,
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es" className={`${inter.variable} ${oswald.variable}`}>
+    // suppressHydrationWarning: el script de <head> pone data-brand antes de
+    // que React hidrate, así que el atributo difiere del HTML del servidor.
+    <html lang="es" data-brand={MARCA_DEFAULT} className={`${inter.variable} ${oswald.variable} ${anton.variable}`} suppressHydrationWarning>
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: cssDeMarcas() }} />
+        <script dangerouslySetInnerHTML={{ __html: scriptMarcaInicial() }} />
+      </head>
       <body>
-        <DialogProvider>
-          {children}
-          <InstallPrompt />
-        </DialogProvider>
+        <BrandProvider>
+          <DialogProvider>
+            {children}
+            <InstallPrompt />
+          </DialogProvider>
+        </BrandProvider>
       </body>
     </html>
   );

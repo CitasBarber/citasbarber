@@ -12,10 +12,15 @@ import { formatoCOP, METODOS_PAGO_LABEL } from "@/lib/constants";
 import { fechaLocalHoy, esFechaPasada, formatearHora12 } from "@/lib/disponibilidad";
 import { esMovil } from "@/lib/dispositivo";
 import { linkWhatsApp } from "@/lib/whatsapp";
+import { useBrand, useMarcaDelNegocio } from "@/components/BrandProvider";
+import { capitalizar } from "@/lib/brands";
 
 export default function AgendarPage() {
   const { barberId } = useParams();
+  const { t } = useBrand();
   const [barbero, setBarbero] = useState(null);
+  // La página de agendar se ve con la marca del negocio, no la del selector
+  useMarcaDelNegocio(barbero?.marca);
   const [paso, setPaso] = useState(1);
 
   // datos cliente
@@ -154,7 +159,7 @@ export default function AgendarPage() {
     );
   }
 
-  if (!barbero) return <Wrap><p className="text-barber-gray">Cargando…</p></Wrap>;
+  if (!barbero) return <Wrap><p className="text-pizarra">Cargando…</p></Wrap>;
 
   return (
     <Wrap>
@@ -166,9 +171,9 @@ export default function AgendarPage() {
           text="text-4xl sm:text-6xl"
         />
         <h1 className="font-display text-2xl sm:text-3xl mt-3">{barbero.nombre}</h1>
-        <p className="text-barber-gray text-sm sm:text-base">{barbero.local} · {barbero.ciudad}</p>
+        <p className="text-pizarra text-sm sm:text-base">{barbero.local} · {barbero.ciudad}</p>
         {barbero.direccion && (
-          <p className="text-xs sm:text-sm text-barber-gray">📍 {barbero.direccion}</p>
+          <p className="text-xs sm:text-sm text-pizarra">📍 {barbero.direccion}</p>
         )}
         <SocialLinks redes={barbero.redes} className="mt-2 justify-center" />
       </div>
@@ -180,9 +185,9 @@ export default function AgendarPage() {
         <button
           type="button"
           onClick={volver}
-          className="group mt-4 inline-flex items-center gap-2 text-sm font-semibold text-barber-ink hover:text-barber-red transition"
+          className="group mt-4 inline-flex items-center gap-2 text-sm font-semibold text-tinta hover:text-brand-deep transition"
         >
-          <span className="grid place-items-center w-9 h-9 rounded-full border border-gray-300 bg-white shadow-sm group-hover:border-barber-red group-hover:-translate-x-0.5 transition">
+          <span className="grid place-items-center w-9 h-9 rounded-full border border-gray-300 bg-white shadow-sm group-hover:border-brand group-hover:-translate-x-0.5 transition">
             ←
           </span>
           Atrás
@@ -214,7 +219,7 @@ export default function AgendarPage() {
               pattern="[0-9]*"
               maxLength={10}
             />
-            <p className="text-xs text-barber-gray mt-1">Con tu celu después consultás cómo va tu cita.</p>
+            <p className="text-xs text-pizarra mt-1">Con tu celu después consultás cómo va tu cita.</p>
           </div>
           <button
             type="submit"
@@ -225,10 +230,10 @@ export default function AgendarPage() {
           </button>
 
           {/* Opción secundaria: si el cliente va manejando o prefiere no llenar el
-              formulario, puede escribirle directamente al barbero por WhatsApp. */}
+              formulario, puede escribirle directamente al profesional por WhatsApp. */}
           {barbero.celular && (
             <div className="pt-2">
-              <div className="flex items-center gap-3 text-xs text-barber-gray">
+              <div className="flex items-center gap-3 text-xs text-pizarra">
                 <span className="h-px flex-1 bg-black/10" />
                 ¿Vas manejando o prefieres escribir?
                 <span className="h-px flex-1 bg-black/10" />
@@ -258,24 +263,24 @@ export default function AgendarPage() {
               <button
                 key={p.key}
                 onClick={() => seleccionarPlan(p)}
-                className={`card p-5 text-left transition flex flex-col h-full ${plan?.key === p.key ? "ring-2 ring-barber-red" : "hover:-translate-y-1"}`}
+                className={`card p-5 text-left transition flex flex-col h-full ${plan?.key === p.key ? "ring-2 ring-brand" : "hover:-translate-y-1"}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="font-display text-2xl leading-none">{p.nombre}</h3>
-                  <span className="text-barber-red font-bold whitespace-nowrap">{formatoCOP(p.precio)}</span>
+                  <span className="text-brand-deep font-bold whitespace-nowrap">{formatoCOP(p.precio)}</span>
                 </div>
-                <ul className="mt-3 text-sm text-barber-gray space-y-1 flex-1">
+                <ul className="mt-3 text-sm text-pizarra space-y-1 flex-1">
                   {p.servicios.map((s, i) => (
-                    <li key={i} className="flex gap-1.5"><span className="text-barber-red">✓</span>{s}</li>
+                    <li key={i} className="flex gap-1.5"><span className="text-brand-deep">✓</span>{s}</li>
                   ))}
                 </ul>
-                <p className="mt-4 pt-3 border-t border-black/5 text-xs font-semibold text-barber-gray">
+                <p className="mt-4 pt-3 border-t border-black/5 text-xs font-semibold text-pizarra">
                   ⏱️ {p.duracion} min {p.anticipo > 0 ? `· Anticipo ${p.anticipo}%` : "· Sin anticipo"}
                 </p>
               </button>
             ))}
           </div>
-          <p className="text-sm text-barber-gray text-center">Toca un plan para continuar.</p>
+          <p className="text-sm text-pizarra text-center">Toca un plan para continuar.</p>
         </div>
       )}
 
@@ -290,7 +295,7 @@ export default function AgendarPage() {
               <button
                 key={c.valor}
                 onClick={() => elegirFecha(c.valor)}
-                className={`px-3 py-1.5 rounded-full text-sm font-semibold border ${fecha === c.valor ? "bg-barber-ink text-white border-barber-ink" : "border-gray-300 hover:border-barber-ink"}`}
+                className={`px-3 py-1.5 rounded-full text-sm font-semibold border ${fecha === c.valor ? "bg-tinta text-white border-tinta" : "border-gray-300 hover:border-tinta"}`}
               >
                 {c.label}
               </button>
@@ -305,16 +310,16 @@ export default function AgendarPage() {
             <div className="flex items-baseline justify-between">
               <label className="label">{etiquetaFecha(fecha, false)}</label>
               {!cargandoSlots && !buscando && slots.length > 0 && (
-                <span className="text-xs text-barber-gray">{slots.length} cupos · {plan?.duracion} min c/u</span>
+                <span className="text-xs text-pizarra">{slots.length} cupos · {plan?.duracion} min c/u</span>
               )}
             </div>
 
             {buscando ? (
-              <p className="text-barber-gray text-sm py-3">Buscando el próximo día con cupos…</p>
+              <p className="text-pizarra text-sm py-3">Buscando el próximo día con cupos…</p>
             ) : cargandoSlots ? (
-              <p className="text-barber-gray text-sm py-3">Cargando horarios…</p>
+              <p className="text-pizarra text-sm py-3">Cargando horarios…</p>
             ) : slots.length === 0 ? (
-              <div className="rounded-lg bg-barber-cream border border-black/10 p-4 text-sm text-barber-gray">
+              <div className="rounded-lg bg-crema border border-black/10 p-4 text-sm text-pizarra">
                 No hay cupos ese día. Prueba con otra fecha o usa los accesos rápidos de arriba.
               </div>
             ) : (
@@ -326,7 +331,7 @@ export default function AgendarPage() {
           </div>
 
           {!cargandoSlots && !buscando && slots.length > 0 && (
-            <p className="text-sm text-barber-gray text-center">Toca una hora para continuar.</p>
+            <p className="text-sm text-pizarra text-center">Toca una hora para continuar.</p>
           )}
         </div>
       )}
@@ -344,7 +349,7 @@ export default function AgendarPage() {
                 <button
                   key={m}
                   onClick={() => setMetodoPago(m)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-semibold ${metodoPago === m ? "bg-barber-red text-white border-barber-red" : "border-gray-300 hover:border-barber-red"}`}
+                  className={`rounded-lg border px-3 py-2 text-sm font-semibold ${metodoPago === m ? "bg-brand text-on-brand border-brand" : "border-linea hover:border-brand"}`}
                 >
                   {METODOS_PAGO_LABEL[m]}
                 </button>
@@ -356,8 +361,8 @@ export default function AgendarPage() {
               método digital, tenga o no anticipo el plan. */}
           {metodoPago && metodoPago !== "efectivo" && (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-              <p className="text-xs font-semibold text-barber-gray uppercase tracking-wide mb-2">
-                Datos para pagarle a {barbero.nombre?.split(" ")[0] || "tu barbero"}
+              <p className="text-xs font-semibold text-pizarra uppercase tracking-wide mb-2">
+                Datos para pagarle a {barbero.nombre?.split(" ")[0] || `tu ${t.profesional}`}
               </p>
               <DatosPago datosPago={barbero.datosPago} metodo={metodoPago} />
             </div>
@@ -376,7 +381,7 @@ export default function AgendarPage() {
               <div className="p-3 bg-white/80 rounded-lg border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
                 <span className="text-base leading-none">📲</span>
                 <p>
-                  <strong>Envío por WhatsApp:</strong> Haz la transferencia del anticipo. Al darle clic a <em>«¡Enviar solicitud!»</em>, se abrirá WhatsApp con los datos de tu reserva para que le compartas la foto del comprobante directamente a tu barbero.
+                  <strong>Envío por WhatsApp:</strong> Haz la transferencia del anticipo. Al darle clic a <em>«¡Enviar solicitud!»</em>, se abrirá WhatsApp con los datos de tu reserva para que le compartas la foto del comprobante directamente a tu {t.profesional}.
                 </p>
               </div>
             </div>
@@ -396,9 +401,9 @@ export default function AgendarPage() {
       {paso === 5 && resultado && (
         <div className="card p-6 mt-4 space-y-4 text-center">
           <div className="text-5xl">📲</div>
-          <h2 className="font-display text-2xl text-barber-ink">¡Falta un último paso!</h2>
-          <p className="text-sm text-barber-gray max-w-md mx-auto leading-relaxed">
-            Para apartar tu cupo, <strong>envíale el mensaje a tu barbero por WhatsApp</strong>. Así él sabrá de tu solicitud y te confirmará de inmediato.
+          <h2 className="font-display text-2xl text-tinta">¡Falta un último paso!</h2>
+          <p className="text-sm text-pizarra max-w-md mx-auto leading-relaxed">
+            Para apartar tu cupo, <strong>envíale el mensaje a tu {t.profesional} por WhatsApp</strong>. Así él sabrá de tu solicitud y te confirmará de inmediato.
           </p>
           <Resumen barbero={barbero} plan={plan} fecha={fecha} hora={hora} />
 
@@ -407,10 +412,10 @@ export default function AgendarPage() {
               sin tener que devolverse al paso de pago. */}
           {metodoPago && metodoPago !== "efectivo" && (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left">
-              <p className="text-xs font-semibold text-barber-gray uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-pizarra uppercase tracking-wide mb-2">
                 {requiereAnticipo
-                  ? `1. Paga el anticipo de ${formatoCOP(montoAnticipo)} a ${barbero.nombre?.split(" ")[0] || "tu barbero"}`
-                  : `Datos para pagarle a ${barbero.nombre?.split(" ")[0] || "tu barbero"}`}
+                  ? `1. Paga el anticipo de ${formatoCOP(montoAnticipo)} a ${barbero.nombre?.split(" ")[0] || `tu ${t.profesional}`}`
+                  : `Datos para pagarle a ${barbero.nombre?.split(" ")[0] || `tu ${t.profesional}`}`}
               </p>
               <DatosPago datosPago={barbero.datosPago} metodo={metodoPago} />
             </div>
@@ -419,8 +424,8 @@ export default function AgendarPage() {
           {resultado.linkWhatsappBarbero && (
             <div className="space-y-2">
               {metodoPago && metodoPago !== "efectivo" && (
-                <p className="text-sm font-semibold text-barber-ink text-left">
-                  {requiereAnticipo ? "2. Envía el comprobante:" : "Luego avísale al barbero:"}
+                <p className="text-sm font-semibold text-tinta text-left">
+                  {requiereAnticipo ? "2. Envía el comprobante:" : `Luego avísale al ${t.profesional}:`}
                 </p>
               )}
               <a
@@ -432,12 +437,12 @@ export default function AgendarPage() {
                 <WhatsAppIcon className="w-5 h-5 shrink-0" />
                 <span>
                   👉 {requiereAnticipo
-                    ? `Toca aquí para enviar comprobante a ${barbero.nombre?.split(" ")[0] || "tu barbero"}`
-                    : `Toca aquí para avisarle a ${barbero.nombre?.split(" ")[0] || "tu barbero"}`} por WhatsApp
+                    ? `Toca aquí para enviar comprobante a ${barbero.nombre?.split(" ")[0] || `tu ${t.profesional}`}`
+                    : `Toca aquí para avisarle a ${barbero.nombre?.split(" ")[0] || `tu ${t.profesional}`}`} por WhatsApp
                 </span>
               </a>
               <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200/80 rounded-lg p-2.5 text-center font-medium">
-                ⚠️ <strong>Importante:</strong> Tu cita no quedará confirmada hasta que el barbero reciba tu mensaje.
+                ⚠️ <strong>Importante:</strong> Tu cita no quedará confirmada hasta que el {t.profesional} reciba tu mensaje.
               </p>
             </div>
           )}
@@ -461,8 +466,8 @@ function Wrap({ children }) {
   return (
     <div className="min-h-screen">
       <Header>
-        <Link href="/" className="hover:text-barber-red">Inicio</Link>
-        <Link href="/mis-citas" className="hover:text-barber-red">Mis citas</Link>
+        <Link href="/" className="hover:text-brand-on-dark">Inicio</Link>
+        <Link href="/mis-citas" className="hover:text-brand-on-dark">Mis citas</Link>
       </Header>
       <main className="mx-auto max-w-2xl px-4 py-8">{children}</main>
     </div>
@@ -475,8 +480,8 @@ function Pasos({ paso }) {
     <div className="flex items-center gap-1.5 mt-1">
       {items.map((it, i) => (
         <div key={it} className="flex-1">
-          <div className={`h-2 rounded-full transition-colors ${i + 1 <= paso ? "bg-barber-red" : "bg-gray-200"}`} />
-          <span className={`hidden sm:block text-xs mt-0.5 ${i + 1 <= paso ? "text-barber-ink font-semibold" : "text-barber-gray"}`}>{it}</span>
+          <div className={`h-2 rounded-full transition-colors ${i + 1 <= paso ? "bg-brand" : "bg-linea"}`} />
+          <span className={`hidden sm:block text-xs mt-0.5 ${i + 1 <= paso ? "text-tinta font-semibold" : "text-pizarra"}`}>{it}</span>
         </div>
       ))}
     </div>
@@ -484,10 +489,11 @@ function Pasos({ paso }) {
 }
 
 function Resumen({ barbero, plan, fecha, hora }) {
+  const { t } = useBrand();
   const duracionReal = Number(plan.duracion) || barbero.horario?.duracionTurnoMin || 30;
   return (
     <div className="rounded-lg border border-black/10 p-4 text-left text-sm space-y-1">
-      <p><b>Barbero:</b> {barbero.nombre} — {barbero.local}</p>
+      <p><b>{capitalizar(t.profesional)}:</b> {barbero.nombre} — {barbero.local}</p>
       <p><b>Plan:</b> {plan.nombre} ({plan.servicios.join(", ")})</p>
       <p className="capitalize"><b>Fecha:</b> {etiquetaFecha(fecha)}</p>
       <p><b>Hora:</b> {hora12(hora)} ({duracionReal} min)</p>
@@ -501,7 +507,7 @@ function GrupoSlots({ titulo, lista, hora, setHora }) {
   if (lista.length === 0) return null;
   return (
     <div>
-      <p className="text-sm font-semibold text-barber-ink mb-2">{titulo}</p>
+      <p className="text-sm font-semibold text-tinta mb-2">{titulo}</p>
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {lista.map((s) => (
           <button
@@ -509,8 +515,8 @@ function GrupoSlots({ titulo, lista, hora, setHora }) {
             onClick={() => setHora(s)}
             className={`rounded-lg border min-h-[48px] py-2.5 text-sm font-semibold transition active:scale-95 ${
               hora === s
-                ? "bg-barber-blue text-white border-barber-blue"
-                : "border-gray-300 hover:border-barber-blue active:bg-gray-50"
+                ? "bg-brand-deep text-on-brand border-brand-deep"
+                : "border-gray-300 hover:border-brand-deep active:bg-gray-50"
             }`}
           >
             {hora12(s)}
@@ -556,10 +562,11 @@ function chipsFecha(diasLaborales = [1, 2, 3, 4, 5, 6]) {
 }
 
 function DatosPago({ datosPago = {}, metodo }) {
+  const { t } = useBrand();
   // Pago por QR: mostramos la imagen que cargó el barbero.
   if (metodo === "qr") {
     if (!datosPago.qrImagen) {
-      return <p className="text-sm text-barber-gray">El barbero aún no cargó un código QR. Escribile por WhatsApp para pedirle los datos de pago.</p>;
+      return <p className="text-sm text-pizarra">El {t.profesional} aún no cargó un código QR. Escribile por WhatsApp para pedirle los datos de pago.</p>;
     }
     return (
       <div className="text-sm">
@@ -579,11 +586,11 @@ function DatosPago({ datosPago = {}, metodo }) {
   const item = cuentas[metodo];
   if (!item) return null;
   if (!item.valor) {
-    return <p className="text-sm text-barber-gray">El barbero aún no cargó su {item.label}. Escribile por WhatsApp para pedirle los datos de pago.</p>;
+    return <p className="text-sm text-pizarra">El {t.profesional} aún no cargó su {item.label}. Escribile por WhatsApp para pedirle los datos de pago.</p>;
   }
   return (
     <div className="text-sm">
-      <p className="text-barber-gray mb-1">{item.label}</p>
+      <p className="text-pizarra mb-1">{item.label}</p>
       <div className="flex items-center gap-2 flex-wrap">
         <span className="font-bold text-base sm:text-lg tracking-wide select-all break-all">{item.valor}</span>
         <CopiarBtn texto={item.valor} />
@@ -615,7 +622,7 @@ function CopiarBtn({ texto }) {
     <button
       type="button"
       onClick={copiar}
-      className={`text-xs font-semibold py-1 px-2.5 rounded-lg border shrink-0 transition ${copiado ? "bg-green-600 text-white border-green-600" : "border-gray-300 hover:border-barber-red"}`}
+      className={`text-xs font-semibold py-1 px-2.5 rounded-lg border shrink-0 transition ${copiado ? "bg-green-600 text-white border-green-600" : "border-gray-300 hover:border-brand"}`}
     >
       {copiado ? "¡Copiado!" : "Copiar"}
     </button>

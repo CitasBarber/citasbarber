@@ -5,6 +5,7 @@ import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession, hashPassword } from "@/lib/auth";
 import { ROLES, ESTADO_BARBERO, PLANES_DEFAULT, BARBERIA_SEDE_DEFAULT, HORARIO_DEFAULT } from "@/lib/constants";
+import { MARCA_DEFAULT, esMarcaValida, obtenerMarca } from "@/lib/brands";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export const GET = handler(async (req) => {
       celular: b.celular,
       ciudad: b.ciudad,
       email: b.email,
+      marca: b.marca || MARCA_DEFAULT,
       estado: b.estado,
       horario: b.horario || {},
       planes: b.planes || [],
@@ -60,7 +62,8 @@ export const POST = handler(async (req) => {
   const body = await req.json();
   const { nombre, local, celular, ciudad, direccion, email, password } = body;
 
-  const localFinal = local?.trim() || BARBERIA_SEDE_DEFAULT.local;
+  const marca = esMarcaValida(body.marca) ? body.marca : MARCA_DEFAULT;
+  const localFinal = local?.trim() || obtenerMarca(marca).nombre;
   const ciudadFinal = ciudad?.trim() || BARBERIA_SEDE_DEFAULT.ciudad;
   const direccionFinal = (typeof direccion === "string" && direccion.trim()) ? direccion.trim() : BARBERIA_SEDE_DEFAULT.direccion;
 
@@ -98,6 +101,7 @@ export const POST = handler(async (req) => {
     ciudad: ciudadFinal,
     direccion: direccionFinal,
     email: emailNormalizado,
+    marca,
     estado: ESTADO_BARBERO.ACTIVO,
     suscripcionActiva: true,
     suscripcionVence: new Date(Date.now() + 30 * 864e5),
@@ -128,6 +132,7 @@ export const POST = handler(async (req) => {
         celular: barbero.celular,
         ciudad: barbero.ciudad,
         email: barbero.email,
+        marca: barbero.marca,
         estado: barbero.estado,
         planes: barbero.planes,
         datosPago: barbero.datosPago || {},

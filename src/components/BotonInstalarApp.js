@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useBrand } from "./BrandProvider";
 
 // Ícono "Compartir" de iOS, para las instrucciones en iPhone.
 function IconoCompartir() {
@@ -27,6 +28,7 @@ function IconoDescarga() {
 // dispara la instalación en un toque; en iPhone (y navegadores sin soporte)
 // abre un modal con las instrucciones para agregarla a la pantalla de inicio.
 export default function BotonInstalarApp({ className = "hover:text-white" }) {
+  const { marca } = useBrand();
   const [instalada, setInstalada] = useState(false);
   const [modal, setModal] = useState(null); // null | "ios" | "manual"
   const deferred = useRef(null);
@@ -85,30 +87,30 @@ export default function BotonInstalarApp({ className = "hover:text-white" }) {
 
       {modal && (
         <div className="fixed inset-0 bg-black/60 grid place-items-center p-4 z-50" onClick={() => setModal(null)}>
-          <div className="card w-full max-w-md p-6 space-y-4 relative text-barber-ink" onClick={(e) => e.stopPropagation()}>
+          <div className="card w-full max-w-md p-6 space-y-4 relative text-tinta" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
               onClick={() => setModal(null)}
               aria-label="Cerrar"
-              className="absolute top-3 right-3 w-8 h-8 grid place-items-center rounded-full text-barber-gray hover:bg-black/5"
+              className="absolute top-3 right-3 w-8 h-8 grid place-items-center rounded-full text-pizarra hover:bg-black/5"
             >
               ✕
             </button>
 
             <div className="flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icon-192.png" alt="CitasBarber" className="w-12 h-12 rounded-xl shrink-0" />
-              <h2 className="font-display text-2xl">Instalá CitasBarber</h2>
+              <img src={marca.iconoApp} alt={marca.nombre} className="w-12 h-12 rounded-xl shrink-0" />
+              <h2 className="font-display text-2xl">Instalá {marca.nombre}</h2>
             </div>
 
             {modal === "ios" ? (
-              <ol className="text-sm text-barber-gray space-y-2 list-decimal pl-5">
+              <ol className="text-sm text-pizarra space-y-2 list-decimal pl-5">
                 <li>Tocá el botón <b>Compartir</b> <IconoCompartir /> en la barra de Safari.</li>
                 <li>Elegí <b>“Agregar a inicio”</b> (Add to Home Screen).</li>
                 <li>Confirmá con <b>Agregar</b>. ¡Listo, ya la tenés como app!</li>
               </ol>
             ) : (
-              <div className="text-sm text-barber-gray space-y-2">
+              <div className="text-sm text-pizarra space-y-2">
                 <p>Abrí el menú de tu navegador (⋮) y elegí:</p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li><b>“Instalar aplicación”</b> o <b>“Agregar a la pantalla de inicio”</b>.</li>

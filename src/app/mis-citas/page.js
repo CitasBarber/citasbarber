@@ -9,6 +9,8 @@ import { WhatsAppIcon, Tijeras } from "@/components/Icons";
 import { formatoCOP } from "@/lib/constants";
 import { fechaLocalHoy, formatearHora12 } from "@/lib/disponibilidad";
 import { useDialog } from "@/components/DialogProvider";
+import { useBrand } from "@/components/BrandProvider";
+import { capitalizar } from "@/lib/brands";
 
 const LS_CELULAR_KEY = "cb_cliente_celular";
 
@@ -24,6 +26,7 @@ function formatearFecha(fechaStr) {
 }
 
 export default function MisCitasPage() {
+  const { t } = useBrand();
   const { confirmar } = useDialog();
   const [celular, setCelular] = useState("");
   const [datos, setDatos] = useState(null); // { proximas: [], historial: [] }
@@ -111,14 +114,14 @@ export default function MisCitasPage() {
   return (
     <div className="min-h-screen">
       <Header>
-        <Link href="/" className="hover:text-barber-red text-sm font-semibold">
+        <Link href="/" className="hover:text-brand-on-dark text-sm font-semibold">
           Inicio
         </Link>
       </Header>
 
       <main className="mx-auto max-w-2xl px-4 py-6 sm:py-8">
         <h1 className="font-display text-3xl">Mis Citas</h1>
-        <p className="text-barber-gray text-sm mt-1">
+        <p className="text-pizarra text-sm mt-1">
           Consulta el estado de tus reservas activas y tu historial.
         </p>
 
@@ -137,7 +140,7 @@ export default function MisCitasPage() {
                 <button
                   type="button"
                   onClick={limpiarNumero}
-                  className="text-xs text-barber-gray hover:text-barber-red underline"
+                  className="text-xs text-pizarra hover:text-brand underline"
                 >
                   Consultar otro número
                 </button>
@@ -167,10 +170,10 @@ export default function MisCitasPage() {
         {/* Si ya consultó y no existe ninguna cita */}
         {consultado && totalCitas === 0 && (
           <div className="card p-8 mt-6 text-center space-y-3">
-            <p className="text-lg font-semibold text-barber-ink">
+            <p className="text-lg font-semibold text-tinta">
               No encontramos citas asociadas a este número
             </p>
-            <p className="text-sm text-barber-gray max-w-md mx-auto">
+            <p className="text-sm text-pizarra max-w-md mx-auto">
               Verifica que el número esté bien escrito o agenda tu primera cita ahora mismo.
             </p>
             <div className="pt-2">
@@ -190,16 +193,16 @@ export default function MisCitasPage() {
                 onClick={() => setTab("proximas")}
                 className={`pb-2.5 px-3 font-semibold text-sm border-b-2 transition flex items-center gap-1.5 ${
                   tab === "proximas"
-                    ? "border-barber-red text-barber-red"
-                    : "border-transparent text-barber-gray hover:text-barber-ink"
+                    ? "border-brand text-brand"
+                    : "border-transparent text-pizarra hover:text-tinta"
                 }`}
               >
                 <span>Próximas citas</span>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full ${
                     tab === "proximas"
-                      ? "bg-barber-red/10 text-barber-red font-bold"
-                      : "bg-black/5 text-barber-gray"
+                      ? "bg-brand/10 text-brand font-bold"
+                      : "bg-black/5 text-pizarra"
                   }`}
                 >
                   {totalProximas}
@@ -210,16 +213,16 @@ export default function MisCitasPage() {
                 onClick={() => setTab("historial")}
                 className={`pb-2.5 px-3 font-semibold text-sm border-b-2 transition flex items-center gap-1.5 ${
                   tab === "historial"
-                    ? "border-barber-red text-barber-red"
-                    : "border-transparent text-barber-gray hover:text-barber-ink"
+                    ? "border-brand text-brand"
+                    : "border-transparent text-pizarra hover:text-tinta"
                 }`}
               >
                 <span>Historial</span>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full ${
                     tab === "historial"
-                      ? "bg-barber-red/10 text-barber-red font-bold"
-                      : "bg-black/5 text-barber-gray"
+                      ? "bg-brand/10 text-brand font-bold"
+                      : "bg-black/5 text-pizarra"
                   }`}
                 >
                   {totalHistorial}
@@ -233,11 +236,11 @@ export default function MisCitasPage() {
                 {totalProximas > 0 && <ActivarRecordatoriosCliente celular={celular} />}
                 {totalProximas === 0 ? (
                   <div className="card p-8 text-center space-y-3">
-                    <p className="font-semibold text-barber-ink">
+                    <p className="font-semibold text-tinta">
                       No tienes citas activas ni programadas
                     </p>
-                    <p className="text-sm text-barber-gray">
-                      ¿Necesitas un corte o mantenimiento? Agenda tu espacio en segundos.
+                    <p className="text-sm text-pizarra">
+                      {t.cta} Agendá tu espacio en segundos.
                     </p>
                     <div className="pt-2">
                       <Link href="/" className="btn-primary text-sm inline-flex">
@@ -255,7 +258,7 @@ export default function MisCitasPage() {
                         key={c.id}
                         className={`card p-5 transition ${
                           esPrimera
-                            ? "border-2 border-barber-red/40 shadow-md bg-gradient-to-br from-white to-red-50/20"
+                            ? "border-2 border-brand/40 shadow-md bg-gradient-to-br from-white to-red-50/20"
                             : ""
                         }`}
                       >
@@ -265,13 +268,13 @@ export default function MisCitasPage() {
                             <span
                               className={`badge text-xs font-bold ${
                                 esHoy
-                                  ? "bg-barber-red text-white"
-                                  : "bg-barber-blue/10 text-barber-blue border border-barber-blue/20"
+                                  ? "bg-brand text-white"
+                                  : "bg-brand-deep/10 text-brand-deep border border-brand-deep/20"
                               }`}
                             >
                               {esHoy ? "⚡ ¡Tu cita es HOY!" : "📌 Tu próxima cita"}
                             </span>
-                            <span className="text-xs text-barber-gray capitalize">
+                            <span className="text-xs text-pizarra capitalize">
                               {formatearFecha(c.fecha)}
                             </span>
                           </div>
@@ -279,11 +282,11 @@ export default function MisCitasPage() {
 
                         <div className="flex justify-between items-start gap-2">
                           <div>
-                            <h3 className="font-display text-xl text-barber-ink">
+                            <h3 className="font-display text-xl text-tinta">
                               {c.barberoLocal}
                             </h3>
-                            <p className="text-sm text-barber-gray">
-                              Barbero: <strong className="text-barber-ink">{c.barberoNombre}</strong>
+                            <p className="text-sm text-pizarra">
+                              {capitalizar(t.profesional)}: <strong className="text-tinta">{c.barberoNombre}</strong>
                             </p>
                           </div>
                           <EstadoBadge estado={c.estado} />
@@ -291,14 +294,14 @@ export default function MisCitasPage() {
 
                         <div className="mt-3 p-3 bg-neutral-100/70 rounded-xl text-sm grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
-                            <p className="text-xs text-barber-gray">Horario</p>
-                            <p className="font-semibold text-barber-ink">
+                            <p className="text-xs text-pizarra">Horario</p>
+                            <p className="font-semibold text-tinta">
                               {c.fecha} · {formatearHora12(c.horaInicio)} - {formatearHora12(c.horaFin)}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-barber-gray">Servicio / Plan</p>
-                            <p className="font-semibold text-barber-ink">
+                            <p className="text-xs text-pizarra">Servicio / Plan</p>
+                            <p className="font-semibold text-tinta">
                               {c.planSnapshot?.nombre} · {formatoCOP(c.planSnapshot?.precio)}
                             </p>
                           </div>
@@ -327,7 +330,7 @@ export default function MisCitasPage() {
                               target="_blank"
                               rel="noreferrer"
                             >
-                              <WhatsAppIcon className="w-4 h-4" /> Escribir al barbero
+                              <WhatsAppIcon className="w-4 h-4" /> Escribir al {t.profesional}
                             </a>
                           )}
                         </div>
@@ -342,7 +345,7 @@ export default function MisCitasPage() {
             {tab === "historial" && (
               <div className="space-y-3">
                 {totalHistorial === 0 ? (
-                  <div className="card p-8 text-center text-barber-gray text-sm">
+                  <div className="card p-8 text-center text-pizarra text-sm">
                     Aún no tienes citas pasadas o finalizadas en tu historial.
                   </div>
                 ) : (
@@ -351,19 +354,19 @@ export default function MisCitasPage() {
                       <div className="flex justify-between items-start gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h4 className="font-display text-base text-barber-ink">
+                            <h4 className="font-display text-base text-tinta">
                               {c.barberoLocal}
                             </h4>
-                            <span className="text-xs text-barber-gray">({c.barberoNombre})</span>
+                            <span className="text-xs text-pizarra">({c.barberoNombre})</span>
                           </div>
-                          <p className="text-xs text-barber-gray mt-0.5">
+                          <p className="text-xs text-pizarra mt-0.5">
                             {formatearFecha(c.fecha)} ({c.fecha}) · {formatearHora12(c.horaInicio)}
                           </p>
                         </div>
                         <EstadoBadge estado={c.estado} />
                       </div>
 
-                      <div className="mt-2 text-xs text-barber-gray flex justify-between items-center">
+                      <div className="mt-2 text-xs text-pizarra flex justify-between items-center">
                         <span>
                           {c.planSnapshot?.nombre} · {formatoCOP(c.planSnapshot?.precio)}
                         </span>
@@ -377,7 +380,7 @@ export default function MisCitasPage() {
                       {c.barberoCelular && (
                         <div className="mt-3 pt-2 border-t border-black/5 flex justify-end">
                           <a
-                            className="text-xs text-barber-gray hover:text-barber-ink flex items-center gap-1"
+                            className="text-xs text-pizarra hover:text-tinta flex items-center gap-1"
                             href={`https://wa.me/${c.barberoCelular.replace(/\D/g, "")}`}
                             target="_blank"
                             rel="noreferrer"

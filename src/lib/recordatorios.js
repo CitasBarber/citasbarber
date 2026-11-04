@@ -3,6 +3,7 @@ import Barbero from "@/models/Barbero";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
 import { enviarPush } from "@/lib/push";
 import { normalizarCelular } from "@/lib/whatsapp";
+import { obtenerMarca } from "@/lib/brands";
 import {
   fechaLocalHoy,
   hhmmAMin,
@@ -90,7 +91,7 @@ export async function recordarClientesDelDia({ barberoId = null, celular = null 
 
     const barberoIds = [...new Set(citasHoy.map((c) => String(c.barbero)))];
     const barberos = await Barbero.find({ _id: { $in: barberoIds } })
-      .select("nombre local horario")
+      .select("nombre local horario marca")
       .lean();
     const mapaBarbero = new Map(barberos.map((b) => [String(b._id), b]));
 
@@ -101,12 +102,13 @@ export async function recordarClientesDelDia({ barberoId = null, celular = null 
       // Aún no abre el local (hora de Colombia): esperamos a un próximo ciclo.
       if (ahoraMin < hhmmAMin(apertura)) continue;
 
-      const local = barbero?.local || "la barbería";
+      const t = obtenerMarca(barbero?.marca).textos;
+      const local = barbero?.local || `la ${t.negocio}`;
       await enviarPush(
         { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
         {
-          title: "Recordatorio de tu cita ✂️",
-          body: `Hoy tenés cita a las ${formatearHora12(cita.horaInicio)} con ${barbero?.nombre || "tu barbero"} en ${local}.`,
+          title: `Recordatorio de tu cita ${t.emoji}`,
+          body: `Hoy tenés cita a las ${formatearHora12(cita.horaInicio)} con ${barbero?.nombre || `tu ${t.profesional}`} en ${local}.`,
           url: "/mis-citas",
           tag: `recordatorio-cliente-${cita._id}`,
         }

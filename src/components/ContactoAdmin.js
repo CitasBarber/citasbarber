@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useBrand } from "./BrandProvider";
+import { capitalizar } from "@/lib/brands";
 
-const MENSAJE_DEFAULT = "Quiero esta app para mí o para mi barbería.";
+const mensajeDefault = (t) => `Quiero esta app para mí o para mi ${t.negocio}.`;
 
-export default function ContactoAdmin({ className = "hover:text-white", label = "¿Tienes barbería?" }) {
+export default function ContactoAdmin({ className = "hover:text-white", label }) {
+  const { marca, t } = useBrand();
+  label ??= `¿Tienes ${t.negocio}?`;
   const [abierto, setAbierto] = useState(false);
   const [nombre, setNombre] = useState("");
   const [celular, setCelular] = useState("");
   const [local, setLocal] = useState("");
-  const [mensaje, setMensaje] = useState(MENSAJE_DEFAULT);
+  const [mensaje, setMensaje] = useState(() => mensajeDefault(t));
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   const [enviado, setEnviado] = useState(false);
@@ -22,7 +26,7 @@ export default function ContactoAdmin({ className = "hover:text-white", label = 
     setNombre("");
     setCelular("");
     setLocal("");
-    setMensaje(MENSAJE_DEFAULT);
+    setMensaje(mensajeDefault(t));
   }
 
   async function enviar(e) {
@@ -57,14 +61,14 @@ export default function ContactoAdmin({ className = "hover:text-white", label = 
           onClick={cerrar}
         >
           <div
-            className="card w-full max-w-lg p-6 space-y-4 relative text-barber-ink"
+            className="card w-full max-w-lg p-6 space-y-4 relative text-tinta"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={cerrar}
               aria-label="Cerrar"
-              className="absolute top-3 right-3 w-8 h-8 grid place-items-center rounded-full text-barber-gray hover:bg-black/5"
+              className="absolute top-3 right-3 w-8 h-8 grid place-items-center rounded-full text-pizarra hover:bg-black/5"
             >
               ✕
             </button>
@@ -73,7 +77,7 @@ export default function ContactoAdmin({ className = "hover:text-white", label = 
               <div className="text-center space-y-2 py-4">
                 <div className="text-4xl">✅</div>
                 <h3 className="font-display text-2xl">¡Solicitud enviada!</h3>
-                <p className="text-barber-gray">
+                <p className="text-pizarra">
                   El administrador la verá en su panel y te contactará pronto. ¡Gracias!
                 </p>
                 <button type="button" className="btn-primary w-full mt-2" onClick={cerrar}>
@@ -83,10 +87,10 @@ export default function ContactoAdmin({ className = "hover:text-white", label = 
             ) : (
               <form onSubmit={enviar} className="space-y-4">
                 <div className="text-center">
-                  <h2 className="font-display text-2xl">¿Tienes una barbería?</h2>
-                  <p className="text-barber-gray text-sm mt-1">
-                    Habla con el administrador para tener esta app en tu barbería o para
-                    unirte a CitasBarber. Te contactamos por WhatsApp.
+                  <h2 className="font-display text-2xl">¿Tienes {t.negocio === "spa" ? "un" : "una"} {t.negocio}?</h2>
+                  <p className="text-pizarra text-sm mt-1">
+                    Habla con el administrador para tener esta app en tu {t.negocio} o para
+                    unirte a {marca.nombre}. Te contactamos por WhatsApp.
                   </p>
                 </div>
                 {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -115,12 +119,12 @@ export default function ContactoAdmin({ className = "hover:text-white", label = 
                   </div>
                 </div>
                 <div>
-                  <label className="label">Nombre de tu barbería (opcional)</label>
+                  <label className="label">Nombre de tu {t.negocio} (opcional)</label>
                   <input
                     className="input"
                     value={local}
                     onChange={(e) => setLocal(e.target.value)}
-                    placeholder="Ej: Barbería El Bigote"
+                    placeholder={`Ej: ${capitalizar(t.negocio)} La Esquina`}
                     maxLength={120}
                   />
                 </div>

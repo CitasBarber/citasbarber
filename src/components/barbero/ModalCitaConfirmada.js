@@ -41,7 +41,7 @@ export default function ModalCitaConfirmada({
       onClick={onCerrar}
     >
       <div
-        className="card w-full max-w-sm p-6 space-y-4 shadow-xl border border-barber-gold/20"
+        className="card w-full max-w-sm p-6 space-y-4 shadow-xl border border-brand-deep/20"
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
@@ -51,14 +51,14 @@ export default function ModalCitaConfirmada({
             <CalendarioIcon className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-display text-lg leading-tight text-barber-dark">¡Cita confirmada!</h2>
-            <p className="text-xs text-barber-gray mt-0.5">
+            <h2 className="font-display text-lg leading-tight text-tinta">¡Cita confirmada!</h2>
+            <p className="text-xs text-pizarra mt-0.5">
               {formatearHora12(cita.horaInicio)} · {cita.clienteNombre}
             </p>
           </div>
         </div>
 
-        <p className="text-sm text-barber-gray">
+        <p className="text-sm text-pizarra">
           ¿Deseas agregar esta cita a tu calendario personal?
         </p>
 
@@ -66,7 +66,7 @@ export default function ModalCitaConfirmada({
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
-            className="btn-outline text-xs py-2 px-2 flex items-center justify-center gap-1.5 hover:border-barber-blue hover:text-barber-blue"
+            className="btn-outline text-xs py-2 px-2 flex items-center justify-center gap-1.5 hover:border-brand-deep hover:text-brand-deep"
             onClick={handleGoogleCalendar}
           >
             <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
@@ -74,7 +74,7 @@ export default function ModalCitaConfirmada({
           </button>
           <button
             type="button"
-            className="btn-outline text-xs py-2 px-2 flex items-center justify-center gap-1.5 hover:border-barber-gold hover:text-barber-gold"
+            className="btn-outline text-xs py-2 px-2 flex items-center justify-center gap-1.5 hover:border-brand-deep hover:text-brand-deep"
             onClick={handleIcsCita}
           >
             <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
@@ -84,13 +84,13 @@ export default function ModalCitaConfirmada({
 
         {/* Opción en bloque si hay más citas ese día */}
         {hayMasCitas && (
-          <div className="p-3 bg-barber-cream/40 dark:bg-stone-800/40 rounded-lg border border-stone-200/60 space-y-2">
-            <p className="text-xs text-barber-gray">
-              Tienes <strong className="text-barber-dark">{totalDelDia} citas confirmadas</strong> para este día.
+          <div className="p-3 bg-crema/40 dark:bg-stone-800/40 rounded-lg border border-stone-200/60 space-y-2">
+            <p className="text-xs text-pizarra">
+              Tienes <strong className="text-tinta">{totalDelDia} citas confirmadas</strong> para este día.
             </p>
             <button
               type="button"
-              className="w-full btn-outline text-xs py-2 border-dashed border-barber-gold text-barber-gold hover:bg-barber-gold/10 font-medium flex items-center justify-center gap-1.5"
+              className="w-full btn-outline text-xs py-2 border-dashed border-brand-deep text-brand-deep hover:bg-brand-deep/10 font-medium flex items-center justify-center gap-1.5"
               onClick={handleIcsDiaCompleto}
             >
               <CalendarioIcon className="w-3.5 h-3.5" />

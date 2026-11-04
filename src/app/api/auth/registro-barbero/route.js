@@ -4,6 +4,7 @@ import Barbero from "@/models/Barbero";
 import { ok, fail, handler } from "@/lib/api";
 import { hashPassword } from "@/lib/auth";
 import { ESTADO_BARBERO, ROLES } from "@/lib/constants";
+import { MARCA_DEFAULT, esMarcaValida } from "@/lib/brands";
 
 export const POST = handler(async (req) => {
   await dbConnect();
@@ -24,6 +25,8 @@ export const POST = handler(async (req) => {
     celular,
     ciudad,
     email: email.toLowerCase().trim(),
+    // Se registra en la marca desde la que llegó (CitasPet, CitasSpa...)
+    marca: esMarcaValida(body.marca) ? body.marca : MARCA_DEFAULT,
     estado: ESTADO_BARBERO.PENDIENTE,
     planes: [], // el admin los configura al aprobar
   });

@@ -1,6 +1,8 @@
 // Utilidades para exportar citas a Google Calendar y Calendario de celular (iCalendar .ics)
 // Zona horaria: America/Bogota (UTC-5)
 
+import { obtenerMarca } from "./brands";
+
 function pad(n) {
   return String(n).padStart(2, "0");
 }
@@ -50,21 +52,21 @@ function escaparIcs(texto = "") {
  * Genera la URL para abrir y prellenar el evento en Google Calendar
  */
 export function generarGoogleCalendarUrl(cita, barbero = {}) {
-  const titulo = `Cita: ${cita.clienteNombre || "Cliente"} - ${cita.planSnapshot?.nombre || cita.plan || "Corte"}`;
+  const titulo = `Cita: ${cita.clienteNombre || "Cliente"} - ${cita.planSnapshot?.nombre || cita.plan || "Servicio"}`;
   const start = fechaHoraLocal(cita.fecha, cita.horaInicio);
   const end = fechaHoraLocal(cita.fecha, cita.horaFin);
 
   const lineas = [
     `Cliente: ${cita.clienteNombre || "Sin nombre"}`,
     cita.clienteCelular ? `Teléfono: ${cita.clienteCelular}` : null,
-    `Servicio: ${cita.planSnapshot?.nombre || cita.plan || "Corte"}`,
+    `Servicio: ${cita.planSnapshot?.nombre || cita.plan || "Servicio"}`,
     cita.planSnapshot?.precio ? `Precio: $${cita.planSnapshot.precio.toLocaleString("es-CO")} COP` : null,
     cita.metodoPago ? `Método de pago: ${cita.metodoPago}` : null,
-    cita.esManual ? "Nota: Agendada manualmente por el barbero" : null,
+    cita.esManual ? `Nota: Agendada manualmente por el ${obtenerMarca(barbero.marca).textos.profesional}` : null,
   ].filter(Boolean);
 
   const ubicacion = [
-    barbero.local || "CitasBarber",
+    barbero.local || obtenerMarca(barbero.marca).nombre,
     barbero.direccion,
     barbero.ciudad,
   ].filter(Boolean).join(", ");
@@ -90,18 +92,18 @@ function generarVEvent(cita, barbero = {}) {
   const dtStamp = fechaHoraAUfc(new Date().toISOString().slice(0, 10), "12:00");
   const uid = `cita-${cita.id || cita._id || Math.random().toString(36).slice(2)}@citasbarber.com`;
 
-  const titulo = `Cita: ${cita.clienteNombre || "Cliente"} - ${cita.planSnapshot?.nombre || cita.plan || "Corte"}`;
+  const titulo = `Cita: ${cita.clienteNombre || "Cliente"} - ${cita.planSnapshot?.nombre || cita.plan || "Servicio"}`;
   const lineas = [
     `Cliente: ${cita.clienteNombre || "Sin nombre"}`,
     cita.clienteCelular ? `Teléfono: ${cita.clienteCelular}` : null,
-    `Servicio: ${cita.planSnapshot?.nombre || cita.plan || "Corte"}`,
+    `Servicio: ${cita.planSnapshot?.nombre || cita.plan || "Servicio"}`,
     cita.planSnapshot?.precio ? `Precio: $${cita.planSnapshot.precio.toLocaleString("es-CO")} COP` : null,
     cita.metodoPago ? `Método de pago: ${cita.metodoPago}` : null,
-    cita.esManual ? "Nota: Agendada manualmente por el barbero" : null,
+    cita.esManual ? `Nota: Agendada manualmente por el ${obtenerMarca(barbero.marca).textos.profesional}` : null,
   ].filter(Boolean);
 
   const ubicacion = [
-    barbero.local || "CitasBarber",
+    barbero.local || obtenerMarca(barbero.marca).nombre,
     barbero.direccion,
     barbero.ciudad,
   ].filter(Boolean).join(", ");
@@ -128,7 +130,7 @@ export function generarIcsCita(cita, barbero = {}) {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//CitasBarber//Citas//ES",
+    "PRODID:-//CitasApp//Citas//ES",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     vevent,
@@ -144,7 +146,7 @@ export function generarIcsDia(citas = [], barbero = {}) {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//CitasBarber//Citas//ES",
+    "PRODID:-//CitasApp//Citas//ES",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     vevents,

@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Header from "@/components/Header";
-import { PosteBarbero, OjoAbierto, OjoCerrado } from "@/components/Icons";
+import Header, { IconoMarca } from "@/components/Header";
+import { OjoAbierto, OjoCerrado } from "@/components/Icons";
+import { useBasePath } from "@/lib/useBasePath";
 
 export default function LoginAdminPage() {
   const router = useRouter();
+  const basePath = useBasePath();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,7 +28,7 @@ export default function LoginAdminPage() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "Error");
       if (d.role !== "admin") throw new Error("Esta cuenta no es de administrador.");
-      router.push("/admin/panel");
+      router.push(`${basePath}/admin/panel`);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -36,9 +38,9 @@ export default function LoginAdminPage() {
 
   return (
     <div className="min-h-screen">
-      <Header><Link href="/" className="hover:text-barber-red">Inicio</Link></Header>
+      <Header><Link href="/" className="hover:text-brand-on-dark">Inicio</Link></Header>
       <main className="mx-auto max-w-sm px-4 py-12">
-        <div className="flex justify-center mb-4"><PosteBarbero className="w-10 h-24" /></div>
+        <div className="flex justify-center mb-4"><IconoMarca className="w-16 h-16" /></div>
         <h1 className="font-display text-3xl text-center">Administración</h1>
         <form onSubmit={login} className="card p-6 mt-6 space-y-3">
           {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -51,7 +53,7 @@ export default function LoginAdminPage() {
               autoCorrect="off"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@citasbarber"
+              placeholder="admin@citasapp"
               required
             />
           </div>
@@ -59,7 +61,7 @@ export default function LoginAdminPage() {
             <label className="label">Contraseña</label>
             <div className="relative">
               <input className="input pr-10" type={verPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required />
-              <button type="button" onClick={() => setVerPassword(!verPassword)} className="absolute inset-y-0 right-0 flex items-center px-3 text-barber-gray hover:text-barber-dark" tabIndex={-1} aria-label={verPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
+              <button type="button" onClick={() => setVerPassword(!verPassword)} className="absolute inset-y-0 right-0 flex items-center px-3 text-pizarra hover:text-tinta" tabIndex={-1} aria-label={verPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
                 {verPassword ? <OjoCerrado className="w-5 h-5" /> : <OjoAbierto className="w-5 h-5" />}
               </button>
             </div>

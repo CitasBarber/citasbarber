@@ -8,6 +8,9 @@ import EstadoBadge from "@/components/EstadoBadge";
 import EditorPlanes from "@/components/admin/EditorPlanes";
 import EditorInfoBarbero from "@/components/admin/EditorInfoBarbero";
 import CrearBarberoModal from "@/components/admin/CrearBarberoModal";
+import { MARCA_DEFAULT, obtenerMarca } from "@/lib/brands";
+import { useBrand } from "@/components/BrandProvider";
+import { useBasePath } from "@/lib/useBasePath";
 import ControlSuscripciones from "@/components/admin/ControlSuscripciones";
 import ActivarNotificaciones from "@/components/ActivarNotificaciones";
 import { useDialog } from "@/components/DialogProvider";
@@ -22,6 +25,8 @@ const FILTROS = [
 
 export default function AdminPanelPage() {
   const router = useRouter();
+  const basePath = useBasePath();
+  const { id: marcaActiva } = useBrand();
   const { confirmar } = useDialog();
   const [sesion, setSesion] = useState(undefined);
   const [filtro, setFiltro] = useState("pendiente");
@@ -40,7 +45,7 @@ export default function AdminPanelPage() {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
-        if (!d.session || d.session.role !== "admin") { router.replace("/admin/login"); setSesion(null); }
+        if (!d.session || d.session.role !== "admin") { router.replace(`${basePath}/admin/login`); setSesion(null); }
         else setSesion(d.session);
       });
   }, [router]);
@@ -98,12 +103,12 @@ export default function AdminPanelPage() {
 
   const CONFIRMAR = {
     rechazar: {
-      titulo: "Rechazar barbero",
-      mensaje: "¿Rechazar la solicitud de este barbero?",
+      titulo: "Rechazar negocio",
+      mensaje: "¿Rechazar la solicitud de este negocio?",
       confirmarLabel: "Rechazar",
     },
     desactivar: {
-      titulo: "Desactivar barbero",
+      titulo: "Desactivar negocio",
       mensaje: "No podrá iniciar sesión ni recibir nuevas citas.",
       confirmarLabel: "Desactivar",
     },
@@ -137,16 +142,23 @@ export default function AdminPanelPage() {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/");
+    router.replace(basePath || "/");
   }
 
-  if (sesion === undefined) return <div className="p-10 text-center text-barber-gray">Cargando…</div>;
+  // Sede precargada al crear un negocio: la del primer negocio de la marca
+  // activa, para no proponerle a un groomer los datos de una barbería.
+  const negocioMismaMarca = barberos.find((b) => (b.marca || MARCA_DEFAULT) === marcaActiva && b.local);
+  const sedeDeLaMarca = negocioMismaMarca
+    ? { local: negocioMismaMarca.local, ciudad: negocioMismaMarca.ciudad, direccion: negocioMismaMarca.direccion }
+    : undefined;
+
+  if (sesion === undefined) return <div className="p-10 text-center text-pizarra">Cargando…</div>;
   if (!sesion) return null;
 
   return (
     <div className="min-h-screen">
-      <Header>
-        <button onClick={logout} className="btn-outline border-white text-white hover:bg-white hover:text-barber-black text-sm py-1.5">Salir</button>
+      <Header showBrandSwitcher>
+        <button onClick={logout} className="btn-outline border-white text-white hover:bg-white hover:text-tinta text-sm py-1.5">Salir</button>
       </Header>
       <main className="mx-auto max-w-5xl px-4 py-6">
         <h1 className="font-display text-3xl">Panel de administración</h1>
@@ -158,20 +170,20 @@ export default function AdminPanelPage() {
         {/* Navegación de vistas */}
         <div className="mt-4 flex gap-2">
           <button onClick={() => setVista("barberos")}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold ${vista === "barberos" ? "bg-barber-ink text-white" : "border"}`}>
-            Barberos
+            className={`px-4 py-2 rounded-lg text-sm font-semibold ${vista === "barberos" ? "bg-tinta text-white" : "border"}`}>
+            Negocios
           </button>
           <button onClick={() => { setVista("solicitudes"); cargarSolicitudes(); }}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2 ${vista === "solicitudes" ? "bg-barber-ink text-white" : "border"}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2 ${vista === "solicitudes" ? "bg-tinta text-white" : "border"}`}>
             Solicitudes
             {nuevasSolicitudes > 0 && (
-              <span className="inline-grid place-items-center min-w-[20px] h-5 px-1.5 rounded-full bg-barber-red text-white text-xs font-bold">
+              <span className="inline-grid place-items-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand text-white text-xs font-bold">
                 {nuevasSolicitudes}
               </span>
             )}
           </button>
           <button onClick={() => setVista("control")}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2 ${vista === "control" ? "bg-barber-ink text-white" : "border"}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2 ${vista === "control" ? "bg-tinta text-white" : "border"}`}>
             Control
             {porCobrarCount > 0 && (
               <span className="inline-grid place-items-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-white text-xs font-bold">
@@ -187,7 +199,7 @@ export default function AdminPanelPage() {
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             {FILTROS.map((f) => (
               <button key={f.key} onClick={() => setFiltro(f.key)}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold ${filtro === f.key ? "bg-barber-ink text-white" : "border"}`}>
+                className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold ${filtro === f.key ? "bg-tinta text-white" : "border"}`}>
                 {f.label}
               </button>
             ))}
@@ -198,21 +210,27 @@ export default function AdminPanelPage() {
             className="btn-primary py-1.5 px-3.5 text-sm whitespace-nowrap shadow-sm ml-auto flex items-center gap-1.5"
           >
             <span className="text-base leading-none font-bold">+</span>
-            <span>Nuevo barbero</span>
+            <span>Nuevo negocio</span>
           </button>
         </div>
 
         <div className="mt-6 space-y-3">
-          {barberos.length === 0 && <div className="card p-8 text-center text-barber-gray">Sin barberos en esta categoría.</div>}
+          {barberos.length === 0 && <div className="card p-8 text-center text-pizarra">Sin negocios en esta categoría.</div>}
           {barberos.map((b) => (
             <div key={b.id} className="card p-4">
               <div className="flex justify-between items-start gap-2 flex-wrap">
                 <div>
-                  <h3 className="font-display text-lg">{b.local}</h3>
-                  <p className="text-sm text-barber-gray">{b.nombre} · {b.ciudad}</p>
-                  <p className="text-sm text-barber-gray mt-0.5">📱 {b.celular} · {b.email}</p>
-                  {b.direccion && <p className="text-xs text-barber-gray">{b.direccion}</p>}
-                  <p className="text-xs text-barber-gray mt-1">
+                  <h3 className="font-display text-lg flex items-center gap-2 flex-wrap">
+                    {b.local}
+                    <span className="badge bg-tinta text-hueso font-body tracking-normal">
+                      <span style={{ color: obtenerMarca(b.marca).colores.brandOnDark }}>Citas</span>
+                      {obtenerMarca(b.marca).nicho}
+                    </span>
+                  </h3>
+                  <p className="text-sm text-pizarra">{b.nombre} · {b.ciudad}</p>
+                  <p className="text-sm text-pizarra mt-0.5">📱 {b.celular} · {b.email}</p>
+                  {b.direccion && <p className="text-xs text-pizarra">{b.direccion}</p>}
+                  <p className="text-xs text-pizarra mt-1">
                     {b.numCitas} cita{b.numCitas === 1 ? "" : "s"} registrada{b.numCitas === 1 ? "" : "s"}
                     {b.suscripcionVence && ` · vence ${new Date(b.suscripcionVence).toLocaleDateString("es-CO")}`}
                   </p>
@@ -253,26 +271,26 @@ export default function AdminPanelPage() {
         {vista === "solicitudes" && (
           <div className="mt-6 space-y-3">
             {solicitudes.length === 0 && (
-              <div className="card p-8 text-center text-barber-gray">Aún no hay solicitudes de contacto.</div>
+              <div className="card p-8 text-center text-pizarra">Aún no hay solicitudes de contacto.</div>
             )}
             {solicitudes.map((s) => (
-              <div key={s.id} className={`card p-4 ${s.estado === "nueva" ? "border-l-4 border-l-barber-red" : ""}`}>
+              <div key={s.id} className={`card p-4 ${s.estado === "nueva" ? "border-l-4 border-l-brand" : ""}`}>
                 <div className="flex justify-between items-start gap-2 flex-wrap">
                   <div>
                     <h3 className="font-display text-lg">
                       {s.nombre}
-                      {s.local && <span className="text-barber-gray text-base font-normal"> · {s.local}</span>}
+                      {s.local && <span className="text-pizarra text-base font-normal"> · {s.local}</span>}
                     </h3>
-                    <p className="text-sm text-barber-gray mt-0.5">📱 {s.celular}</p>
-                    <p className="text-xs text-barber-gray">
+                    <p className="text-sm text-pizarra mt-0.5">📱 {s.celular}</p>
+                    <p className="text-xs text-pizarra">
                       {new Date(s.createdAt).toLocaleString("es-CO")}
                     </p>
                   </div>
-                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${s.estado === "nueva" ? "bg-barber-red text-white" : "bg-gray-200 text-barber-gray"}`}>
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${s.estado === "nueva" ? "bg-brand text-white" : "bg-gray-200 text-pizarra"}`}>
                     {s.estado === "nueva" ? "Nueva" : "Atendida"}
                   </span>
                 </div>
-                <p className="mt-3 text-sm bg-barber-cream rounded-lg p-3 whitespace-pre-wrap">{s.mensaje}</p>
+                <p className="mt-3 text-sm bg-crema rounded-lg p-3 whitespace-pre-wrap">{s.mensaje}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <a className="btn-wa text-sm py-1.5" href={`https://wa.me/${s.celular.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
                     Responder por WhatsApp
@@ -301,15 +319,7 @@ export default function AdminPanelPage() {
 
       {creandoBarbero && (
         <CrearBarberoModal
-          defaultBarberia={
-            barberos.length > 0 && barberos[0].local
-              ? {
-                  local: barberos[0].local,
-                  ciudad: barberos[0].ciudad,
-                  direccion: barberos[0].direccion,
-                }
-              : undefined
-          }
+          defaultBarberia={sedeDeLaMarca}
           onClose={() => setCreandoBarbero(false)}
           onCreado={(nuevoBarbero, abrirPlanes) => {
             setCreandoBarbero(false);
@@ -340,8 +350,8 @@ export default function AdminPanelPage() {
       {eliminando && (
         <div className="fixed inset-0 bg-black/60 grid place-items-center p-4 z-50">
           <div className="card p-6 w-full max-w-md space-y-4">
-            <h2 className="font-display text-2xl text-red-600">Eliminar barbero</h2>
-            <p className="text-sm text-barber-gray">
+            <h2 className="font-display text-2xl text-red-600">Eliminar negocio</h2>
+            <p className="text-sm text-pizarra">
               Vas a eliminar de forma <b>permanente</b> a <b>{eliminando.nombre}</b> ({eliminando.local}).
             </p>
             <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800">

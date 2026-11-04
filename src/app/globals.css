@@ -3,16 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --barber-red: #e11d2a;
-  --barber-blue: #1e50a0;
+  /* Neutros oficiales de CitasApp (iguales en las tres marcas). Los colores
+     de cada marca (--brand, --brand-deep, --stripe, ...) se inyectan desde
+     src/lib/brands.js según el atributo data-brand de <html>. */
+  --tinta: #0b0c10;   /* texto principal y fondo del header */
+  --hueso: #faf8f4;   /* fondo principal; texto sobre oscuro */
+  --crema: #f3eee4;   /* fondos de sección y tarjetas */
+  --pizarra: #5b6670; /* texto secundario */
+  --linea: #e4ddd0;   /* bordes, divisores, inputs */
+  --whatsapp: #25d366;
+  --whatsapp-deep: #128c4a; /* botones de WhatsApp pequeños (texto blanco) */
+  --cobre: #b87333;          /* solo marca CitasApp: titulares grandes sobre oscuro */
+  --cobre-profundo: #8c5524; /* botones, enlaces, cifras sobre fondo claro */
+  --azul-acero: #436c84;     /* calculadora y gráficas únicamente */
+
+  /* Acentos de marca para las tarjetas de la landing de CitasApp.co */
+  --citasbarber-acento: #e3262f;
+  --citaspet-acento: #0f8a7e;
+  --citasspa-acento: #e4604f;
+
+  /* Mismos neutros en canales RGB para Tailwind (bg-tinta/80, etc.) */
+  --tinta-rgb: 11 12 16;
+  --hueso-rgb: 250 248 244;
+  --crema-rgb: 243 238 228;
+  --pizarra-rgb: 91 102 112;
+  --linea-rgb: 228 221 208;
 }
 
 html,
 body {
   padding: 0;
   margin: 0;
-  background: #f5f3ef;
-  color: #111111;
+  background: var(--hueso);
+  color: var(--tinta);
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
@@ -62,15 +85,19 @@ h1, h2, h3, .font-display {
   letter-spacing: 0.02em;
 }
 
-/* Franja diagonal tipo poste de barbero */
-.barber-pole {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--barber-red) 0 12px,
-    #ffffff 12px 24px,
-    var(--barber-blue) 24px 36px,
-    #ffffff 36px 48px
-  );
+/* Franja diagonal de la marca activa (poste de barbero, huella, esmalte) */
+.brand-stripe {
+  background: var(--stripe);
+}
+
+/* Transición suave de colores mientras se cambia de marca. BrandProvider pone
+   la clase un instante en <html>; con movimiento reducido no se anima. */
+@media (prefers-reduced-motion: no-preference) {
+  html.cambiando-marca *,
+  html.cambiando-marca *::before,
+  html.cambiando-marca *::after {
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease !important;
+  }
 }
 
 @layer components {
@@ -78,28 +105,28 @@ h1, h2, h3, .font-display {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px];
   }
   .btn-primary {
-    @apply btn bg-barber-red text-white hover:bg-barber-red-dark;
+    @apply btn bg-brand text-on-brand hover:bg-brand-deep;
   }
   .btn-blue {
-    @apply btn bg-barber-blue text-white hover:bg-barber-blue-dark;
+    @apply btn bg-brand-deep text-on-brand hover:bg-tinta;
   }
   .btn-dark {
-    @apply btn bg-barber-ink text-white hover:bg-black;
+    @apply btn bg-tinta text-hueso hover:bg-black;
   }
   .btn-outline {
-    @apply btn border-2 border-barber-ink text-barber-ink hover:bg-barber-ink hover:text-white;
+    @apply btn border-2 border-tinta text-tinta hover:bg-tinta hover:text-hueso;
   }
   .btn-wa {
-    @apply btn bg-[#25D366] text-white hover:bg-[#1da851];
+    @apply btn bg-whatsapp-deep text-white hover:brightness-90;
   }
   .card {
     @apply rounded-2xl bg-white shadow-card border border-black/5;
   }
   .input {
-    @apply w-full rounded-lg border border-gray-300 px-3 py-2.5 outline-none focus:border-barber-blue focus:ring-1 focus:ring-barber-blue;
+    @apply w-full rounded-lg border border-linea bg-white px-3 py-2.5 outline-none focus:border-brand-deep focus:ring-1 focus:ring-brand-deep;
   }
   .label {
-    @apply block text-sm font-semibold text-barber-ink mb-1;
+    @apply block text-sm font-semibold text-tinta mb-1;
   }
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
