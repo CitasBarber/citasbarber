@@ -85,7 +85,7 @@ export const POST = handler(async (req) => {
   clienteCelular = normalizarCelular(clienteCelular);
 
   const barbero = await Barbero.findById(barberoId);
-  if (!barbero) return fail("Barbero no encontrado", 404);
+  if (!barbero) return fail("Profesional no encontrado", 404);
 
   const plan = (barbero.planes || []).find((p) => p.key === planKey && p.activo);
   if (!plan) return fail("Plan no disponible", 400);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OjoAbierto, OjoCerrado, WhatsAppIcon } from "@/components/Icons";
 import { BARBERIA_SEDE_DEFAULT, DURACIONES_CORTE_OPCIONES } from "@/lib/constants";
 import { obtenerMarca, capitalizar } from "@/lib/brands";
@@ -24,7 +24,11 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
   });
 
   const [duracionTurnoMin, setDuracionTurnoMin] = useState(30);
-  const [password, setPassword] = useState("Barbero123*");
+  const [password, setPassword] = useState(`${obtenerMarca(marcaActiva).nicho}123*`);
+
+  useEffect(() => {
+    setPassword(`${marca.nicho}123*`);
+  }, [marcaId]);
   const [verPassword, setVerPassword] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
@@ -39,19 +43,21 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
 
   function generarPasswordAleatoria() {
     const num = Math.floor(1000 + Math.random() * 9000);
-    setPassword(`Barber#${num}`);
+    setPassword(`${marca.nicho}#${num}`);
   }
 
   // Si el usuario pega un correo completo en emailAlias, limpiamos o extraemos
+  const dominioMarca = `@${marca.slug}.com`;
+
   function handleEmailChange(val) {
-    const limpio = val.trim().toLowerCase().replace(/@citasbarber\.com$/, "");
+    const limpio = val.trim().toLowerCase().replace(new RegExp(`@${marca.slug}\\.com$`), "");
     set("emailAlias", limpio);
   }
 
   const emailFinal = form.emailAlias
     ? form.emailAlias.includes("@")
       ? form.emailAlias.trim().toLowerCase()
-      : `${form.emailAlias.trim().toLowerCase()}@citasbarber.com`
+      : `${form.emailAlias.trim().toLowerCase()}${dominioMarca}`
     : "";
 
   async function handleSubmit(e) {
@@ -311,11 +317,11 @@ export default function CrearBarberoModal({ onClose, onCreado, defaultBarberia }
                     type="text"
                     value={form.emailAlias}
                     onChange={(e) => handleEmailChange(e.target.value)}
-                    placeholder="nombre.barbero"
+                    placeholder={`nombre.${t.profesional}`}
                     required
                   />
                   <span className="inline-flex items-center px-3 bg-gray-100 text-pizarra font-medium text-sm select-none border-l border-gray-200">
-                    {form.emailAlias.includes("@") ? "" : "@citasbarber.com"}
+                    {form.emailAlias.includes("@") ? "" : dominioMarca}
                   </span>
                 </div>
                 <p className="text-xs text-pizarra mt-1">

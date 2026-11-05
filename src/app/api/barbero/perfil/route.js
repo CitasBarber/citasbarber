@@ -24,7 +24,7 @@ export const GET = handler(async () => {
   await dbConnect();
   const session = requireBarbero();
   const b = await Barbero.findById(session.barberoId).lean();
-  if (!b) return fail("Barbero no encontrado", 404);
+  if (!b) return fail("Profesional no encontrado", 404);
   return ok({
     barbero: {
       id: b._id.toString(),
@@ -54,7 +54,7 @@ export const PUT = handler(async (req) => {
   const session = requireBarbero();
   const body = await req.json();
   const b = await Barbero.findById(session.barberoId);
-  if (!b) return fail("Barbero no encontrado", 404);
+  if (!b) return fail("Profesional no encontrado", 404);
 
   if (body.horario) {
     b.horario.horaInicio = body.horario.horaInicio ?? b.horario.horaInicio;

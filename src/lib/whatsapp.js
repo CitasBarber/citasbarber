@@ -27,10 +27,11 @@ const SITIO_URL = resolverSitioUrl();
 // Respeta el modo "plano" (PC/WhatsApp Desktop) donde los emojis se corrompen.
 function firmaSitio(marca, { plano = false } = {}) {
   const url = `${SITIO_URL}/?marca=${marca.id}`;
+  const texto = marca.textos.firmaCitas || "Agenda tus citas fácil con";
   if (plano) {
-    return `\n\nAgenda tus citas facil con ${marca.nombre}:\n${url}`;
+    return `\n\n${texto} ${marca.nombre}:\n${url}`;
   }
-  return `\n\n${E.CALENDARIO} _Agenda tus citas fácil con_ *${marca.nombre}*\n👉 ${url}`;
+  return `\n\n${E.CALENDARIO} _${texto}_ *${marca.nombre}*\n👉 ${url}`;
 }
 
 // Nombre del negocio para los mensajes, con respaldo según el nicho
@@ -116,8 +117,11 @@ export function mensajeConfirmacion(cita, barbero, { plano = false } = {}) {
   const direccion = barbero?.direccion
     ? `\n${em("UBICACION")}*Dirección:* ${barbero.direccion}`
     : "";
+  const tituloCliente = marca.textos.sujetoCliente
+    ? `La cita de ${marca.textos.sujetoCliente} quedo confirmada en ${nombreNegocio(barbero, marca)}!`
+    : `Tu cita quedo confirmada en ${nombreNegocio(barbero, marca)}!`;
   return (
-    `${em("NAVAJA")}*Tu cita quedo confirmada en ${nombreNegocio(barbero, marca)}!*${cierreTitulo}\n\n` +
+    `${em("NAVAJA")}*${tituloCliente}*${cierreTitulo}\n\n` +
     `${em("PERSONA")}*${capitalizar(marca.textos.profesional)}:* ${barbero?.nombre || ""}\n` +
     `${em("TIJERAS")}*Plan:* ${plan.nombre || cita.plan}\n` +
     `*Servicios:* ${servicios}\n` +
@@ -125,16 +129,20 @@ export function mensajeConfirmacion(cita, barbero, { plano = false } = {}) {
     `${em("RELOJ")}*Hora:* ${formatearHora12(cita.horaInicio)} - ${formatearHora12(cita.horaFin)} (${plan.duracion} min)\n` +
     `${em("BILLETE")}*Valor:* ${formatoCOP(plan.precio)}` +
     direccion +
-    `\n\n_Ahi lo esperamos!_` +
+    `\n\n_${marca.textos.cierreEspera || "¡Ahí lo esperamos!"}_` +
     firmaSitio(marca, { plano })
   );
 }
 
 export function mensajeRechazo(cita, barbero) {
   const marca = obtenerMarca(barbero?.marca);
+  const sujeto = marca.textos.sujetoCliente;
+  const motivo = sujeto
+    ? `atender a ${sujeto} para el`
+    : `atender tu cita para el`;
   return (
     `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${nombreNegocio(barbero, marca)}*.\n\n` +
-    `Lamentablemente no puedo atender tu solicitud de cita para el ` +
+    `Lamentablemente no puedo ${motivo} ` +
     `${formatearFecha(cita.fecha)} a las ${formatearHora12(cita.horaInicio)}.\n\n` +
     `_Hablemos para reprogramar._`
   );
@@ -143,9 +151,11 @@ export function mensajeRechazo(cita, barbero) {
 export function mensajeCancelacion(cita, barbero, { motivo = "" } = {}) {
   const detalleMotivo = motivo ? `\n\n*Motivo:* ${motivo}` : "";
   const marca = obtenerMarca(barbero?.marca);
+  const sujeto = marca.textos.sujetoCliente;
+  const citaRef = sujeto ? `la cita de ${sujeto}` : `tu cita`;
   return (
     `Hola ${cita.clienteNombre}, soy *${barbero?.nombre || ""}* de *${nombreNegocio(barbero, marca)}*.\n\n` +
-    `Tuve que cancelar tu cita confirmada para el ` +
+    `Tuve que cancelar ${citaRef} para el ` +
     `${formatearFecha(cita.fecha)} a las ${formatearHora12(cita.horaInicio)}.` +
     detalleMotivo +
     `\n\n_Escríbeme para reprogramar cuando quieras._`

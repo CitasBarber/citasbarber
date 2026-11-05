@@ -57,8 +57,7 @@ export default function HomeMarcaPage() {
               <HeroTitulo texto={t.hero} />
             </h1>
             <p className="mt-4 text-white/80 text-base sm:text-lg">
-              Agendá con tu {t.profesional} de confianza en un momentico. Solo das tu
-              nombre y el celu, y te llega la confirmación por WhatsApp. ¡Así de fácil!
+              {t.descHero}
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <a href="#barberos" className="btn-primary w-full sm:w-auto justify-center">{t.cta}</a>
@@ -78,7 +77,7 @@ export default function HomeMarcaPage() {
         <h2 className="font-display text-3xl flex items-center gap-2">
           <IconoMarca className="w-8 h-8" /> {t.escogeProfesional}
         </h2>
-        <p className="text-pizarra mt-1">Estos son los {t.profesionales} de {marca.nombre}. Escogé con quién querés agendar.</p>
+        <p className="text-pizarra mt-1">Estos son los {t.profesionales} de {marca.nombre}. {t.ctaEscoger}.</p>
 
         {cargando ? (
           <p className="mt-8 text-pizarra">Cargando {t.profesionales}…</p>

@@ -22,4 +22,11 @@ export const EMOJI = {
   BRILLO:     String.fromCodePoint(0x2728),          // destellos
   CERVEZA:    String.fromCodePoint(0x1F37B),         // jarras de cerveza
   CHOCOLATE:  String.fromCodePoint(0x1F36B),         // chocolate
+  // CitasPet
+  HUELLA:     String.fromCodePoint(0x1F43E),         // huella de pata
+  JABON:      String.fromCodePoint(0x1F9FC),         // jabón
+  AGUA:       String.fromCodePoint(0x1F4A7),         // gota de agua
+  // CitasSpa
+  UNAS:       String.fromCodePoint(0x1F485),         // esmalte de uñas
+  FLOR:       String.fromCodePoint(0x1F338),         // flor de cerezo
 };

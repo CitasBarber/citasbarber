@@ -43,10 +43,10 @@ export const METODOS_PAGO_LABEL = {
 // Bronce: 30 - 5 = 25 ; Plata/Oro: 60 - 5 = 55
 export const PLANES_KEYS = ["bronce", "plata", "oro"];
 
-// Plantilla por defecto de planes cuando el admin configura a un barbero.
-// Los precios son ejemplos editables por el admin.
-// Los emojis vienen del módulo centralizado y seguro (ver ./emojis).
-export const PLANES_DEFAULT = [
+// Plantillas de planes por marca. Precios de ejemplo, editables por el admin.
+// Emojis del módulo centralizado (ver ./emojis).
+
+const PLANES_BARBER = [
   {
     key: "bronce",
     nombre: "Bronce",
@@ -88,6 +88,99 @@ export const PLANES_DEFAULT = [
     activo: true,
   },
 ];
+
+const PLANES_PET = [
+  {
+    key: "bronce",
+    nombre: "Bronce",
+    servicios: [`${EMOJI.JABON} Baño básico`],
+    precio: 30000,
+    duracion: 40,
+    anticipo: 0,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta", "efectivo"],
+    activo: true,
+  },
+  {
+    key: "plata",
+    nombre: "Plata",
+    servicios: [
+      `${EMOJI.JABON} Baño completo`,
+      `${EMOJI.TIJERAS} Corte de pelo`,
+      `${EMOJI.AGUA} Limpieza de oídos`,
+    ],
+    precio: 60000,
+    duracion: 70,
+    anticipo: 50,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta"],
+    activo: true,
+  },
+  {
+    key: "oro",
+    nombre: "Oro",
+    servicios: [
+      `${EMOJI.JABON} Baño completo`,
+      `${EMOJI.TIJERAS} Corte de pelo`,
+      `${EMOJI.AGUA} Limpieza de oídos`,
+      `${EMOJI.HUELLA} Corte de uñas`,
+      `${EMOJI.FLOR} Perfume y moño`,
+    ],
+    precio: 90000,
+    duracion: 90,
+    anticipo: 50,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta"],
+    activo: true,
+  },
+];
+
+const PLANES_SPA = [
+  {
+    key: "bronce",
+    nombre: "Bronce",
+    servicios: [`${EMOJI.UNAS} Manicure básico`],
+    precio: 25000,
+    duracion: 30,
+    anticipo: 0,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta", "efectivo"],
+    activo: true,
+  },
+  {
+    key: "plata",
+    nombre: "Plata",
+    servicios: [
+      `${EMOJI.UNAS} Manicure semipermanente`,
+      `${EMOJI.BRILLO} Pedicure`,
+    ],
+    precio: 55000,
+    duracion: 60,
+    anticipo: 50,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta"],
+    activo: true,
+  },
+  {
+    key: "oro",
+    nombre: "Oro",
+    servicios: [
+      `${EMOJI.UNAS} Manicure semipermanente`,
+      `${EMOJI.BRILLO} Pedicure`,
+      `${EMOJI.MASAJE} Hidratación de manos`,
+      `${EMOJI.FLOR} Diseño y decoración`,
+    ],
+    precio: 85000,
+    duracion: 90,
+    anticipo: 50,
+    metodosPago: ["nequi", "daviplata", "qr", "cuenta"],
+    activo: true,
+  },
+];
+
+export function planesDefaultPorMarca(marcaId) {
+  if (marcaId === "pet") return PLANES_PET.map((p) => ({ ...p }));
+  if (marcaId === "spa") return PLANES_SPA.map((p) => ({ ...p }));
+  return PLANES_BARBER.map((p) => ({ ...p }));
+}
+
+// Alias para compatibilidad: planes base de barbería
+export const PLANES_DEFAULT = PLANES_BARBER;
 
 export const DIAS_SEMANA = [
   "domingo",

@@ -4,6 +4,10 @@ export const metadata = {
   title: "CitasApp · Agenda con WhatsApp para barberías, peluquerías de mascotas y spas",
   description:
     "CitasApp: la app de citas con WhatsApp para tu negocio. Sin descargar nada, sin permanencia, con tu nombre y tus colores. CitasBarber, CitasPet y CitasSpa.",
+  icons: {
+    icon: [{ url: "/citasapp-icon.png", type: "image/png" }],
+    apple: "/citasapp-icon.png",
+  },
   openGraph: {
     title: "CitasApp · Agenda con WhatsApp",
     description:

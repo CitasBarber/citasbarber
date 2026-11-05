@@ -25,7 +25,7 @@ export const POST = handler(async (req) => {
   let barbero = null;
   if (usuario.role === ROLES.BARBERO) {
     barbero = await Barbero.findById(usuario.barbero);
-    if (!barbero) return fail("Perfil de barbero no encontrado", 404);
+    if (!barbero) return fail("Perfil de profesional no encontrado", 404);
     if (barbero.estado === ESTADO_BARBERO.PENDIENTE)
       return fail("Tu cuenta está pendiente de aprobación por el administrador.", 403);
     if (barbero.estado === ESTADO_BARBERO.RECHAZADO)

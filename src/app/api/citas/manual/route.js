@@ -29,7 +29,7 @@ export const POST = handler(async (req) => {
     return fail("No puedes agendar en una fecha que ya pasó.", 400);
 
   const barbero = await Barbero.findById(session.barberoId);
-  if (!barbero) return fail("Barbero no encontrado", 404);
+  if (!barbero) return fail("Profesional no encontrado", 404);
 
   const plan = (barbero.planes || []).find((p) => p.key === planKey);
   if (!plan) return fail("Plan no configurado", 400);

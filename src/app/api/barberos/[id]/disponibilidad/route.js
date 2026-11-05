@@ -16,10 +16,10 @@ export const GET = handler(async (req, { params }) => {
   if (!fecha || !planKey) return fail("Faltan parámetros fecha o plan");
 
   const barbero = await Barbero.findById(params.id).lean();
-  if (!barbero) return fail("Barbero no encontrado", 404);
+  if (!barbero) return fail("Profesional no encontrado", 404);
 
   const plan = (barbero.planes || []).find((p) => p.key === planKey);
-  if (!plan) return fail("Plan no configurado para este barbero", 404);
+  if (!plan) return fail("Plan no configurado para este profesional", 404);
 
   // Citas que ocupan agenda: solicitadas o confirmadas ese día
   const citas = await Cita.find({

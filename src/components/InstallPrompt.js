@@ -20,7 +20,11 @@ function IconoCompartir() {
 // Solo mostramos el banner en la web pública (home y flujo de agendar), no en
 // los paneles de barbero/admin ni en "mis-citas".
 function esRutaPublica(pathname) {
-  return pathname === "/" || pathname.startsWith("/agendar");
+  return (
+    pathname === "/" ||
+    pathname.startsWith("/agendar") ||
+    /^\/(citasbarber|citaspet|citasspa)/.test(pathname)
+  );
 }
 
 export default function InstallPrompt() {

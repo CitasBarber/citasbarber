@@ -18,11 +18,12 @@ const PAGINAS = [
   ["/admin", "Administración"],
   ["/barbero/panel", "Mi panel"],
   ["/barbero", "Profesionales"],
-  ["/agendar", "Agendá tu cita"],
+  ["/agendar", null],
   ["/mis-citas", "Mis citas"],
 ];
 
-function nombrePagina(pathname) {
+function nombrePagina(pathname, marca) {
+  if (pathname?.startsWith("/agendar")) return `${marca?.textos?.verboAgendar ?? "Agenda"} tu cita`;
   const encontrada = PAGINAS.find(([prefijo]) => pathname?.startsWith(prefijo));
   return encontrada ? encontrada[1] : "";
 }
@@ -66,7 +67,11 @@ function aplicarEnDocumento(marca, pathname) {
     window.setTimeout(() => html.classList.remove("cambiando-marca"), 250);
   }
 
-  const pagina = nombrePagina(pathname);
+  // En la landing principal CitasApp.co no se pisan el título ni los íconos:
+  // la página tiene su propio favicon y título independientes de la marca activa.
+  if (pathname === "/") return;
+
+  const pagina = nombrePagina(pathname, marca);
   document.title = pagina ? `${marca.nombre} — ${pagina}` : marca.nombre;
 
   document.querySelectorAll('link[rel~="icon"]').forEach((link) => {

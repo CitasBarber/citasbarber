@@ -13,7 +13,7 @@ export const GET = handler(async (req, { params }) => {
     .select("nombre local ciudad direccion foto redes celular planes horario datosPago ventanaCancelacionHoras estado marca")
     .lean();
   if (!b || b.estado !== ESTADO_BARBERO.ACTIVO)
-    return fail("Barbero no encontrado o inactivo", 404);
+    return fail("Profesional no encontrado o inactivo", 404);
 
   return ok({
     barbero: {

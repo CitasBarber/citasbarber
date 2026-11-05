@@ -4,6 +4,7 @@ import Barbero from "@/models/Barbero";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import { ESTADO_CITA, ROLES } from "@/lib/constants";
+import { obtenerMarca } from "@/lib/brands";
 import {
   linkWhatsApp,
   mensajeConfirmacion,
@@ -45,7 +46,7 @@ export const PATCH = handler(async (req, { params }) => {
           { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
           {
             title: "Cita confirmada ✅",
-            body: `Tu cita del ${cita.fecha} a las ${formatearHora12(cita.horaInicio)} con ${barbero?.nombre || "tu barbero"} fue confirmada.`,
+            body: `Tu cita del ${cita.fecha} a las ${formatearHora12(cita.horaInicio)} con ${barbero?.nombre || `tu ${obtenerMarca(barbero?.marca).textos.profesional}`} fue confirmada.`,
             url: "/mis-citas",
             tag: `confirmada-${cita._id}`,
           }
@@ -157,7 +158,7 @@ export const PATCH = handler(async (req, { params }) => {
           { ownerRole: "cliente", clienteCelular: normalizarCelular(cita.clienteCelular) },
           {
             title: "Cita cancelada",
-            body: `Tu cita del ${cita.fecha} a las ${formatearHora12(cita.horaInicio)} fue cancelada por el barbero.`,
+            body: `Tu cita del ${cita.fecha} a las ${formatearHora12(cita.horaInicio)} fue cancelada por tu profesional.`,
             url: "/mis-citas",
             tag: `cancelada-${cita._id}`,
           }

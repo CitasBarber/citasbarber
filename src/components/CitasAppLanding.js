@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { WhatsAppIcon } from "@/components/Icons";
 
+const WA_URL = "https://wa.me/573173780801";
+
 function IgIcon({ className = "w-5 h-5" }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -14,9 +16,9 @@ function IgIcon({ className = "w-5 h-5" }) {
 }
 
 const MARCAS = [
-  { slug: "citasbarber", nicho: "Barber", desc: "Barberos y barberías",   emoji: "💈" },
-  { slug: "citaspet",    nicho: "Pet",    desc: "Peluquerías de mascotas", emoji: "🐾" },
-  { slug: "citasspa",    nicho: "Spa",    desc: "Spas de uñas y salones",  emoji: "💅" },
+  { slug: "citasbarber", nicho: "Barber", desc: "Barberos y barberías",    emoji: "💈" },
+  { slug: "citaspet",    nicho: "Pet",    desc: "Peluquerías de mascotas",  emoji: "🐾" },
+  { slug: "citasspa",    nicho: "Spa",    desc: "Spas de uñas y salones",   emoji: "💅" },
 ];
 
 const PASOS = [
@@ -98,6 +100,280 @@ const NEGOCIO_BULLETS = [
   "Notificaciones push para vos y tu equipo",
 ];
 
+// Planes SaaS reales (lo que paga el negocio)
+const PLANES_SAAS = [
+  {
+    titulo: "Plan Profesional",
+    desc: "Independiente o negocios de 2 a 3",
+    precio: "$44.900",
+    adicional: "+ $25.000 por profesional adicional (máx. 3)",
+    anual: "Pago anual: $449.000",
+    badge: null,
+    destacado: false,
+  },
+  {
+    titulo: "Plan Negocio",
+    desc: "4 profesionales o más",
+    precio: "$129.000",
+    adicional: "+ $19.900 por profesional adicional",
+    anual: "Pago anual: $1.290.000",
+    badge: "INCLUYE 4",
+    destacado: true,
+  },
+];
+
+const FAQS = [
+  {
+    q: "¿Necesito descargar una app?",
+    a: "No. CitasApp funciona directo desde el navegador de tu celular. Podés agregarla a la pantalla de inicio y usarla como si fuera una app descargada — sin pasar por ninguna tienda.",
+  },
+  {
+    q: "¿Funciona en iPhone y Android?",
+    a: "Sí. Compatible con cualquier celular con navegador moderno: Chrome en Android y Safari en iPhone.",
+  },
+  {
+    q: "¿Cuánto tiempo toma tener mi negocio en línea?",
+    a: "Menos de 24 horas. Nos escribís por WhatsApp, configuramos tu perfil con tus servicios y precios, y ya podés recibir citas el mismo día.",
+  },
+  {
+    q: "¿Puedo cancelar cuando quiera?",
+    a: "Sí. No hay contratos ni permanencia mínima. Cancelás en cualquier momento sin cobros adicionales.",
+  },
+  {
+    q: "¿Qué pasa si mis clientes no saben usar apps?",
+    a: "CitasApp está diseñada para que cualquier cliente agende en segundos: solo dan su nombre y número de celular. No hay que crear cuentas ni recordar contraseñas.",
+  },
+];
+
+/* ── Datos para el demo del teléfono (una pantalla por marca) ── */
+const DEMO_BRANDS = [
+  {
+    id: "barber",
+    color: "#e3262f",
+    emoji: "💈",
+    nombre: "CitasBarber",
+    profesional: "Barbero",
+    groomerNombre: "Carlos Martínez",
+    groomerInicial: "C",
+    planes: ["Corte $25k", "Barba+Corte $45k"],
+    label: "ESCOGÉ TU BARBERO",
+  },
+  {
+    id: "pet",
+    color: "#0f8a7e",
+    emoji: "🐾",
+    nombre: "CitasPet",
+    profesional: "Groomer",
+    groomerNombre: "Valeria Suárez",
+    groomerInicial: "V",
+    planes: ["Baño básico $30k", "Grooming $90k"],
+    label: "ELIGE TU GROOMER",
+  },
+  {
+    id: "spa",
+    color: "#e4604f",
+    emoji: "💅",
+    nombre: "CitasSpa",
+    profesional: "Especialista",
+    groomerNombre: "Andrea Mejía",
+    groomerInicial: "A",
+    planes: ["Manicure $25k", "Mani+Pedi $55k"],
+    label: "ELIGE TU ESPECIALISTA",
+  },
+];
+
+/* ── Pantalla de marca dentro del teléfono ── */
+function BrandScreen({ brand, anim }) {
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#0b0c10", ...anim }}>
+      {/* App bar */}
+      <div style={{ height: 36, background: brand.color, display: "flex", alignItems: "center", paddingLeft: 12, paddingRight: 12 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+          {brand.emoji} {brand.nombre}
+        </span>
+      </div>
+
+      <div style={{ padding: "10px 12px" }}>
+        <p style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.35)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8 }}>
+          {brand.label}
+        </p>
+
+        {/* Card principal */}
+        <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <div style={{ width: 34, height: 34, borderRadius: "50%", background: brand.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#fff", flexShrink: 0 }}>
+              {brand.groomerInicial}
+            </div>
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>{brand.groomerNombre}</p>
+              <p style={{ fontSize: 8, color: "#fbbf24" }}>★★★★★ · {brand.profesional}</p>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
+            {brand.planes.map((p) => (
+              <span key={p} style={{ padding: "2px 7px", fontSize: 8, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)", borderRadius: 100 }}>
+                {p}
+              </span>
+            ))}
+          </div>
+          <div style={{ padding: "5px 0", fontSize: 9, background: brand.color, color: "#fff", textAlign: "center", fontWeight: 700, borderRadius: 8 }}>
+            Agendar →
+          </div>
+        </div>
+
+        {/* Card secundaria esqueleto */}
+        <div style={{ marginTop: 6, opacity: 0.3, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.08)", flexShrink: 0 }} />
+            <div>
+              <div style={{ width: 76, height: 7, background: "rgba(255,255,255,0.15)", borderRadius: 4, marginBottom: 4 }} />
+              <div style={{ width: 52, height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 4 }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Demo animado del teléfono ── */
+// 3 marcas × 4s cada una = 12s total
+const ANIM_S1 = { animation: "demoSlide1 12s infinite" };
+const ANIM_S2 = { animation: "demoSlide2 12s infinite", opacity: 0 };
+const ANIM_S3 = { animation: "demoSlide3 12s infinite", opacity: 0 };
+
+// Radio del teléfono como constante para consistencia
+const R_OUTER = 42; // px ≈ 2.6rem
+const R_INNER = 37; // px ≈ 2.3rem
+
+function PhoneDemo() {
+  return (
+    <>
+      <style>{`
+        @keyframes demoSlide1 {
+          0%   { opacity: 1; }
+          30%  { opacity: 1; }
+          33%  { opacity: 0; }
+          100% { opacity: 0; }
+        }
+        @keyframes demoSlide2 {
+          0%   { opacity: 0; }
+          33%  { opacity: 0; }
+          36%  { opacity: 1; }
+          63%  { opacity: 1; }
+          67%  { opacity: 0; }
+          100% { opacity: 0; }
+        }
+        @keyframes demoSlide3 {
+          0%   { opacity: 0; }
+          67%  { opacity: 0; }
+          70%  { opacity: 1; }
+          97%  { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `}</style>
+
+      <div
+        className="relative select-none shrink-0"
+        style={{ width: 222, height: 452 }}
+      >
+        {/* Cuerpo del teléfono (borde exterior) */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: R_OUTER,
+            background: "linear-gradient(155deg, #2a2a2a 0%, #0d0d0d 100%)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)",
+          }}
+        />
+
+        {/* Área de pantalla */}
+        <div
+          style={{
+            position: "absolute",
+            top: 4,
+            left: 4,
+            right: 4,
+            bottom: 4,
+            borderRadius: R_INNER,
+            background: "#0b0c10",
+            overflow: "hidden",
+          }}
+        >
+          {/* Notch */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: 76,
+              height: 16,
+              background: "#1a1a1a",
+              borderBottomLeftRadius: 12,
+              borderBottomRightRadius: 12,
+              zIndex: 20,
+            }}
+          />
+
+          {/* Status bar */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 30,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingLeft: 16,
+              paddingRight: 16,
+              zIndex: 10,
+            }}
+          >
+            <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 9, fontWeight: 600 }}>9:41</span>
+            <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 8 }}>▌▌▌ 100%</span>
+          </div>
+
+          {/* Pantallas de cada marca */}
+          <div style={{ position: "absolute", inset: 0, top: 30 }}>
+            <BrandScreen brand={DEMO_BRANDS[0]} anim={ANIM_S1} />
+            <BrandScreen brand={DEMO_BRANDS[1]} anim={ANIM_S2} />
+            <BrandScreen brand={DEMO_BRANDS[2]} anim={ANIM_S3} />
+          </div>
+        </div>
+
+        {/* Botón derecho (encendido) */}
+        <div style={{ position: "absolute", right: -2, top: 108, width: 3, height: 52, background: "#1c1c1c", borderRadius: "0 2px 2px 0" }} />
+        {/* Botones izquierdos (volumen) */}
+        <div style={{ position: "absolute", left: -2, top: 92,  width: 3, height: 28, background: "#1c1c1c", borderRadius: "2px 0 0 2px" }} />
+        <div style={{ position: "absolute", left: -2, top: 126, width: 3, height: 28, background: "#1c1c1c", borderRadius: "2px 0 0 2px" }} />
+      </div>
+    </>
+  );
+}
+
+/* ── Botón flotante WhatsApp ── */
+function WaFlotante() {
+  return (
+    <a
+      href={WA_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Contactar por WhatsApp"
+      className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-transform duration-200"
+      style={{ background: "#25D366", boxShadow: "0 4px 20px rgba(37,211,102,0.4)" }}
+    >
+      <WhatsAppIcon className="w-7 h-7 text-white" />
+    </a>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Landing principal
+   ═══════════════════════════════════════════════════════════ */
 export default function CitasAppLanding() {
   return (
     <div className="min-h-screen flex flex-col bg-crema text-tinta scroll-smooth">
@@ -131,31 +407,42 @@ export default function CitasAppLanding() {
       <main className="flex-1 flex flex-col items-center px-4">
 
         {/* ── Hero ── */}
-        <section className="w-full flex flex-col items-center pt-16 pb-14 text-center max-w-xl">
-          <div className="inline-flex items-center gap-3 mb-6">
-            <span className="h-px w-8" style={{ background: "var(--cobre)" }} />
-            <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-cobre">
-              Colombia · Citas online
-            </p>
-            <span className="h-px w-8" style={{ background: "var(--cobre)" }} />
+        <section className="w-full max-w-5xl pt-14 pb-12">
+          <div className="grid md:grid-cols-[1fr_250px] gap-10 md:gap-14 items-center">
+
+            {/* Texto */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-left">
+              <div className="inline-flex items-center gap-3 mb-6">
+                <span className="h-px w-8" style={{ background: "var(--cobre)" }} />
+                <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-cobre">
+                  Colombia · Citas online
+                </p>
+                <span className="h-px w-8" style={{ background: "var(--cobre)" }} />
+              </div>
+
+              <h1 className="font-display text-5xl sm:text-6xl leading-[1.05] text-tinta">
+                Tu turno,<br />
+                <span className="text-cobre">cuando querás.</span>
+              </h1>
+
+              <p className="mt-5 text-pizarra text-base sm:text-lg leading-relaxed max-w-md">
+                Agendá con tu profesional favorito en un momentico.
+                Sin llamadas, sin filas — la confirmación llega por WhatsApp y en la app.
+              </p>
+
+              <a
+                href="#plataformas"
+                className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-cobre-profundo text-hueso font-semibold text-sm hover:bg-tinta transition-colors duration-200"
+              >
+                Ver plataformas ↓
+              </a>
+            </div>
+
+            {/* Demo teléfono */}
+            <div className="flex justify-center">
+              <PhoneDemo />
+            </div>
           </div>
-
-          <h1 className="font-display text-5xl sm:text-6xl leading-[1.05] text-tinta">
-            Tu turno,<br />
-            <span className="text-cobre">cuando querás.</span>
-          </h1>
-
-          <p className="mt-5 text-pizarra text-base sm:text-lg leading-relaxed max-w-md">
-            Agendá con tu profesional favorito en un momentico.
-            Sin llamadas, sin filas — la confirmación llega por WhatsApp y en la app.
-          </p>
-
-          <a
-            href="#plataformas"
-            className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-cobre-profundo text-hueso font-semibold text-sm hover:bg-tinta transition-colors duration-200"
-          >
-            Ver plataformas ↓
-          </a>
         </section>
 
         {/* ── Tarjetas de marca ── */}
@@ -207,18 +494,15 @@ export default function CitasAppLanding() {
             </h2>
           </div>
 
-          {/* grid: paso · flecha · paso · flecha · paso */}
           <div className="grid sm:grid-cols-[1fr_32px_1fr_32px_1fr] gap-y-8 items-start">
             {PASOS.flatMap((p, i) => [
               <div key={`paso-${i}`} className="flex flex-row sm:flex-col items-start gap-4">
-                {/* icono en caja de color */}
                 <div
                   className="w-14 h-14 shrink-0 rounded-2xl grid place-items-center text-hueso shadow-card"
                   style={{ background: `var(${p.varColor})` }}
                 >
                   {p.icono}
                 </div>
-                {/* texto */}
                 <div>
                   <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-pizarra/60">
                     {p.n}
@@ -229,19 +513,16 @@ export default function CitasAppLanding() {
                   <p className="text-pizarra text-sm mt-1.5 leading-relaxed">{p.desc}</p>
                 </div>
               </div>,
-
-              i < PASOS.length - 1 && (
-                <div key={`flecha-${i}`} className="hidden sm:flex items-start justify-center pt-5 text-linea text-2xl select-none">
-                  →
-                </div>
-              ),
-            ])}
+              i < PASOS.length - 1
+                ? <div key={`flecha-${i}`} className="hidden sm:flex items-start justify-center pt-5 text-linea text-2xl select-none">→</div>
+                : null,
+            ]).filter(Boolean)}
           </div>
         </section>
 
       </main>
 
-      {/* ── Beneficios ── (fondo hueso, ancho completo) */}
+      {/* ── Beneficios ── */}
       <section className="bg-hueso border-y border-linea px-4 py-16">
         <div className="mx-auto max-w-3xl">
           <h2 className="font-display text-3xl sm:text-4xl text-tinta mb-2">
@@ -250,7 +531,6 @@ export default function CitasAppLanding() {
           <p className="text-pizarra mb-10 text-sm sm:text-base">
             Diseñada para la manera en que Colombia agenda: rápido, por WhatsApp, desde el celular.
           </p>
-
           <div className="grid sm:grid-cols-3 gap-6">
             {BENEFICIOS.map((b, i) => (
               <div key={i} className="flex flex-col gap-3">
@@ -265,12 +545,155 @@ export default function CitasAppLanding() {
         </div>
       </section>
 
-      {/* ── Para negocios ── (fondo crema con borde) */}
-      <section id="para-negocios" className="px-4 py-16 bg-crema scroll-mt-16">
+      {/* ── Precios ── */}
+      <section className="bg-hueso border-y border-linea px-4 py-20">
         <div className="mx-auto max-w-3xl">
-          <div className="rounded-2xl border border-linea bg-hueso p-8 sm:p-10 flex flex-col sm:flex-row gap-8 sm:gap-12 items-start">
+          <div className="text-center mb-10">
+            <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-cobre mb-1">
+              Precios
+            </p>
+            <h2 className="font-display text-3xl sm:text-4xl text-tinta">Simple. Sin sorpresas.</h2>
+            <p className="mt-2 text-sm text-pizarra">
+              Los mismos precios para CitasBarber, CitasPet y CitasSpa. Sin permanencia.
+            </p>
+          </div>
 
-            {/* Texto izquierdo */}
+          {/* Cards de plan */}
+          <div className="grid sm:grid-cols-2 gap-5 mb-8">
+            {PLANES_SAAS.map((plan) => (
+              <div
+                key={plan.titulo}
+                className="rounded-2xl relative overflow-hidden flex flex-col gap-3"
+                style={{
+                  padding: "1.75rem",
+                  ...(plan.destacado
+                    ? { background: "#0b0c10", border: "2px solid rgba(184,115,51,0.5)" }
+                    : { background: "#fff",    border: "1px solid var(--linea)" }),
+                }}
+              >
+                {plan.destacado && (
+                  <div
+                    className="absolute top-0 left-0 right-0 h-px"
+                    style={{ background: "linear-gradient(90deg,transparent,rgba(184,115,51,0.9),transparent)" }}
+                  />
+                )}
+
+                {plan.badge && (
+                  <span
+                    className="self-start text-[10px] font-bold tracking-[0.15em] uppercase px-2.5 py-1 rounded-full"
+                    style={{ background: "rgba(184,115,51,0.2)", color: "#b87333" }}
+                  >
+                    {plan.badge}
+                  </span>
+                )}
+
+                <div>
+                  <h3
+                    className="font-display text-2xl"
+                    style={{ color: plan.destacado ? "#fff" : "var(--tinta)" }}
+                  >
+                    {plan.titulo}
+                  </h3>
+                  <p
+                    className="text-sm mt-0.5"
+                    style={{ color: plan.destacado ? "rgba(255,255,255,0.45)" : "var(--pizarra)" }}
+                  >
+                    {plan.desc}
+                  </p>
+                </div>
+
+                <div className="flex items-end gap-1.5">
+                  <span className="font-display text-4xl sm:text-5xl" style={{ color: "#b87333" }}>
+                    {plan.precio}
+                  </span>
+                  <span
+                    className="pb-1 text-sm"
+                    style={{ color: plan.destacado ? "rgba(255,255,255,0.4)" : "var(--pizarra)" }}
+                  >
+                    /mes
+                  </span>
+                </div>
+
+                <p
+                  className="text-xs"
+                  style={{ color: plan.destacado ? "rgba(255,255,255,0.4)" : "var(--pizarra)" }}
+                >
+                  {plan.adicional}
+                </p>
+                <p
+                  className="text-xs font-semibold"
+                  style={{ color: plan.destacado ? "rgba(255,255,255,0.3)" : "var(--pizarra)" }}
+                >
+                  {plan.anual}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Promo anual */}
+          <div
+            className="rounded-xl flex items-start gap-3 mb-8 text-sm"
+            style={{ background: "rgba(140,85,36,0.07)", border: "1px solid var(--linea)", padding: "1rem 1.25rem" }}
+          >
+            <span className="text-xl shrink-0">🎁</span>
+            <p className="text-pizarra">
+              <strong className="text-cobre-profundo">Pagando el año:</strong> pagás 10 meses y recibís 12
+              — y la app con tu nombre, logo y colores{" "}
+              <strong className="text-cobre-profundo">te sale gratis.</strong>
+            </p>
+          </div>
+
+          {/* CTA */}
+          <a
+            href={WA_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 font-semibold px-6 py-3.5 rounded-lg text-white hover:opacity-90 transition-opacity"
+            style={{ background: "#25D366" }}
+          >
+            <WhatsAppIcon className="w-5 h-5" />
+            Pedir mi demo gratis · 317 378 0801
+          </a>
+        </div>
+      </section>
+
+      {/* ── Preguntas frecuentes ── */}
+      <section className="bg-crema px-4 py-16">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-10 text-center">
+            <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-cobre mb-1">
+              Preguntas frecuentes
+            </p>
+            <h2 className="font-display text-3xl sm:text-4xl text-tinta">
+              Lo que suelen preguntar
+            </h2>
+          </div>
+          <div className="flex flex-col gap-3">
+            {FAQS.map((faq, i) => (
+              <details key={i} className="group rounded-xl border border-linea bg-hueso overflow-hidden">
+                <summary className="flex items-center justify-between gap-4 cursor-pointer px-5 py-4 font-semibold text-tinta select-none list-none [&::-webkit-details-marker]:hidden">
+                  <span>{faq.q}</span>
+                  <span
+                    className="shrink-0 w-6 h-6 rounded-full grid place-items-center text-lg leading-none font-light group-open:rotate-45 transition-transform duration-200"
+                    style={{ background: "var(--linea)", color: "var(--pizarra)" }}
+                  >
+                    +
+                  </span>
+                </summary>
+                <div className="px-5 pb-4 text-sm text-pizarra leading-relaxed border-t border-linea pt-3">
+                  {faq.a}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Para negocios ── */}
+      <section id="para-negocios" className="px-4 py-16 bg-hueso border-t border-linea scroll-mt-16">
+        <div className="mx-auto max-w-3xl">
+          <div className="rounded-2xl border border-linea bg-crema p-8 sm:p-10 flex flex-col sm:flex-row gap-8 sm:gap-12 items-start">
+
             <div className="flex-1">
               <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-cobre mb-3">
                 Para profesionales
@@ -285,7 +708,6 @@ export default function CitasAppLanding() {
               </p>
             </div>
 
-            {/* Lista + CTA derecha */}
             <div className="flex-1 flex flex-col gap-5">
               <ul className="flex flex-col gap-2.5">
                 {NEGOCIO_BULLETS.map((b, i) => (
@@ -297,7 +719,7 @@ export default function CitasAppLanding() {
               </ul>
               <div className="flex flex-col gap-3">
                 <a
-                  href="https://wa.me/573173780801"
+                  href={WA_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 font-semibold text-sm px-5 py-3 rounded-lg bg-cobre-profundo text-hueso hover:bg-tinta transition-colors duration-200 w-full sm:w-auto sm:self-start"
@@ -341,6 +763,9 @@ export default function CitasAppLanding() {
           </a>
         </div>
       </footer>
+
+      {/* ── Botón flotante WhatsApp ── */}
+      <WaFlotante />
 
     </div>
   );

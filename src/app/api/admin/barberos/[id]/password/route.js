@@ -24,10 +24,10 @@ export const POST = handler(async (req, { params }) => {
     return fail("La contraseña debe tener al menos 6 caracteres");
 
   const barbero = await Barbero.findById(params.id);
-  if (!barbero) return fail("Barbero no encontrado", 404);
+  if (!barbero) return fail("Profesional no encontrado", 404);
 
   const usuario = await Usuario.findOne({ barbero: barbero._id });
-  if (!usuario) return fail("Usuario del barbero no encontrado. El barbero debe registrarse primero.", 404);
+  if (!usuario) return fail("Usuario del profesional no encontrado. El profesional debe registrarse primero.", 404);
 
   usuario.passwordHash    = await hashPassword(password.trim());
   usuario.passwordTemporal = true;

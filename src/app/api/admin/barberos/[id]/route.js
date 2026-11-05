@@ -4,7 +4,7 @@ import Usuario from "@/models/Usuario";
 import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession } from "@/lib/auth";
-import { ESTADO_BARBERO, ROLES, PLANES_DEFAULT } from "@/lib/constants";
+import { ESTADO_BARBERO, ROLES, planesDefaultPorMarca } from "@/lib/constants";
 import { esMarcaValida } from "@/lib/brands";
 
 function requireAdmin() {
@@ -22,7 +22,7 @@ export const PUT = handler(async (req, { params }) => {
   requireAdmin();
   const body = await req.json();
   const b = await Barbero.findById(params.id);
-  if (!b) return fail("Barbero no encontrado", 404);
+  if (!b) return fail("Profesional no encontrado", 404);
   if (body.nombre?.trim())    b.nombre    = body.nombre.trim();
   if (body.local?.trim())     b.local     = body.local.trim();
   if (body.celular?.trim())   b.celular   = body.celular.trim();
@@ -61,7 +61,7 @@ export const PATCH = handler(async (req, { params }) => {
   const body = await req.json();
   const { accion, meses, dias, tarifaMensual, fechaVencimiento } = body;
   const b = await Barbero.findById(params.id);
-  if (!b) return fail("Barbero no encontrado", 404);
+  if (!b) return fail("Profesional no encontrado", 404);
 
   switch (accion) {
     case "aprobar":
@@ -70,7 +70,7 @@ export const PATCH = handler(async (req, { params }) => {
       b.suscripcionVence = new Date(Date.now() + (meses || 1) * 30 * 864e5);
       if (!b.fechaInicioSuscripcion) b.fechaInicioSuscripcion = new Date();
       // Si no tiene planes, se cargan los de plantilla para que el admin los ajuste
-      if (!b.planes || b.planes.length === 0) b.planes = PLANES_DEFAULT;
+      if (!b.planes || b.planes.length === 0) b.planes = planesDefaultPorMarca(b.marca);
       break;
     case "rechazar":
       b.estado = ESTADO_BARBERO.RECHAZADO;
@@ -116,7 +116,7 @@ export const DELETE = handler(async (req, { params }) => {
   requireAdmin();
 
   const b = await Barbero.findById(params.id);
-  if (!b) return fail("Barbero no encontrado", 404);
+  if (!b) return fail("Profesional no encontrado", 404);
 
   const citas = await Cita.deleteMany({ barbero: b._id });
   await Usuario.deleteOne({ barbero: b._id });

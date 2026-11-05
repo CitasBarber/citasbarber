@@ -4,7 +4,7 @@ import Usuario from "@/models/Usuario";
 import Cita from "@/models/Cita";
 import { ok, fail, handler } from "@/lib/api";
 import { getSession, hashPassword } from "@/lib/auth";
-import { ROLES, ESTADO_BARBERO, PLANES_DEFAULT, BARBERIA_SEDE_DEFAULT, HORARIO_DEFAULT } from "@/lib/constants";
+import { ROLES, ESTADO_BARBERO, planesDefaultPorMarca, BARBERIA_SEDE_DEFAULT, HORARIO_DEFAULT } from "@/lib/constants";
 import { MARCA_DEFAULT, esMarcaValida, obtenerMarca } from "@/lib/brands";
 
 export const dynamic = "force-dynamic";
@@ -71,10 +71,10 @@ export const POST = handler(async (req) => {
     return fail("Nombre, celular y correo son obligatorios", 400);
   }
 
-  // Normalizar email: si el admin ingresó solo el alias, concatenar @citasbarber.com
+  // Normalizar email: si el admin ingresó solo el alias, concatenar el dominio de la marca
   let emailNormalizado = email.trim().toLowerCase();
   if (!emailNormalizado.includes("@")) {
-    emailNormalizado = `${emailNormalizado}@citasbarber.com`;
+    emailNormalizado = `${emailNormalizado}@${obtenerMarca(marca).slug}.com`;
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -87,7 +87,7 @@ export const POST = handler(async (req) => {
     return fail("Ya existe un usuario registrado con ese correo electrónico", 409);
   }
 
-  const pass = password?.trim() || "Barbero123*";
+  const pass = password?.trim() || `${obtenerMarca(marca).nicho}123*`;
   if (pass.length < 6) {
     return fail("La contraseña debe tener al menos 6 caracteres", 400);
   }
@@ -109,7 +109,7 @@ export const POST = handler(async (req) => {
       ...HORARIO_DEFAULT,
       duracionTurnoMin: duracionTurno,
     },
-    planes: PLANES_DEFAULT,
+    planes: planesDefaultPorMarca(marca),
   });
 
   const passwordHash = await hashPassword(pass);
