@@ -29,7 +29,16 @@ const anton = Anton({
 // theme-color y manifest según la marca activa.
 const MARCA_INICIAL = BRANDS[MARCA_DEFAULT];
 
+const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://citasappco.vercel.app");
+
 export const metadata = {
+  metadataBase: new URL(baseUrl),
   title: `${MARCA_INICIAL.nombre} — ${MARCA_INICIAL.textos.hero}`,
   description: `${MARCA_INICIAL.nombre}. ${MARCA_INICIAL.textos.hero} Agendá en un momentico, sin llamadas.`,
   // Permite que iOS trate la web como app (pantalla completa) al agregarla a

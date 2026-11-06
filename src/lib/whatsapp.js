@@ -5,7 +5,7 @@ import { obtenerMarca, capitalizar } from "./brands";
 
 // Sitio del proyecto: se usa como firma promocional en los mensajes que llegan
 // al cliente final, para dar a conocer la plataforma.
-const SITIO_URL_DEFAULT = "https://citasbarber.vercel.app";
+const SITIO_URL_DEFAULT = "https://citasappco.vercel.app";
 
 // Resuelve la URL del sitio validando que sea realmente una URL http(s). Si la
 // variable de entorno viene vacía o mal configurada (p. ej. en Vercel quedó

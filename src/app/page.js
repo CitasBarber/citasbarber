@@ -12,8 +12,15 @@ export const metadata = {
     title: "CitasApp · Agenda con WhatsApp",
     description:
       "La app de citas con WhatsApp para barberías, peluquerías de mascotas y spas. Sin descargar nada.",
+    url: "/",
     locale: "es_CO",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CitasApp · Agenda con WhatsApp",
+    description:
+      "La app de citas con WhatsApp para barberías, peluquerías de mascotas y spas. Sin descargar nada.",
   },
 };
 
